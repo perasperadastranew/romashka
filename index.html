@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Коттеджный посёлок «Ромашковая долина»: девять домов в изометрической долине. Концепт-сайт на WebGL.">
+<meta property="og:title" content="Коттеджный посёлок «Ромашковая долина»">
+<meta property="og:description" content="Девять домов и ни одного соседа сверху. Концепт-сайт на WebGL.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23e4502f'/%3E%3Cg fill='%23fff'%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(0 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(30 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(60 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(90 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(120 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(150 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(180 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(210 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(240 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(270 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(300 20 20)'/%3E%3Cellipse cx='20' cy='10' rx='3.6' ry='7.5' transform='rotate(330 20 20)'/%3E%3C/g%3E%3Ccircle cx='20' cy='20' r='5.6' fill='%23ffc94a'/%3E%3C/svg%3E">
+<style>html,body{margin:0;padding:0}</style>
+<title>КП Ромашковая долина</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500&family=Golos+Text:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: a fixed isometric WebGL stage; text lives in one small card per screen (lower left),
+   a pill row of the nine houses sits at the bottom. Single light look by choice. */
+:root{
+  color-scheme:light;
+  --bg:#e9f0f1;
+  --card:#ffffff;
+  --ink:#1c211f;
+  --dim:#6d7773;
+  --line:#dfe5e3;
+  --accent:#e4502f;
+  --mint:#58b892;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --gutter:clamp(16px,3.2vw,44px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;overflow-x:hidden}
+#stage{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none}
+.bar{position:fixed;top:0;left:0;right:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) var(--gutter) 14px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.brand{font-family:var(--display);font-weight:500;font-size:13px;letter-spacing:0;text-transform:none;color:var(--card);background:var(--accent);padding:6px 12px;border-radius:8px}
+#count{font-variant-numeric:tabular-nums;background:var(--card);padding:6px 12px;border-radius:999px;color:var(--ink)}
+main{position:static}
+section{min-height:100vh;min-height:100svh;padding-inline:var(--gutter);padding-block:88px 92px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start}
+.card{background:var(--card);border-radius:14px;padding:22px 22px 20px;max-width:min(340px,100%);display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 0 var(--line),0 18px 40px -22px rgba(28,33,31,.35)}
+.card h1,.card h2{font-family:var(--display);font-weight:400;font-size:clamp(22px,2.3vw,28px);line-height:1.12;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.card p{margin:0;color:var(--dim);font-size:14px}
+.num{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-variant-numeric:tabular-nums}
+.meta{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--dim);font-variant-numeric:tabular-nums;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.state{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.state:empty{display:none}
+.btn{align-self:flex-start;border:0;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--card);background:var(--accent);padding:8px 14px;border-radius:999px;text-decoration:none}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:3;padding:0 var(--gutter) calc(env(safe-area-inset-bottom,0px) + 18px);pointer-events:none}
+.nav ol{list-style:none;margin:0;padding:6px;display:flex;gap:4px;overflow-x:auto;max-width:100%;width:max-content;background:var(--card);border-radius:999px;pointer-events:auto;box-shadow:0 12px 30px -18px rgba(28,33,31,.4);scrollbar-width:none}
+.nav ol::-webkit-scrollbar{display:none}
+.nav a{display:block;white-space:nowrap;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--dim);text-decoration:none;padding:7px 12px;border-radius:999px}
+.nav a[aria-current="true"]{background:var(--accent);color:var(--card)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wx{display:flex;gap:2px;background:var(--card);border-radius:999px;padding:3px;margin-left:auto}
+.wx button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--dim);background:transparent;border:0;border-radius:999px;padding:4px 10px;cursor:pointer}
+.wx button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+#stage{filter:saturate(1.12) contrast(1.03)}
+.ts{position:fixed;left:0;right:0;z-index:0;pointer-events:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
+.ts-top{top:0;height:30%;-webkit-mask-image:linear-gradient(to bottom,#000 10%,transparent);mask-image:linear-gradient(to bottom,#000 10%,transparent)}
+.ts-bot{bottom:0;height:24%;-webkit-mask-image:linear-gradient(to top,#000 10%,transparent);mask-image:linear-gradient(to top,#000 10%,transparent)}
+#wxc{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.pins{position:fixed;inset:0;z-index:1;pointer-events:none}
+.card{position:relative;z-index:2}
+.pin{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;letter-spacing:.02em;color:var(--ink);background:var(--card);border-radius:999px;padding:4px 10px 4px 4px;text-decoration:none;white-space:nowrap;box-shadow:0 8px 20px -12px rgba(28,33,31,.5);pointer-events:auto;will-change:transform}
+.pin b{font-weight:400;color:var(--card);background:var(--accent);border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.pin::after{content:"";position:absolute;left:13px;top:100%;width:1px;height:14px;background:var(--accent)}
+@media (max-width:760px){ .pin span{display:none} .pin{padding:4px}
+ section{padding-block:76px 84px} .card{padding:18px} }
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.card h1{font-family:var(--mono);font-weight:500;font-size:clamp(22px,2.2vw,28px);letter-spacing:-.03em;line-height:1.15}
+.brand{display:inline-flex;align-items:center;gap:7px}
+.brand .daisy{width:18px;height:18px}
+.logo{width:52px;height:52px;border-radius:14px;background:var(--accent);display:grid;place-items:center}
+.logo .daisy{width:38px;height:38px}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 0;padding:0;list-style:none}
+.facts li{font-family:var(--mono);font-size:11px;letter-spacing:.02em;color:var(--ink);background:var(--bg);border-radius:999px;padding:5px 10px}
+main{cursor:pointer}
+.card{cursor:auto}
+</style>
+
+</head>
+<body>
+<canvas id="stage" aria-hidden="true"></canvas>
+<canvas id="wxc" aria-hidden="true"></canvas>
+<div class="ts ts-top" aria-hidden="true"></div><div class="ts ts-bot" aria-hidden="true"></div>
+
+<div class="bar">
+  <span class="brand"><svg class="daisy" viewBox="0 0 40 40" aria-hidden="true"><g fill="#fff"><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(0 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(30 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(60 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(90 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(120 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(150 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(180 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(210 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(240 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(270 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(300 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(330 20 20)"/></g><circle cx="20" cy="20" r="6.2" fill="#ffc94a"/><circle cx="18" cy="18.2" r="1.6" fill="#fff" opacity=".55"/></svg>Ромашковая долина</span>
+  <span class="wx" role="group" aria-label="Погода"><button type="button" id="wx-sun" data-wx="sun" aria-pressed="true">Ясно</button><button type="button" id="wx-rain" data-wx="rain" aria-pressed="false">Дождь</button><button type="button" id="wx-snow" data-wx="snow" aria-pressed="false">Снег</button></span>
+  <span id="count">Лот 00 / 09</span>
+</div>
+
+<main id="main">
+  <section id="top" data-st="0">
+    <div class="card">
+      <div class="logo"><svg class="daisy" viewBox="0 0 40 40" aria-hidden="true"><g fill="#fff"><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(0 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(30 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(60 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(90 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(120 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(150 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(180 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(210 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(240 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(270 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(300 20 20)"/><ellipse cx="20" cy="9.5" rx="4.2" ry="8.5" transform="rotate(330 20 20)"/></g><circle cx="20" cy="20" r="6.2" fill="#ffc94a"/><circle cx="18" cy="18.2" r="1.6" fill="#fff" opacity=".55"/></svg></div>
+      <div class="num">9 лотов · сдан давно</div>
+      <h1>Коттеджный посёлок «Ромашковая долина»</h1>
+      <p>Девять домов и ни одного соседа сверху. До моря пять минут качения, до леса ноль.</p>
+      <ul class="facts"><li>9 домов на 5,5 га</li><li>лес в шаговой доступности</li><li>парковки нет, машин тоже</li></ul>
+      <div class="state" id="loadState">Генплан загружается…</div>
+    </div>
+  </section>
+</main>
+
+<div class="pins" id="pins"></div>
+
+<nav class="nav" aria-label="Лоты"><ol id="navList"></ol></nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(function(){
+const HOUSES=[{"file":"ForestHouse","short":"Шалаш","name":"Шалаш-студия в лесу","text":"Свободная планировка: стен нет, есть скаты. Мох на крыше входит в стоимость и растёт бесплатно.","meta":"Вид на звёзды · отделка: брёвна","btn":"Покрутить телескоп","min":[-99.87,-0.24,15.24],"max":[-87.74,7.42,30.15],"x":-93.8,"z":24.85,"y":0.0,"rot":0.4363,"parts":[{"id":"telescope","p":[-3.2,1.05,1.4],"ax":[0,1,0],"mode":"kick","a":0.5,"w":0.5}]},{"file":"PinkHouse","short":"Розовый","name":"Розовый дом с палисадником","text":"Видовое жильё в один этаж. Дым над трубой завивается сам, ромашка на двери крутится по требованию.","meta":"Двор без машин · забор по периметру","btn":"Крутануть ромашку","min":[-80.74,-0.2,-15.2],"max":[-68.01,5.6,-4.51],"x":-74.55,"z":-10.15,"y":0.0,"rot":0.3491,"parts":[{"id":"daisy","p":[0.0,1.061,1.758],"ax":[0,0,1],"mode":"spin","a":0.5,"w":0}]},{"file":"StoneHouse","short":"Каменный","name":"Каменный особняк","text":"Толстые стены и плющ вместо фасадной подсветки. Сердце на кронштейне служит единственной вывеской в посёлке.","meta":"Ручей у крыльца · шпили: 2 шт.","btn":"Качнуть сердце","min":[-47.84,-0.35,-55.25],"max":[-33.63,5.94,-46.15],"x":-39.55,"z":-50.4,"y":0.0,"rot":0.1745,"parts":[{"id":"heart","p":[1.908,3.48,-0.067],"ax":[1,0,0],"mode":"swing","a":0.22,"w":1.8}]},{"file":"TreeHouse","short":"На клёне","name":"Пентхаус на клёне","text":"Самый высокий этаж в долине. Лифта нет, зато есть лестница вверх и горка вниз.","meta":"Потолки до кроны · круговая терраса","btn":"Развернуть флаг","min":[43.35,-2.81,-76.02],"max":[52.46,8.08,-66.88],"x":47.95,"z":-71.4,"y":0.0,"rot":0.55,"parts":[{"id":"flag","p":[0.1,7.2,-0.0],"ax":[0,1,0],"mode":"kick","a":0.45,"w":0.9}]},{"file":"MillHouse","short":"Мельница","name":"Лофт в мельнице","text":"Бывшее производственное здание. Лопасти работают как вентиляция и как достопримечательность.","meta":"Центр долины · дощатый настил","btn":"Раскрутить лопасти","min":[1.04,-0.04,0.57],"max":[5.19,5.78,3.9],"x":2.45,"z":2.1,"y":0.0,"rot":-0.3491,"parts":[{"id":"blades","p":[0,3.78,0.6],"ax":[0,0,1],"mode":"spin","a":0.9,"w":0}]},{"file":"DomeHouse","short":"Купол","name":"Дом-купол с огородом","text":"Ни одного угла: пыли негде прятаться. Морковь на грядке включена в договор.","meta":"Яблоня, груша, апельсин · мост через ручей","btn":"Проверить морковь","min":[25.22,-1.4,17.19],"max":[33.89,3.85,25.7],"x":30.45,"z":21.35,"y":0.0,"rot":-0.1745,"parts":[{"id":"carrots","p":[-3.8,0.06,0.9],"ax":[0,1,0],"mode":"bob","a":0.1,"w":2.2}]},{"file":"JunkHouse","short":"Батисфера","name":"Батисфера на сваях","text":"Жильё для тех, кто всё чинит сам. Вентиль крутится, часы идут, остальное в процессе.","meta":"Первая линия · состояние творческое","btn":"Крутить вентиль","min":[72.18,-0.05,44.4],"max":[78.09,5.65,48.46],"x":74.2,"z":45.85,"y":0.1,"rot":-0.6109,"parts":[{"id":"valve","p":[0.0,2.599,1.497],"ax":[0,0,1],"mode":"spin","a":0.7,"w":0},{"id":"hand","p":[0.0,3.89,1.061],"ax":[0,0,1],"mode":"spin","a":-1.6,"w":0}]},{"file":"LogHouse","short":"Сруб","name":"Сруб под соломой","text":"Экологичнее некуда: брёвна, солома и тыква под коньком. Сарай и вилы идут бонусом.","meta":"Участок с забором · две яблони","btn":"Качнуть тыкву","min":[-34.94,-0.25,66.81],"max":[-19.92,5.54,77.18],"x":-27.3,"z":73.85,"y":0.0,"rot":0.0873,"parts":[{"id":"pumpkin","p":[0.5,4.051,2.2],"ax":[0,0,1],"mode":"swing","a":0.16,"w":1.6}]},{"file":"BlueHouse","short":"С колоннами","name":"Особняк с колоннами","text":"Классика: портик, балюстрада, венок над входом. Для тех, кому важны статус и скамейка у пруда.","meta":"Пруд с отмелью · фонарь у дорожки","btn":"Крутануть венок","min":[-49.4,-0.36,31.92],"max":[-32.58,7.34,44.1],"x":-41.3,"z":40.6,"y":0.0,"rot":0.0,"parts":[{"id":"wreath","p":[0.0,3.9,0.87],"ax":[0,0,1],"mode":"spin","a":0.4,"w":0}]}];
+const main=document.getElementById('main'), navList=document.getElementById('navList');
+HOUSES.forEach((h,i)=>{
+  const s=document.createElement('section'); s.dataset.st=i+1; s.id=h.file.toLowerCase();
+  s.innerHTML='<div class="card"><div class="num">Лот '+String(i+1).padStart(2,'0')+' / 09</div><h2>'+h.name+'</h2><p>'+h.text+'</p>'+
+    '<div class="meta">'+h.meta+'</div><button class="btn" type="button" id="act-'+h.file.toLowerCase()+'" data-act="'+i+'">'+h.btn+' ↻</button><div class="state" data-h="'+i+'">Дом загружается…</div></div>';
+  main.appendChild(s);
+  const pin=document.createElement('a'); pin.className='pin'; pin.href='#'+s.id; pin.innerHTML='<b>'+(i+1)+'</b><span>'+h.short+'</span>'; document.getElementById('pins').appendChild(pin); h.pin=pin;
+  const li=document.createElement('li'); li.innerHTML='<a href="#'+s.id+'">'+h.short+'</a>'; navList.appendChild(li);
+});
+const outro=document.createElement('section'); outro.dataset.st=HOUSES.length+1; outro.id='all';
+outro.innerHTML='<div class="card"><div class="num">Отдел продаж закрыт</div><h2>Все лоты давно заняты</h2><p>Ипотека не предусмотрена, очереди тоже. Можно только смотреть и крутить.</p><a class="btn" href="#top">На генплан ↑</a></div>';
+main.appendChild(outro);
+const sections=[...document.querySelectorAll('section')], N=sections.length;
+const navLinks=[...navList.querySelectorAll('a')];
+const countEl=document.getElementById('count'), loadEl=document.getElementById('loadState');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const canvas=document.getElementById('stage');
+let renderer;
+try{ renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false}); }
+catch(e){ loadEl.textContent='WebGL недоступен в этом браузере.'; document.querySelectorAll('.state[data-h]').forEach(el=>el.textContent=''); return; }
+renderer.setClearColor(0xe9f0f1,1);
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+const camera=new THREE.OrthographicCamera(-1,1,1,-1,1,1200);
+const DIR=new THREE.Vector3(1,0.86,1).normalize();
+scene.add(new THREE.HemisphereLight(0xf4f7ff,0xd3daf0,0.52));
+const sun=new THREE.DirectionalLight(0xffedd2,0.74); scene.add(sun); scene.add(sun.target);
+const SUN=new THREE.Vector3(-0.55,1,0.35).normalize();
+sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-0.0006; sun.shadow.radius=3;
+const water=new THREE.Mesh(new THREE.PlaneGeometry(3000,3000),new THREE.MeshStandardMaterial({color:0xbfe0ee,roughness:1,metalness:0}));
+water.rotation.x=-Math.PI/2; water.position.y=-0.3; water.receiveShadow=true; scene.add(water);
+
+
+// Cloud shadows: shapes that only cast shadows, so they never block the view of a house.
+const clouds=[]; const cmat=new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false});
+for(let i=0;i<7;i++){ const g=new THREE.Group(); const n=3+i%2;
+  for(let j=0;j<n;j++){ const m=new THREE.Mesh(new THREE.SphereGeometry(7+((i*7+j*3)%5),12,8),cmat); m.position.set(j*8-n*4,0,((i+j)%3)*4-4); m.scale.y=.4; m.castShadow=true; g.add(m); }
+  g.position.set(-160+i*52,70,-90+((i*37)%180)); g.userData.v=1.2+((i*13)%7)*0.25; scene.add(g); clouds.push(g); }
+
+try{ window.createImageBitmap=undefined; }catch(e){} // textures load through <img>, which the page's CSP allows for data: URIs
+const loader=new THREE.GLTFLoader();
+const lin=h=>'vec3('+[1,3,5].map(i=>{const v=parseInt(h.slice(i,i+2),16)/255;return (v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)).toFixed(4);}).join(',')+')';
+const PATH=lin('#E2DDD0'), TERR=lin('#F4F3EE'), DOT=lin('#D3D8D4'), UPX={value:0.1}, UMASK={value:null}, UH={value:[]}, USNOW={value:0}, UWET={value:0}, UT={value:0}, SHALLOW=lin('#E6F6F7'), SAND=lin('#F3EBD9'), LAWN=lin('#D5EBC9'), LAWN2=lin('#E1F2D8');
+UMASK.value=new THREE.TextureLoader().load('map/paths.png'); UMASK.value.flipY=false; UMASK.value.minFilter=UMASK.value.magFilter=THREE.LinearFilter; UMASK.value.generateMipmaps=false;
+// Paths are not geometry: a top-down mask (paths joined into one network, a link and a pad for every house)
+// is drawn onto the ground as a fine pattern of pale dots.
+function patch(mat,kind,extra){
+  mat.customProgramCacheKey=()=>kind;
+  mat.onBeforeCompile=sh=>{
+    sh.uniforms.uPx=UPX; sh.uniforms.uMask=UMASK; sh.uniforms.uH=UH; sh.uniforms.uSnow=USNOW; sh.uniforms.uWet=UWET; sh.uniforms.uT=UT; if(extra) Object.assign(sh.uniforms,extra);
+    sh.vertexShader='varying vec3 vWp;varying float vUp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vUp=normalize(mat3(modelMatrix)*objectNormal).y;');
+    let f='varying vec3 vWp;uniform float uPx;\nuniform sampler2D uMask;uniform vec3 uH[9];uniform float uSnow;uniform float uWet;uniform float uT;varying float vUp;float gTerr;\nfloat dotMask(vec2 p){vec2 g=fract(p/0.2)-.5;float m=1.-smoothstep(.2-uPx*3.2,.2+uPx*3.2,length(g));return mix(m,.12,smoothstep(.02,.07,uPx));}\n'+sh.fragmentShader;
+    if(kind==='land') f=f.replace('#include <map_fragment>','#include <map_fragment>\n gTerr=step(distance(diffuseColor.rgb,'+TERR+'),0.05);\n vec2 mu=(vWp.xz+vec2(125.,110.))/vec2(250.,220.); if(mu.x>0.&&mu.x<1.&&mu.y>0.&&mu.y<1.&&distance(diffuseColor.rgb,'+TERR+')<0.05){ vec4 mk=texture2D(uMask,mu); float stripe=step(.5,fract((vWp.x+vWp.z)/2.6)); diffuseColor.rgb=mix(diffuseColor.rgb,mix('+LAWN+','+LAWN2+',stripe),smoothstep(.35,.6,mk.g)*(1.-uSnow)); diffuseColor.rgb=mix(diffuseColor.rgb,'+DOT+',dotMask(vWp.xz)*smoothstep(.25,.6,mk.r)); }\n if(gTerr>.5){ diffuseColor.rgb=mix(diffuseColor.rgb*vec3(.975,1.,.955),diffuseColor.rgb,smoothstep(.8,7.,vWp.y)); diffuseColor.rgb=mix(diffuseColor.rgb,'+SAND+',smoothstep(.3,-.25,vWp.y)*.9); }');
+    if(kind==='land'||kind==='water') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.957,.955,.937),'+(kind==='land'?'mix(.04+.12*smoothstep(.05,.2,uPx),.2+.42*smoothstep(.05,.2,uPx),gTerr)':'.3*smoothstep(.05,.2,uPx)')+');');
+    // No environment map: glass, metal and glazed surfaces get a painted-in sky reflection and one softbox highlight.
+    if(kind==='obj') f=f.replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );','vec3 rr=reflect(-geometry.viewDir,geometry.normal); float gls=(1.-roughnessFactor)*(1.-roughnessFactor); float fr=mix(.05,1.,pow(1.-saturate(dot(geometry.normal,geometry.viewDir)),5.)); vec3 F0=mix(vec3(fr),diffuseColor.rgb,metalnessFactor); vec3 sky=mix(vec3(.62,.6,.56),vec3(1.),smoothstep(-.4,.7,rr.y)); outgoingLight+=F0*gls*(sky*(.35+.65*metalnessFactor)+1.6*smoothstep(.8,.97,dot(rr,normalize(vec3(.35,.62,.7)))));\n gl_FragColor = vec4( outgoingLight, diffuseColor.a );');
+    if(kind==='obj') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n float rim=pow(1.-abs(normal.z),3.); gl_FragColor.rgb=gl_FragColor.rgb+rim*.06;');
+    if(kind==='land') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n float co=0.; for(int i=0;i<9;i++){ vec2 dd=(vWp.xz-uH[i].xy)/uH[i].z; co+=exp(-dot(dd,dd)*2.2); } gl_FragColor.rgb*=1.-.085*min(co,1.)*gTerr;');
+    if(kind==='water') f=f.replace('#include <map_fragment>','#include <map_fragment>\n vec2 wu=(vWp.xz+vec2(125.,110.))/vec2(250.,220.); wu=abs(mod(wu+1.,2.)-1.); float shl=texture2D(uMask,wu).b; diffuseColor.rgb=mix(diffuseColor.rgb,'+SHALLOW+',smoothstep(.1,.95,shl)*.8); float ww=fract(shl*3.5-uT*.05); float ring=smoothstep(0.,.07,ww)*smoothstep(.2,.09,ww); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.),ring*smoothstep(.3,.85,shl)*.5*(1.-uSnow));');
+    // Weather: snow settles on whatever faces up; rain cools and darkens everything a little.
+    f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n float sn=uSnow*smoothstep(.35,.8,abs(vUp))'+(kind==='water'?'*.35':'')+'; float lm=dot(gl_FragColor.rgb,vec3(.333)); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.955,.972,1.)*clamp(lm*.9+.36,.7,1.),sn); gl_FragColor.rgb*=mix(vec3(1.),vec3(.86,.9,.95),uWet);');
+    sh.fragmentShader=f;
+  };
+  mat.needsUpdate=true;
+}
+function prep(root,kind){ root.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; const m=o.material; if(kind==='land'){ m.metalness=0; m.roughness=1; m.metalnessMap=m.roughnessMap=null; } else m.metalness=0.62; m.side=THREE.DoubleSide; patch(m,kind||'obj'); for(const t of [m.map,m.roughnessMap,m.metalnessMap]) if(t){ t.minFilter=t.magFilter=THREE.NearestFilter; t.generateMipmaps=false; } } }); }
+function get(file){ return new Promise(res=>loader.load('map/'+file+'.json',gl=>{ prep(gl.scene,file==='land'?'land':'obj'); res(gl.scene); },undefined,()=>res(null))); }
+// Each house: a group at its spot on the map; a body, and moving parts that turn around their own pivot.
+patch(water.material,'water');
+HOUSES.forEach(h=>{ h.group=new THREE.Group(); h.group.position.set(h.x,h.y,h.z); h.group.rotation.y=h.rot; scene.add(h.group); h.hop=0;
+  h.parts.forEach(p=>{ p.pivot=new THREE.Group(); p.pivot.position.fromArray(p.p); if(p.id==='daisy') p.pivot.position.z+=.05; p.axis=new THREE.Vector3().fromArray(p.ax); p.ang=0; p.vel=0; p.amp=0; p.ph=0; h.group.add(p.pivot); }); });
+
+// Ambient life around each house: small props that drift, pop and fly. Everything lives in the house's own group.
+const FX=[], R=()=>Math.random(), V3=THREE.Vector3;
+const std=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:1,metalness:0},o||{}));
+function tex(draw){ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); draw(g); const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; return t; }
+const noteTex=col=>tex(g=>{ g.fillStyle=g.strokeStyle=col; g.lineWidth=5; g.lineCap='round'; g.beginPath(); g.ellipse(22,48,11,8,-0.35,0,7); g.fill(); g.beginPath(); g.moveTo(31,46); g.lineTo(31,12); g.stroke(); g.beginPath(); g.moveTo(31,12); g.quadraticCurveTo(50,16,48,32); g.stroke(); });
+const starTex=tex(g=>{ g.fillStyle='#f0b93a'; g.beginPath(); for(let i=0;i<8;i++){ const a=i*Math.PI/4, r=i%2?9:30; g.lineTo(32+Math.cos(a)*r,32+Math.sin(a)*r); } g.fill(); });
+const NOTES=[noteTex('#1c211f'),noteTex('#e4502f')];
+function emitter(h,c){
+  const ps=[]; for(let i=0;i<c.n;i++){ const o=c.make(i); o.visible=false; h.group.add(o); ps.push({o,age:1,life:1,v:new V3(),ph:R()*6.28}); }
+  let acc=R();
+  const fire=()=>{ const p=ps.find(p=>p.age>=p.life); if(!p) return; p.age=0; p.life=c.life*(.8+R()*.4); p.o.visible=true; c.spawn(p); };
+  FX.push({h,burst:m=>{ for(let i=0;i<m;i++) fire(); },update(dt,t){ if(!reduce){ acc+=dt*c.rate; while(acc>=1){ acc-=1; fire(); } }
+    for(const p of ps){ if(p.age>=p.life){ p.o.visible=false; continue; } p.age+=dt; c.step(p,dt,Math.min(1,p.age/p.life),t); } }});
+}
+const puffGeo=new THREE.IcosahedronGeometry(0.2,1), paperGeo=new THREE.IcosahedronGeometry(0.13,0), sparkGeo=new THREE.SphereGeometry(0.045,6,4);
+function puffs(h,pos,rate){ emitter(h,{n:8,rate:rate||0.9,life:3.2,make:()=>new THREE.Mesh(puffGeo,std(0xffffff,{transparent:true,depthWrite:false})),
+  spawn:p=>{ p.o.position.set(pos[0]+(R()-.5)*.1,pos[1],pos[2]+(R()-.5)*.1); p.v.set((R()-.5)*.2,.5+R()*.2,(R()-.5)*.2); },
+  step:(p,dt,k)=>{ p.o.position.addScaledVector(p.v,dt); p.o.scale.setScalar(.5+k*1.7); p.o.material.opacity=(1-k)*.9; }}); }
+function papers(h,pos){ emitter(h,{n:10,rate:0.55,life:5,make:()=>{ const m=new THREE.Mesh(paperGeo,std(0xffffff,{flatShading:true})); m.castShadow=true; return m; },
+  spawn:p=>{ p.o.position.fromArray(pos); p.v.set((R()-.5)*2.6,2.4+R()*1.4,1.6+R()*1.8); },
+  step:(p,dt,k)=>{ if(p.o.position.y>0.13||p.v.y>0){ p.v.y-=7*dt; p.o.position.addScaledVector(p.v,dt); p.o.rotation.x+=dt*6; p.o.rotation.z+=dt*4; } else p.o.position.y=0.13; p.o.scale.setScalar(k>.85?(1-k)/.15:1); }}); }
+function floaters(h,pos,texs,o){ emitter(h,{n:8,rate:o.rate,life:o.life,make:i=>new THREE.Sprite(new THREE.SpriteMaterial({map:texs[i%texs.length],transparent:true,depthWrite:false})),
+  spawn:p=>{ p.o.position.set(pos[0]+(R()-.5)*o.spread,pos[1],pos[2]+(R()-.5)*o.spread); p.v.set(o.v[0]+(R()-.5)*.3,o.v[1],o.v[2]+(R()-.5)*.3); },
+  step:(p,dt,k,t)=>{ p.o.position.addScaledVector(p.v,dt); p.o.position.x+=Math.sin(t*3+p.ph)*dt*.4; p.o.material.opacity=Math.min(1,k*6)*(1-k*k); p.o.scale.setScalar(o.size*(o.twinkle?.7+.3*Math.sin(t*9+p.ph):1)); }}); }
+function sparks(h,pos){ emitter(h,{n:14,rate:5,life:0.6,make:()=>new THREE.Mesh(sparkGeo,new THREE.MeshBasicMaterial({color:0xf5a623})),
+  spawn:p=>{ p.o.position.fromArray(pos); p.v.set((R()-.5)*3,1.5+R()*2,(R()-.5)*3); },
+  step:(p,dt,k)=>{ p.v.y-=9*dt; p.o.position.addScaledVector(p.v,dt); p.o.scale.setScalar(1-k); }}); }
+// Winged things: two flat wings on a hinge, flying a loop around a point.
+function flyers(h,c,o){ const list=[];
+  for(let i=0;i<o.n;i++){ const g=new THREE.Group(), wings=[]; const mat=std(o.colors[i%o.colors.length],{side:THREE.DoubleSide});
+    for(const s of [-1,1]){ const hinge=new THREE.Group(); const w=new THREE.Mesh(new THREE.PlaneGeometry(o.w,o.d),mat); w.rotation.x=-Math.PI/2; w.position.x=s*o.w/2; w.castShadow=!!o.shadow; hinge.add(w); g.add(hinge); wings.push([hinge,s]); }
+    if(o.body){ const b=new THREE.Mesh(sparkGeo,std(o.body)); b.scale.set(1.2,1.2,2.6); g.add(b); }
+    h.group.add(g); list.push({g,wings,ph:i*2.1+R(),sp:o.speed*(.8+R()*.4),r:o.r*(.7+R()*.5)}); }
+  let boost=0;
+  FX.push({h,burst:()=>{ boost=1; },update(dt,t){ boost*=Math.exp(-dt*1.2); const tt=reduce?0:t;
+    for(const f of list){ const a=tt*f.sp*(1+boost*2)+f.ph;
+      f.g.position.set(c[0]+Math.cos(a)*f.r,c[1]+Math.sin(tt*1.3+f.ph)*o.bob,c[2]+Math.sin(a*(o.loop||1))*f.r);
+      f.g.rotation.y=-a+(o.loop?0:-Math.PI/2)+Math.PI; const fl=o.flapBase+Math.abs(Math.sin(tt*o.flap+f.ph))*o.flapAmp;
+      for(const [hinge,s] of f.wings) hinge.rotation.z=s*fl; } }}); }
+// Paper planes: a folded dart that glides in loops around a point, nose first, banking into the turn.
+function planes(h,c,n){ const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute([0,0,.36,-.2,.02,-.26,0,0,-.26, 0,0,.36,0,0,-.26,.2,.02,-.26, 0,0,.36,0,0,-.26,0,-.09,-.26],3)); geo.computeVertexNormals();
+  const mat=std(0xffffff,{side:THREE.DoubleSide,flatShading:true}), list=[], nx=new V3();
+  for(let i=0;i<n;i++){ const m=new THREE.Mesh(geo,mat); m.castShadow=true; m.scale.setScalar(1.8); h.group.add(m); list.push({m,ph:i*6.28/n+R(),r:2.6+i*.7,sp:(.55+R()*.2)*(i%2?-1:1),y:1.2+i*.9}); }
+  let boost=0; const at=(f,a,o)=>o.set(c[0]+Math.cos(a)*f.r,c[1]+f.y+Math.sin(a*2+f.ph)*.5,c[2]+Math.sin(a)*f.r*.8);
+  FX.push({h,burst:()=>{ boost=1; },update(dt,t){ boost*=Math.exp(-dt*1); if(!reduce) for(const f of list) f.ph+=dt*f.sp*(1+boost*2.5);
+    for(const f of list){ at(f,f.ph,f.m.position); at(f,f.ph+Math.sign(f.sp)*.08,nx); h.group.localToWorld(nx); f.m.lookAt(nx); f.m.rotateZ(-Math.sign(f.sp)*.45); } }}); }
+function sprouts(h,row){ const list=[];
+  row.forEach((p,i)=>{ const g=new THREE.Group(); const leaf=new THREE.SphereGeometry(0.16,8,5);
+    for(const s of [-1,1]){ const m=new THREE.Mesh(leaf,std(i%2?0x86d3b2:0x5fbf9a)); m.scale.set(1,.28,.55); m.position.set(s*.13,.2,0); m.rotation.z=s*.6; m.castShadow=true; g.add(m); }
+    const st=new THREE.Mesh(new THREE.CylinderGeometry(.025,.03,.2,5),std(0x86d3b2)); st.position.y=.1; g.add(st);
+    g.position.fromArray(p); g.rotation.y=i*1.3; h.group.add(g); list.push({g,ph:i/row.length}); });
+  let boost=0;
+  FX.push({h,burst:()=>{ boost=1; },update(dt,t){ boost*=Math.exp(-dt*.8);
+    for(const s of list){ const c=reduce?.7:((t/8+s.ph)%1); let k=c<.55?c/.55:c<.85?1:(1-c)/.15; k=k*k*(3-2*k); s.g.scale.setScalar(Math.max(.001,k*(1+boost*.8+Math.sin(t*10+s.ph*9)*.06*boost))); } }}); }
+HOUSES.forEach(h=>UH.value.push(new THREE.Vector3((h.min[0]+h.max[0])/2,(h.min[2]+h.max[2])/2,Math.max(h.max[0]-h.min[0],h.max[2]-h.min[2])*0.5+1)));
+
+// Folded paper planes in the shape of the messenger logo: two wings, a keel and one folded-in flap.
+const tgGeo=new THREE.BufferGeometry(); { const N=[0,0,.46],L=[-.34,.02,-.2],R=[.34,.02,-.2],C=[0,0,-.06],F=[0,-.13,-.16],G=[.12,-.05,-.12];
+  tgGeo.setAttribute('position',new THREE.Float32BufferAttribute([...N,...L,...C, ...N,...C,...R, ...N,...F,...C, ...C,...F,...G],3)); tgGeo.computeVertexNormals(); }
+function orbiters(h,c,list,o){ let boost=0; const nx=new V3();
+  list.forEach((m,i)=>{ h.group.add(m); m.userData.f={ph:i*6.28/list.length+R(),r:o.r*(.8+R()*.45),sp:(o.speed*(.8+R()*.4))*(i%2?-1:1),y:o.y0+R()*o.dy,spin:(R()-.5)*o.spin}; });
+  FX.push({h,burst:()=>{ boost=1; },update(dt,t){ boost*=Math.exp(-dt*1); for(const m of list){ const f=m.userData.f; if(!reduce) f.ph+=dt*f.sp*(1+boost*2.5);
+    const at=(a,out)=>out.set(c[0]+Math.cos(a)*f.r,c[1]+f.y+Math.sin(a*2+f.ph)*o.bob,c[2]+Math.sin(a)*f.r*.85);
+    at(f.ph,m.position); if(o.face){ at(f.ph+Math.sign(f.sp)*.08,nx); h.group.localToWorld(nx); m.lookAt(nx); m.rotateZ(-Math.sign(f.sp)*.4); }
+    else { m.rotation.x+=dt*f.spin*(1+boost*3); m.rotation.y+=dt*f.spin*.7*(1+boost*3); } } }}); }
+function tgPlanes(h,c,n){ const mat=std(0xeef6ff,{side:THREE.DoubleSide,flatShading:true}); const list=[]; for(let i=0;i<n;i++){ const m=new THREE.Mesh(tgGeo,mat); m.castShadow=true; m.scale.setScalar(1.6); list.push(m); } orbiters(h,c,list,{r:3.4,speed:.55,y0:1.2,dy:2.6,bob:.45,face:true}); }
+// Candy wrappers: a sweet with two twisted ends, tumbling around the house.
+function wrappers(h,c,n){ const cols=[0xf6a9bf,0xffd166,0x8fd8b8,0x9cc3f5,0xe4502f], list=[];
+  const bow=new THREE.BufferGeometry(); bow.setAttribute('position',new THREE.Float32BufferAttribute([.09,0,0,.24,.09,0,.24,-.09,0, -.09,0,0,-.24,-.09,0,-.24,.09,0],3)); bow.computeVertexNormals();
+  for(let i=0;i<n;i++){ const g=new THREE.Group(), col=cols[i%cols.length]; const body=new THREE.Mesh(new THREE.SphereGeometry(.1,12,8),std(col,{roughness:.35})); body.scale.set(1.3,.85,.85); const ends=new THREE.Mesh(bow,std(col,{side:THREE.DoubleSide,roughness:.4})); body.castShadow=ends.castShadow=true; g.add(body,ends); g.scale.setScalar(1.5); list.push(g); }
+  orbiters(h,c,list,{r:3.6,speed:.45,y0:.8,dy:3.2,bob:.6,spin:5}); }
+// Nuts: hexagonal rings of steel drifting around the workshop.
+function nuts(h,c,n){ const geo=new THREE.TorusGeometry(.11,.055,6,6), mat=std(0xb8c0c8,{metalness:.6,roughness:.35}), list=[]; for(let i=0;i<n;i++){ const m=new THREE.Mesh(geo,mat); m.castShadow=true; m.scale.setScalar(1.3+R()*.6); list.push(m); } orbiters(h,c,list,{r:3.2,speed:.5,y0:1,dy:3.6,bob:.5,spin:4}); }
+// Bees with stripes, buzzing in a loose cloud.
+function bees(h,c,n,r){ const list=[]; const bodyGeo=new THREE.SphereGeometry(.07,12,8), ring=new THREE.TorusGeometry(.066,.014,6,14), wing=new THREE.PlaneGeometry(.11,.07);
+  for(let i=0;i<n;i++){ const g=new THREE.Group(); const b=new THREE.Mesh(bodyGeo,std(0xffc94a,{roughness:.5})); b.scale.set(1,1,1.6); g.add(b);
+    for(const z of [-.03,.04]){ const s=new THREE.Mesh(ring,std(0x2a2a2a)); s.position.z=z; g.add(s); }
+    const wl=new THREE.Mesh(wing,std(0xffffff,{transparent:true,opacity:.75,side:THREE.DoubleSide})), wr=wl.clone(); wl.position.set(-.06,.06,0); wr.position.set(.06,.06,0); wl.rotation.x=wr.rotation.x=-Math.PI/2; g.add(wl,wr); g.userData.w=[wl,wr]; g.scale.setScalar(1.8); list.push(g); }
+  orbiters(h,c,list,{r,speed:1.5,y0:.8,dy:1.8,bob:.5,face:true});
+  FX.push({h,burst:()=>{},update(dt,t){ for(const g of list){ const a=Math.sin(t*60+g.userData.f.ph*9)*.6; g.userData.w[0].rotation.z=a; g.userData.w[1].rotation.z=-a; } }}); }
+const HX={}; HOUSES.forEach(h=>HX[h.file]=h);
+puffs(HX.PinkHouse,[1.1,5.05,-0.1],0.8);
+flyers(HX.PinkHouse,[0,1.0,2.6],{n:3,colors:[0xf7b6c8,0xffd98a,0xb7c6f5],w:.2,d:.26,r:2.0,speed:.7,bob:.35,loop:1.6,flap:16,flapBase:.2,flapAmp:1.1});
+planes(HX.MillHouse,[0.7,2.2,0],4);
+puffs(HX.TreeHouse,[0,5.1,1.1],1.3);
+floaters(HX.ForestHouse,[-3.6,1.6,1.5],[starTex],{rate:1.1,life:3.2,v:[-.35,.75,.05],size:.42,spread:.3,twinkle:true});
+floaters(HX.BlueHouse,[0,3.1,1.3],NOTES,{rate:.9,life:3.6,v:[.1,.8,.25],size:.6,spread:1.2});
+sparks(HX.JunkHouse,[-1.9,2.95,0]);
+puffs(HX.JunkHouse,[-0.6,5.25,-0.3],0.6);
+nuts(HX.JunkHouse,[0.5,1.6,0],9);
+sprouts(HX.LogHouse,[[-2.4,0.02,3.3],[-1.6,0.02,3.4],[-0.8,0.02,3.3],[0.8,0.02,3.4],[1.6,0.02,3.3],[2.4,0.02,3.4]]);
+bees(HX.LogHouse,[5.8,1.6,-1.5],5,1.4);
+bees(HX.LogHouse,[0,2.6,0.5],7,3.4);
+wrappers(HX.DomeHouse,[0,1.2,0],8);
+papers(HX.StoneHouse,[1.0,3.6,1.0]);
+tgPlanes(HX.StoneHouse,[0,2.6,0],5);
+
+// The grounds around each house: flowers, bushes, edging stones, lamps along the way in, and a sale sign.
+const PROPS={"ForestHouse":{"flower":[[-100.1,1.23,14.22,0,1.08],[-99.86,1.17,14.23,0,1.11],[-101.37,0.57,16.65,0,0.86],[-101.24,0.36,17.2,1,1.04],[-101.6,0.72,16.41,1,1.17],[-84.08,0.43,19.76,2,0.95],[-84.13,0.54,19.02,1,1.06],[-83.89,0.57,19.26,0,1.07],[-89.78,0.13,34.0,1,1.28],[-89.86,0.03,33.36,0,1.04],[-89.88,0.04,33.59,2,1.22],[-87.33,1.34,13.14,2,1.18],[-87.49,1.48,12.48,2,0.97],[-87.2,1.34,13.19,1,1.03],[-88.97,1.14,13.21,0,0.88],[-88.3,1.25,13.05,0,1.11],[-88.58,1.34,12.75,1,0.88],[-102.52,0.02,29.1,0,1.21],[-102.46,0.01,28.44,1,1.05],[-101.96,0.01,28.5,2,1.01],[-101.73,0.12,32.46,2,1.21],[-101.59,0.13,32.79,2,0.87],[-101.91,0.13,32.51,1,1.19],[-101.6,1.57,14.29,2,1.08],[-88.36,0.06,32.66,2,1.1],[-88.58,0.01,32.36,2,1.07],[-88.33,0.1,32.95,2,1.06],[-97.72,0.81,14.06,2,1.13],[-98.29,0.94,14.01,1,0.91],[-97.57,1.01,13.57,1,0.88],[-96.96,1.33,12.8,1,1.02],[-97.27,1.38,12.79,2,0.95],[-96.42,1.36,12.6,0,1.29],[-102.57,0.68,17.34,1,1.18],[-101.87,0.47,17.4,2,1.21],[-102.37,0.82,16.77,2,1.09],[-103.22,0.04,26.81,0,1.12],[-102.88,0.02,26.82,0,0.83],[-102.83,0.02,27.15,1,1.3],[-95.43,0.0,32.22,2,0.92],[-95.89,0.0,32.32,0,0.89],[-95.15,0.0,32.74,2,1.18],[-101.04,0.04,18.81,0,0.81],[-100.61,0.0,19.47,2,1.04],[-89.92,0.14,34.09,0,1.22],[-103.73,0.06,25.63,0,0.84],[-103.76,0.06,26.03,2,1.29],[-103.98,0.09,25.87,0,1.03]],"bush":[[-101.04,0.0,21.4,0.88],[-83.97,0.75,18.14,0.95],[-104.35,0.58,19.86,1.03],[-98.79,1.58,12.89,0.98],[-89.24,0.0,31.76,0.97],[-97.48,0.08,34.28,0.8],[-103.44,0.16,30.71,1.32],[-87.21,1.11,14.07,1.07],[-92.03,0.0,32.09,1.18]],"stone":[[-87.1,0.0,23.63,0.74],[-87.73,0.0,25.67,0.68],[-89.98,0.0,28.28,0.66],[-93.42,0.0,29.45,0.94],[-96.13,0.0,29.05,0.98],[-98.7,0.0,27.36,0.89],[-99.9,0.0,25.63,1.08],[-100.5,0.0,21.69,0.9],[-99.55,0.0,19.12,1.0],[-97.95,0.02,17.35,1.04],[-94.98,0.02,16.03,0.64],[-91.95,0.01,16.19,1.04],[-89.37,0.0,17.58,1.04],[-87.25,0.0,21.0,0.9]],"lamp":[[-86.05,0.0,22.52],[-83.38,0.87,18.35]],"sign":[-86.43,0.1,18.49]},"PinkHouse":{"flower":[[-83.78,0.11,-16.58,1,1.11],[-83.57,0.09,-16.37,0,1.15],[-74.75,0.0,-17.64,0,1.27],[-75.54,0.0,-17.4,2,1.28],[-75.15,0.0,-17.57,0,1.26],[-65.39,0.25,-18.01,1,1.28],[-65.35,0.25,-17.94,2,0.94],[-65.37,0.31,-18.35,1,1.25],[-75.12,0.01,-19.22,1,1.0],[-74.47,0.01,-19.29,1,0.96],[-74.37,0.01,-19.66,1,1.22],[-69.94,0.01,-2.06,1,1.0],[-69.41,0.01,-2.33,1,1.18],[-69.43,0.01,-2.15,0,1.22],[-79.15,-0.02,-0.87,0,1.21],[-71.13,0.01,-1.67,2,0.84],[-71.14,0.01,-1.79,2,1.18],[-71.4,0.0,-1.91,0,1.26],[-73.36,0.0,-16.53,1,1.17],[-73.15,0.0,-16.52,2,1.13],[-83.02,-0.02,-7.03,1,1.08],[-82.68,-0.01,-7.19,1,1.01],[-82.59,-0.0,-7.27,0,0.97],[-83.48,0.04,-14.93,0,1.17],[-83.34,0.04,-15.07,2,0.91],[-83.47,0.03,-14.76,1,0.94],[-64.21,0.3,-17.1,0,0.85],[-63.86,0.38,-17.33,2,1.02],[-63.8,0.34,-16.91,0,0.86],[-67.77,0.12,-1.02,2,1.23],[-67.34,0.16,-0.86,0,0.91],[-68.08,0.17,-0.21,0,1.27],[-73.0,0.01,-19.16,0,1.12],[-73.43,0.01,-19.26,1,1.06],[-73.31,0.0,-18.68,0,0.84],[-64.06,0.09,-7.03,0,1.07],[-64.83,0.04,-7.09,2,0.95],[-64.83,0.04,-7.01,2,1.12],[-83.55,0.05,-15.33,1,0.82],[-83.62,0.05,-15.29,2,1.0],[-83.92,0.08,-15.4,2,0.83],[-65.8,0.14,-17.45,0,1.04],[-65.55,0.22,-17.95,2,0.87],[-66.01,0.16,-17.81,2,0.87],[-76.35,0.0,-1.81,0,1.27],[-76.85,0.0,-2.3,2,1.17],[-77.11,0.0,-1.87,1,1.22]],"bush":[[-83.49,0.0,-11.43,1.32],[-83.33,-0.04,-5.81,0.84],[-83.89,0.09,-15.86,0.74],[-77.96,-0.01,-0.92,0.73],[-65.16,0.04,-13.84,1.21],[-72.3,0.0,-3.84,1.36],[-68.08,0.07,-1.71,1.27],[-73.41,0.0,-16.54,1.0],[-64.12,0.22,-16.29,0.79]],"stone":[[-68.42,0.0,-9.3,1.13],[-69.34,0.0,-6.62,0.92],[-72.22,0.0,-4.27,1.06],[-75.3,0.0,-3.94,0.78],[-77.65,0.0,-4.85,0.76],[-79.7,0.0,-7.13,0.76],[-80.33,0.0,-10.38,0.71],[-79.41,0.0,-13.09,0.77],[-76.38,0.0,-15.49,0.71],[-74.3,0.0,-15.84,0.75],[-71.13,0.0,-14.88,0.92]],"lamp":[[-68.12,0.0,-12.97],[-67.59,0.06,-17.9]],"sign":[-70.26,0.0,-16.4]},"StoneHouse":{"flower":[[-50.42,0.38,-51.8,0,1.22],[-49.63,0.16,-51.77,1,0.92],[-50.41,0.36,-51.26,2,0.9],[-50.89,0.52,-50.38,2,1.27],[-50.95,0.54,-50.38,2,0.97],[-51.01,0.56,-50.61,0,0.9],[-36.77,0.0,-56.67,1,1.07],[-36.99,0.0,-56.76,1,1.13],[-36.91,0.0,-56.37,2,0.88],[-30.16,0.25,-54.22,1,0.81],[-30.09,0.26,-54.19,1,0.9],[-42.95,0.0,-44.07,0,0.83],[-43.23,0.0,-43.49,1,0.84],[-42.8,0.0,-43.89,2,0.89],[-44.56,0.0,-57.21,1,1.05],[-44.54,0.0,-57.16,0,1.29],[-40.75,0.01,-58.88,2,1.11],[-40.84,0.02,-59.09,0,1.11],[-41.03,0.02,-59.06,1,0.89],[-49.28,0.28,-54.92,0,1.24],[-49.18,0.28,-55.12,2,1.22],[-49.83,0.46,-55.19,2,1.22],[-43.18,0.01,-58.66,1,1.05],[-42.91,0.04,-58.95,0,0.84],[-42.84,0.0,-58.29,2,0.84],[-31.5,0.01,-54.27,2,1.19],[-31.4,0.03,-54.93,1,1.11],[-32.01,0.01,-54.7,2,0.94],[-33.41,0.05,-56.77,0,1.1],[-33.31,0.07,-57.39,1,0.82],[-33.7,0.02,-57.46,1,1.14],[-31.3,0.46,-57.04,2,0.82],[-31.24,0.24,-56.28,1,1.08],[-31.49,0.22,-56.35,0,0.93],[-49.32,0.22,-54.0,2,1.17],[-49.35,0.18,-53.47,1,0.96],[-48.53,0.05,-53.43,2,1.25],[-43.9,0.04,-58.78,0,0.81],[-44.34,0.11,-59.02,0,1.06],[-43.86,0.07,-58.96,1,1.09],[-30.92,0.28,-55.7,2,0.87],[-30.45,0.42,-55.55,1,1.28],[-31.0,0.13,-55.05,1,1.1],[-47.66,0.24,-57.22,2,1.08],[-47.63,0.23,-57.19,0,1.06],[-47.9,0.22,-56.74,1,1.21]],"bush":[[-45.37,0.2,-58.87,1.32],[-36.21,0.0,-44.45,1.2],[-37.44,0.0,-42.28,0.85],[-31.91,0.0,-53.8,0.87],[-31.28,0.0,-48.33,1.18],[-50.81,0.52,-49.06,0.95],[-47.57,0.32,-57.72,0.72],[-34.76,0.0,-56.04,0.92],[-42.5,0.07,-59.37,0.88]],"stone":[[-34.23,0.0,-50.33,1.03],[-35.2,0.0,-47.26,0.79],[-38.13,0.0,-44.73,0.9],[-41.06,0.0,-44.19,0.97],[-43.08,0.0,-44.62,0.85],[-45.97,0.0,-46.82,1.06],[-47.15,0.0,-49.58,1.02],[-46.86,0.0,-52.93,0.73],[-44.8,0.0,-55.79,0.65],[-42.02,0.0,-57.09,0.7],[-39.95,0.0,-57.17,0.72],[-36.26,0.0,-55.44,1.19],[-34.96,0.0,-53.72,0.89]],"lamp":[[-34.11,0.0,-47.16],[-29.75,0.13,-49.51]],"sign":[-32.49,0.0,-50.87]},"TreeHouse":{"flower":[[47.47,0.0,-66.07,1,1.28],[47.76,0.0,-66.0,0,0.94],[47.49,0.0,-65.89,1,0.88],[55.84,0.09,-66.17,2,1.19],[55.97,0.05,-66.74,1,1.26],[56.2,0.09,-66.39,1,1.24],[39.09,0.05,-76.42,2,0.89],[39.74,0.03,-76.66,1,0.86],[39.39,0.04,-76.61,2,1.12],[41.81,0.01,-65.01,0,1.03],[41.83,0.0,-65.44,0,0.86],[41.63,0.02,-64.88,0,1.05],[54.02,0.0,-68.89,2,0.96],[53.84,0.0,-69.63,1,1.28],[53.6,0.0,-68.91,0,0.88],[50.45,0.0,-77.29,1,1.17],[50.71,0.0,-77.25,2,1.26],[50.57,0.0,-76.63,1,0.82],[55.36,0.0,-72.5,1,1.22],[55.45,0.0,-72.58,2,1.15],[55.61,0.0,-72.56,2,0.86],[51.31,0.0,-64.38,2,1.11],[51.31,0.0,-64.36,1,0.81],[51.86,0.0,-64.27,2,1.27],[41.4,0.0,-66.27,2,0.9],[53.06,0.0,-73.59,1,0.91],[53.37,0.0,-73.91,0,1.16],[53.31,0.0,-73.69,1,0.94],[46.02,0.01,-80.35,2,1.14],[46.16,0.03,-80.63,1,1.17],[46.48,0.01,-80.25,0,1.3],[55.95,0.0,-71.75,0,1.2],[56.37,0.01,-72.16,2,1.16],[56.53,0.03,-72.46,2,1.12],[53.65,0.0,-65.9,2,1.12],[53.93,0.0,-65.74,0,0.93],[53.57,0.0,-65.94,1,1.14],[47.84,0.0,-66.04,2,0.95],[47.55,0.0,-65.97,2,0.84],[47.93,0.0,-66.22,1,1.23],[40.25,0.08,-65.25,0,1.07],[39.74,0.1,-65.43,2,0.81],[40.29,0.07,-65.36,1,1.1],[49.04,0.0,-65.07,0,0.9],[49.24,0.0,-64.99,2,1.25],[49.42,0.0,-64.77,2,1.25]],"bush":[[42.71,0.01,-79.09,1.29],[51.01,0.0,-78.4,0.78],[56.96,0.17,-68.26,0.83],[52.19,0.09,-62.4,1.27],[40.55,0.0,-71.74,1.23],[41.47,0.0,-76.65,0.99],[55.37,0.04,-75.37,0.94],[56.68,0.7,-64.68,0.94],[56.9,0.08,-73.28,1.09]],"stone":[[52.58,0.0,-71.07,0.94],[51.25,0.0,-68.16,0.67],[48.68,0.0,-66.82,1.09],[43.3,0.0,-70.54,0.64],[43.68,0.0,-73.49,0.93],[45.87,0.0,-75.68,0.69],[49.33,0.0,-75.92,1.01],[51.97,0.0,-73.79,0.65]],"lamp":[[43.04,0.0,-68.39],[43.27,0.04,-63.45]],"sign":[45.68,0.0,-65.33]},"MillHouse":{"flower":[[4.91,0.0,-1.45,1,1.19],[5.14,0.0,-1.65,1,1.24],[4.44,0.0,-1.96,2,0.93],[4.58,0.0,7.65,0,1.21],[5.23,0.0,7.51,2,1.26],[4.93,0.0,7.15,1,1.1],[9.29,0.0,4.44,2,0.85],[9.29,0.0,3.76,0,0.8],[5.66,0.0,7.98,0,0.86],[4.91,0.0,8.43,0,1.03],[5.56,0.0,8.62,1,1.19],[6.13,0.0,6.24,2,1.08],[5.92,0.0,6.77,1,1.26],[5.52,0.0,6.2,0,0.81],[4.72,0.0,5.98,2,1.1],[5.51,0.0,6.45,2,0.83],[4.98,0.0,6.22,1,1.03],[-1.35,0.0,5.75,2,0.97],[5.19,0.0,6.29,2,1.29],[5.4,0.0,6.05,1,1.09],[5.53,0.0,5.73,1,1.14],[4.73,0.0,6.92,0,0.96],[4.24,0.0,6.81,0,0.94],[4.13,0.0,7.47,2,0.87],[9.37,0.0,5.93,2,1.08],[9.63,0.0,5.63,2,1.27],[-0.52,0.0,-0.53,1,1.07],[-0.71,0.0,-0.92,0,0.92],[-0.67,0.0,-0.43,2,0.96],[2.94,0.0,-1.81,2,0.94],[3.27,0.0,-1.57,2,1.23],[2.97,0.0,-1.06,1,0.99],[6.98,0.0,-2.14,2,1.1],[6.53,0.0,-2.27,2,1.04],[6.95,0.0,-2.22,1,1.01],[9.27,0.0,5.95,1,1.22],[8.84,0.0,5.98,1,0.84],[8.58,0.0,5.58,2,1.03],[2.18,0.0,-2.67,2,0.92],[1.4,0.0,-2.07,2,1.0],[1.72,0.0,-2.76,0,1.3],[-0.76,0.0,-3.59,2,1.25],[-0.24,0.0,-3.86,2,1.15],[-0.41,0.0,-3.02,0,0.85],[0.45,0.0,-3.64,2,1.1],[0.95,0.0,-4.21,1,0.99],[0.62,0.0,-3.97,1,0.88]],"bush":[[-0.32,0.0,-2.16,1.17],[8.74,0.0,-1.21,1.35],[7.94,0.0,7.03,0.8],[2.42,0.0,-2.73,1.35],[7.62,0.0,3.82,1.02],[1.01,0.0,6.22,1.03],[4.8,0.0,-2.17,0.86],[-0.81,0.0,0.56,1.39],[6.09,0.0,-0.31,1.39]],"stone":[[6.01,0.0,2.24,1.08],[3.82,0.0,5.04,0.68],[0.77,0.0,3.94,1.1],[0.97,0.0,0.3,0.71],[4.25,0.0,-0.43,1.15]],"lamp":[[-0.84,0.0,1.31],[-3.69,0.0,5.36]],"sign":[-0.63,0.0,5.35]},"DomeHouse":{"flower":[[24.25,0.0,22.41,0,1.16],[24.3,0.0,22.32,0,1.24],[23.67,0.0,18.26,2,1.0],[24.32,0.0,17.68,1,0.97],[24.42,0.0,18.41,1,0.85],[22.85,0.0,24.4,1,0.82],[23.26,0.0,24.41,0,0.98],[23.46,0.0,24.76,0,0.86],[33.68,0.0,26.83,2,1.23],[33.42,0.0,27.35,1,1.24],[33.76,0.0,26.98,2,0.81],[34.7,0.0,14.67,2,0.89],[34.58,0.0,14.82,0,0.81],[35.32,0.0,15.26,1,0.81],[22.73,0.16,27.51,0,1.03],[22.61,0.32,28.15,0,0.86],[22.45,0.23,27.59,2,0.91],[21.55,0.03,19.36,2,1.02],[22.07,0.01,19.32,1,1.21],[21.95,0.04,18.65,2,0.87],[23.76,0.0,18.52,0,0.87],[24.46,0.0,18.62,1,1.12],[24.31,0.0,18.72,0,0.82],[30.41,0.0,28.65,2,0.81],[30.06,0.0,28.46,0,0.95],[30.43,0.0,28.53,2,1.28],[36.62,-0.03,28.56,0,1.02],[37.01,-0.07,28.82,1,1.09],[36.79,-0.04,28.69,2,1.07],[24.24,0.0,25.17,2,1.04],[24.56,0.0,24.71,1,0.91],[24.29,0.0,25.02,2,1.0],[37.46,0.02,15.37,1,1.05],[36.86,0.0,15.97,1,0.83],[36.62,0.0,15.58,2,1.24],[24.91,0.11,29.18,1,1.13],[24.37,0.22,29.22,2,1.22],[24.99,0.15,29.5,2,1.23],[23.24,0.0,19.33,1,1.24],[22.89,0.0,19.54,1,1.15],[22.6,0.0,19.52,1,1.0],[26.72,0.0,26.47,1,0.95],[26.44,0.0,26.74,1,1.09],[37.29,0.0,18.67,1,0.9],[36.91,0.0,18.73,0,0.81],[36.76,0.0,18.72,1,1.26]],"bush":[[38.36,0.0,21.75,1.06],[26.92,0.0,29.29,1.17],[36.27,-0.11,29.58,1.04],[38.32,0.0,18.7,1.07],[35.14,0.0,15.68,0.92],[23.48,0.0,17.77,1.06],[23.94,0.0,23.72,1.12],[27.99,0.0,26.48,0.91],[24.19,0.0,21.41,1.09]],"stone":[[34.07,0.0,21.69,0.99],[32.69,0.0,24.7,1.2],[29.82,0.0,25.96,0.85],[27.2,0.0,25.3,0.69],[25.12,0.0,22.33,0.66],[25.34,0.0,19.81,0.7],[27.72,0.0,17.32,1.09],[30.88,0.0,17.12,1.08],[33.05,0.0,18.58,0.61]],"lamp":[[35.03,0.0,20.32],[36.5,0.0,15.6]],"sign":[33.59,0.0,16.54]},"JunkHouse":{"flower":[[79.36,0.0,43.98,0,0.82],[79.29,0.0,44.44,2,0.83],[78.89,0.0,44.23,0,0.83],[81.37,0.0,47.46,2,0.92],[80.71,0.0,47.2,2,1.23],[80.79,0.0,47.87,1,0.95],[76.66,0.0,52.84,0,1.14],[76.82,0.0,52.51,1,0.95],[77.0,0.0,52.42,0,0.84],[72.53,0.0,51.42,0,1.01],[73.05,0.0,51.33,1,0.9],[72.48,0.0,51.05,0,0.94],[71.01,0.0,41.64,0,1.08],[71.26,0.0,41.86,0,0.88],[71.15,0.0,41.8,1,1.11],[74.86,0.0,42.52,1,1.07],[69.71,0.0,49.34,1,1.17],[69.79,0.0,49.28,2,1.08],[69.38,0.0,49.6,0,1.15],[78.97,0.0,43.28,0,1.08],[79.13,0.0,42.92,1,0.9],[79.45,0.0,42.55,1,0.86],[78.69,0.0,43.26,1,0.89],[73.32,0.0,50.7,0,1.13],[73.33,0.0,50.11,1,0.98],[73.26,0.0,50.05,0,0.94],[76.92,0.0,42.68,2,0.88],[76.49,0.0,42.59,1,1.17],[76.81,0.0,42.88,0,1.08],[75.6,0.0,52.06,0,0.86],[75.68,0.0,52.13,0,1.24],[75.52,0.0,52.17,0,1.14],[79.64,0.0,44.34,2,1.0],[79.49,0.0,44.71,1,1.06],[79.13,0.0,44.82,1,1.27],[78.29,0.0,49.66,1,1.05],[78.15,0.0,49.28,2,1.06],[78.38,0.0,49.21,0,0.82],[77.94,0.0,50.46,2,0.92],[77.94,0.0,50.84,0,0.98],[78.08,0.0,50.15,1,0.87],[67.44,0.0,49.06,2,0.95],[68.11,0.0,48.61,2,0.92],[67.88,0.0,48.59,1,1.18],[70.29,0.0,48.57,1,1.22],[69.86,0.0,48.42,1,1.04],[69.79,0.0,48.96,1,0.9]],"bush":[[70.19,0.0,40.84,0.71],[68.93,0.0,49.27,1.39],[76.08,0.0,41.32,1.04],[81.39,0.0,48.32,1.14],[71.43,0.0,43.11,0.8],[80.2,0.0,43.77,0.83],[77.19,0.0,50.95,1.35],[73.19,0.0,50.76,0.87],[82.14,-0.05,41.07,0.73]],"stone":[[78.65,0.0,46.74,0.71],[76.91,0.0,49.48,0.6],[73.79,0.0,49.69,1.11],[71.76,0.0,47.44,0.86],[74.81,0.0,42.92,0.91],[77.56,0.0,43.87,0.8]],"lamp":[[71.63,0.0,43.38],[67.1,0.0,45.37]],"sign":[69.72,0.0,46.94]},"LogHouse":{"flower":[[-19.9,0.01,79.64,1,1.2],[-19.44,0.03,79.88,1,0.84],[-19.76,0.02,79.78,2,1.25],[-16.06,0.11,73.92,2,0.97],[-16.19,0.1,74.38,1,1.28],[-16.35,0.09,74.45,1,1.23],[-18.85,0.11,66.79,0,1.13],[-19.18,0.09,66.69,1,0.98],[-19.3,0.09,66.57,1,0.86],[-35.06,0.05,79.2,1,1.12],[-35.39,0.17,79.7,2,1.04],[-35.06,0.05,79.3,2,1.15],[-21.71,0.0,80.24,2,0.84],[-21.83,0.0,80.25,2,1.05],[-21.47,0.0,80.33,2,1.3],[-21.81,0.16,64.19,0,1.28],[-22.38,0.11,64.27,0,0.87],[-21.86,0.19,63.89,0,0.82],[-16.83,0.09,70.89,0,1.11],[-16.15,0.13,71.27,2,1.24],[-16.78,0.08,71.44,1,1.2],[-21.98,0.44,62.3,2,1.17],[-21.36,0.42,62.74,0,1.21],[-21.89,0.43,62.41,1,1.2],[-18.24,0.01,73.02,1,0.81],[-18.55,0.0,72.43,2,1.04],[-18.83,0.0,73.04,0,0.89],[-35.73,0.16,79.02,2,1.06],[-35.76,0.11,78.71,1,1.25],[-35.56,0.03,78.27,0,1.21],[-28.36,0.0,80.32,1,0.97],[-28.62,0.0,80.43,2,0.82],[-28.51,0.0,80.62,1,0.99],[-25.04,0.01,64.64,0,1.19],[-25.28,0.0,65.13,1,1.2],[-20.69,0.09,65.46,1,1.17],[-20.3,0.15,65.17,1,1.24],[-20.11,0.19,64.89,2,0.97],[-31.69,0.0,81.34,0,1.2],[-31.23,0.0,81.14,0,0.8],[-31.34,0.0,81.41,1,1.0],[-20.81,0.0,79.99,2,0.95],[-20.68,0.02,80.36,1,0.84],[-21.17,0.01,80.7,2,0.89],[-25.63,0.0,81.68,1,1.16],[-25.12,0.0,81.74,1,1.25],[-25.7,0.0,81.22,0,1.18]],"bush":[[-28.68,0.0,79.6,0.9],[-27.38,0.02,64.24,0.87],[-22.17,0.4,62.41,0.89],[-31.72,0.0,79.12,0.72],[-20.21,0.1,65.69,1.3],[-15.71,0.19,70.05,1.36],[-22.38,0.0,78.48,0.81],[-15.87,0.13,73.45,0.86],[-37.04,0.34,77.98,1.38]],"stone":[[-20.63,0.0,72.2,0.98],[-21.55,0.0,75.43,1.19],[-24.25,0.0,78.01,0.97],[-26.08,0.0,78.67,0.93],[-29.22,0.0,78.56,1.07],[-31.94,0.0,77.09,0.96],[-33.93,0.0,74.01,1.14],[-34.13,0.0,70.82,1.11],[-33.03,0.0,68.13,0.92],[-31.29,0.0,66.39,1.03],[-28.35,0.0,65.25,1.12],[-25.63,0.0,65.43,1.15],[-22.3,0.0,67.52,0.83],[-21.18,0.0,69.3,1.07]],"lamp":[[-28.79,0.02,64.32],[-33.32,0.52,62.31]],"sign":[-32.72,0.06,65.31]},"BlueHouse":{"flower":[[-53.65,0.79,41.68,1,1.14],[-53.35,0.64,41.15,1,1.0],[-52.84,0.51,41.8,2,1.23],[-30.76,0.33,38.24,1,1.23],[-30.86,0.32,37.77,0,1.21],[-31.39,0.18,37.83,1,1.24],[-38.4,0.0,47.28,0,1.23],[-42.4,0.07,30.07,0,0.87],[-42.85,0.05,30.38,1,0.85],[-51.19,0.13,34.81,1,1.29],[-51.99,0.23,34.37,2,1.14],[-51.99,0.23,34.62,0,1.09],[-53.04,1.33,46.0,1,1.29],[-52.63,1.13,45.91,0,1.14],[-41.1,0.08,29.8,0,0.97],[-40.63,0.08,30.01,1,1.15],[-53.09,0.32,32.84,0,1.0],[-53.46,0.34,32.99,0,0.96],[-53.92,0.37,33.08,1,1.07],[-31.42,0.12,42.46,1,0.99],[-31.65,0.1,42.86,1,1.2],[-30.97,0.23,42.74,0,1.1],[-50.65,0.36,45.64,0,1.0],[-50.85,0.37,45.44,1,1.07],[-51.07,0.48,45.7,0,1.04],[-33.6,0.02,45.44,2,0.93],[-33.32,0.07,46.13,0,1.11],[-33.43,0.03,45.59,2,1.18],[-46.81,0.0,45.1,2,1.04],[-47.38,0.0,44.91,2,0.98],[-47.39,0.0,44.94,1,0.92],[-49.49,0.04,44.95,2,1.23],[-49.86,0.06,44.72,1,0.86],[-50.97,0.11,34.99,1,1.13],[-51.45,0.16,34.79,1,1.15],[-51.29,0.14,34.95,0,1.18],[-50.15,0.01,41.84,0,1.11],[-50.01,0.0,42.1,1,0.81],[-50.3,0.02,41.89,0,1.1],[-51.19,0.02,29.95,1,1.26],[-51.41,0.08,30.03,0,1.16],[-51.79,0.15,30.05,2,1.1],[-31.85,1.25,30.59,2,1.09],[-32.35,1.25,29.9,0,0.84],[-32.01,1.3,30.07,1,1.05],[-31.06,0.25,43.54,1,1.27],[-30.45,0.42,43.4,1,0.89],[-31.02,0.25,43.36,0,1.06]],"bush":[[-52.85,0.52,41.82,1.09],[-50.85,0.24,32.09,0.75],[-32.79,1.23,29.57,0.76],[-31.72,0.08,39.19,1.06],[-43.05,0.19,28.5,0.91],[-31.52,0.22,44.41,1.3],[-48.73,0.1,46.89,1.09],[-52.58,0.28,34.08,1.07],[-29.76,0.78,36.84,1.31]],"stone":[[-33.54,0.0,38.1,0.86],[-34.62,0.0,41.89,0.63],[-37.03,0.0,44.32,0.64],[-39.55,0.0,45.32,0.71],[-43.12,0.0,45.16,0.94],[-45.7,0.0,43.79,0.9],[-47.56,0.0,41.54,1.0],[-48.36,0.0,39.13,0.73],[-47.92,0.0,35.26,0.69],[-46.12,0.01,32.6,0.72],[-44.59,0.02,31.48,0.66],[-40.6,0.05,30.56,1.17],[-38.11,0.06,31.13,1.0],[-35.72,0.04,32.73,1.14],[-33.83,0.0,35.94,0.69]],"lamp":[[-45.25,0.0,45.28],[-43.19,0.05,49.78]],"sign":[-41.65,0.0,47.13]}};
+{ const M=new THREE.Matrix4(), Q=new THREE.Quaternion(), P=new V3(), SC=new V3(), E=new THREE.Euler();
+  const all=k=>HOUSES.flatMap(h=>(PROPS[h.file][k]||[]));
+  const inst=(geo,mat,items,fn,shadow)=>{ if(!items.length) return; patch(mat,'obj'); const m=new THREE.InstancedMesh(geo,mat,items.length); items.forEach((it,i)=>{ fn(it,i); M.compose(P,Q.setFromEuler(E),SC); m.setMatrixAt(i,M); }); m.castShadow=shadow!==false; m.receiveShadow=true; m.frustumCulled=false; scene.add(m); };
+  const fl=all('flower'), cols=[0xf6a9bf,0xffd166,0xffffff];
+  const petal=(()=>{ const s=new THREE.Shape(), n=6; for(let k=0;k<=n*16;k++){ const a=k/(n*16)*Math.PI*2, r=.06+.1*Math.pow(Math.abs(Math.cos(a*n/2)),.6); k?s.lineTo(Math.cos(a)*r,Math.sin(a)*r):s.moveTo(Math.cos(a)*r,Math.sin(a)*r); } const g=new THREE.ShapeGeometry(s); g.rotateX(-Math.PI/2); return g; })();
+  inst(new THREE.CylinderGeometry(.012,.016,.3,5),std(0x6fbf98),fl,it=>{ P.set(it[0],it[1]+.15*it[4],it[2]); E.set(0,0,0); SC.setScalar(it[4]); },false);
+  inst(new THREE.SphereGeometry(.07,8,6),std(0x8fd8b8),fl,(it,i)=>{ P.set(it[0]+.05*it[4],it[1]+.07*it[4],it[2]); E.set(0,i,0); SC.set(it[4]*1.3,it[4]*.35,it[4]*.7); },false);
+  cols.forEach((c,ci)=>inst(petal,std(c,{side:THREE.DoubleSide}),fl.filter(it=>it[3]===ci),(it,i)=>{ P.set(it[0],it[1]+.3*it[4],it[2]); E.set(.25*Math.sin(i*1.7),i*.9,.25*Math.cos(i*1.3)); SC.setScalar(it[4]); },false));
+  inst(new THREE.SphereGeometry(.045,8,6),std(0xf2b632,{roughness:.6}),fl,it=>{ P.set(it[0],it[1]+.31*it[4],it[2]); E.set(0,0,0); SC.set(it[4],it[4]*.6,it[4]); },false);
+  const lobe=new THREE.SphereGeometry(.5,18,12), LOBES=[[0,.36,0,1,0x7fcfac],[.42,.26,.18,.72,0x8fd8b8],[-.36,.24,.24,.68,0x8fd8b8],[.06,.22,-.4,.66,0x7fcfac],[.1,.68,.06,.6,0xa6e0c5],[-.2,.5,-.15,.5,0xa6e0c5]];
+  LOBES.forEach(([ox,oy,oz,s,c],k)=>inst(lobe,std(c,{roughness:.8}),all('bush'),(it,i)=>{ const a=i*2.1, ca=Math.cos(a), sa=Math.sin(a), q=it[3]; P.set(it[0]+(ox*ca-oz*sa)*q,it[1]+oy*q,it[2]+(ox*sa+oz*ca)*q); E.set(0,0,0); SC.setScalar(s*q*(0.92+((i*7+k*3)%5)*.04)); }));
+  inst(new THREE.IcosahedronGeometry(.2,0),std(0xd9d6cf,{flatShading:true}),all('stone'),(it,i)=>{ P.set(it[0],it[1]+.06,it[2]); E.set(i,i*2.1,i*.7); SC.set(it[3]*1.2,it[3]*.7,it[3]); });
+  const lamps=all('lamp');
+  inst(new THREE.CylinderGeometry(.035,.05,1.5,6),std(0x7d8792,{roughness:.5}),lamps,it=>{ P.set(it[0],it[1]+.75,it[2]); E.set(0,0,0); SC.setScalar(1); });
+  inst(new THREE.SphereGeometry(.16,10,8),std(0xfff1c2,{emissive:0xffd98a,emissiveIntensity:.55,roughness:.3}),lamps,it=>{ P.set(it[0],it[1]+1.6,it[2]); E.set(0,0,0); SC.setScalar(1); },false);
+  HOUSES.forEach((h,i)=>{ const s=PROPS[h.file].sign; if(!s) return;
+    const t=tex(g=>{ g.canvas.width=256; g.canvas.height=128; g.fillStyle='#fff'; g.fillRect(0,0,256,128); g.fillStyle='#e4502f'; g.font='700 42px system-ui,Arial,sans-serif'; g.textAlign='center'; g.fillText('ПРОДАНО',128,66); g.fillStyle='#6d7773'; g.font='400 24px ui-monospace,Menlo,monospace'; g.fillText('лот '+String(i+1).padStart(2,'0'),128,104); });
+    const g=new THREE.Group(), board=new THREE.Mesh(new THREE.BoxGeometry(1.3,.65,.05),[std(0xffffff),std(0xffffff),std(0xffffff),std(0xffffff),new THREE.MeshStandardMaterial({map:t,roughness:1}),std(0xffffff)]);
+    board.position.y=1.15; board.castShadow=true; const post=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,1.2,6),std(0xd8d2c8)); post.position.y=.6; post.castShadow=true; g.add(board,post);
+    g.position.set(s[0],s[1],s[2]); g.rotation.y=Math.PI/4; scene.add(g); });
+}
+// Weather: a mood for the light and a thin layer of rain or snow drawn over the scene.
+const WX={mode:'sun',rain:0,snow:0}, wxc=document.getElementById('wxc'), wg=wxc.getContext('2d'), drops=[];
+for(let i=0;i<260;i++) drops.push({x:R(),y:R(),s:.6+R()*.8,ph:R()*6.28});
+document.querySelectorAll('[data-wx]').forEach(b=>b.addEventListener('click',()=>{ WX.mode=b.dataset.wx; document.querySelectorAll('[data-wx]').forEach(o=>o.setAttribute('aria-pressed',o===b)); }));
+const hemiL=scene.children.find(o=>o.isHemisphereLight), CLR=new THREE.Color(), C_SUN=new THREE.Color(0xe9f0f1), C_RAIN=new THREE.Color(0xcfd8de), C_SNOW=new THREE.Color(0xeef3f7), W_SUN=new THREE.Color(0xbfe0ee), W_RAIN=new THREE.Color(0x9fbccc), W_SNOW=new THREE.Color(0xd4e6f0);
+function weather(dt,t){
+  const kr=1-Math.exp(-dt*1.6), ks=1-Math.exp(-dt*.7);
+  WX.rain+=((WX.mode==='rain'?1:0)-WX.rain)*kr; WX.snow+=((WX.mode==='snow'?1:0)-WX.snow)*(WX.mode==='snow'?ks:kr);
+  USNOW.value=WX.snow; UWET.value=WX.rain;
+  sun.intensity=.74-.5*WX.rain-.22*WX.snow; hemiL.intensity=.52+.14*WX.rain+.1*WX.snow;
+  CLR.copy(C_SUN).lerp(C_RAIN,WX.rain).lerp(C_SNOW,WX.snow); renderer.setClearColor(CLR,1);
+  water.material.color.copy(W_SUN).lerp(W_RAIN,WX.rain).lerp(W_SNOW,WX.snow);
+  for(const c of clouds) c.scale.setScalar(1+WX.rain*1.4+WX.snow*.6);
+  const dpr=Math.min(window.devicePixelRatio||1,2); if(wxc.width!==Math.round(W*dpr)||wxc.height!==Math.round(H*dpr)){ wxc.width=Math.round(W*dpr); wxc.height=Math.round(H*dpr); }
+  wg.setTransform(dpr,0,0,dpr,0,0); wg.clearRect(0,0,W,H);
+  if(reduce||WX.rain+WX.snow<.02) return;
+  if(WX.rain>.02){ wg.strokeStyle='rgba(120,145,170,'+(.5*WX.rain).toFixed(3)+')'; wg.lineWidth=1.2; wg.beginPath();
+    for(const d of drops){ const y=((d.y+t*1.5*d.s)%1)*(H+60)-30, x=((d.x+y*.00022)%1)*(W+80)-40; wg.moveTo(x,y); wg.lineTo(x-4*d.s,y+18*d.s); } wg.stroke(); }
+  if(WX.snow>.02){ wg.fillStyle='rgba(255,255,255,'+(.95*WX.snow).toFixed(3)+')'; wg.shadowColor='rgba(120,140,170,.45)'; wg.shadowBlur=3;
+    for(const d of drops){ const y=((d.y+t*.09*d.s)%1)*(H+20)-10, x=((d.x+Math.sin(t*.8+d.ph)*.012)%1)*W; wg.beginPath(); wg.arc(x,y,1.3+d.s*1.6,0,6.3); wg.fill(); } wg.shadowBlur=0; }
+}
+(async()=>{
+  const land=await get('land');
+  if(land){ scene.add(land); loadEl.textContent='';
+    // The valley repeats around itself, mirrored, so forest and mountains run past every edge of the screen.
+    for(let ix=-2;ix<=2;ix++) for(let iz=-2;iz<=2;iz++){ if(!ix&&!iz) continue; const c=land.clone(); c.scale.set(ix%2?-1:1,1,iz%2?-1:1); c.position.set(ix*250,0,iz*220); scene.add(c); } } else loadEl.textContent='Генплан не загрузился.';
+  for(let i=0;i<HOUSES.length;i++){ const h=HOUSES[i], st=document.querySelector('[data-h="'+i+'"]');
+    const body=await get(h.file==='MillHouse'?'mill':h.file+'_body');
+    if(!body){ st.textContent='Дом не загрузился.'; continue; }
+    h.group.add(body);
+    for(const p of h.parts){ const m=await get(p.id==='blades'?'blades':h.file+'_'+p.id); if(m){ m.position.fromArray(p.p).multiplyScalar(-1); p.pivot.add(m); } }
+    st.textContent='';
+  }
+})();
+
+let W=0,H=0,mobile=false;
+function resize(){ W=window.innerWidth; H=window.innerHeight; mobile=W<=760; renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); renderer.setSize(W,H,false); }
+addEventListener('resize',resize); resize();
+let mx=0,my=0; addEventListener('pointermove',e=>{ mx=e.clientX/W-.5; my=e.clientY/H-.5; });
+
+// Interaction: the button in a card, or a click anywhere on the scene, kicks the current house's moving parts
+// and pulls the camera in on them for a moment.
+let focus=null; const fv=new THREE.Vector3();
+function act(i){ const h=HOUSES[i]; if(!h) return; h.hop=1;
+  h.parts.forEach(p=>{ if(p.mode==='spin') p.vel+=14*Math.sign(p.a); else if(p.mode==='kick') p.vel+=11; else p.amp=1; });
+  FX.forEach(f=>{ if(f.h===h) f.burst(6); });
+  const p=h.parts[0]; focus={until:performance.now()+(window.__focusMs||2600),h:mobile?4.2:3.2,i,p}; }
+main.addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(b){ act(+b.dataset.act); return; }
+  if(e.target.closest('.card')) return; if(cur>=1&&cur<=HOUSES.length) act(cur-1); });
+
+function station(k,out){
+  if(k<=0||k>HOUSES.length){ out.t.set(-8,0,6); out.h=mobile?150:92; out.shift=0; return; }
+  const h=HOUSES[k-1], sx=h.max[0]-h.min[0], sy=h.max[1]-h.min[1], sz=h.max[2]-h.min[2];
+  out.t.set((h.min[0]+h.max[0])/2,h.min[1]+sy*0.4,(h.min[2]+h.max[2])/2);
+  out.h=Math.max(sx,sz,sy*1.2)*(mobile?1.25:0.72)+2.5; out.shift=1;
+}
+const A={t:new THREE.Vector3(),h:1,shift:0}, B={t:new THREE.Vector3(),h:1,shift:0}, T=new THREE.Vector3(), ct=new THREE.Vector3();
+let ch=100, first=true, last=performance.now(), shiftS=0, px=0, py=0, cur=-1, t0=last, lastU=0;
+function frame(now){
+  const dt=Math.min(.5,(now-last)/1000); last=now; const k1=window.__snap?1:1-Math.exp(-dt*6), k2=1-Math.exp(-dt*3), t=(now-t0)/1000;
+  const mid=H/2; let best=0,bd=1e9,tt=0;
+  for(let i=0;i<N;i++){ const r=sections[i].getBoundingClientRect(); const d=(r.top+r.height/2-mid)/r.height; if(Math.abs(d)<bd){bd=Math.abs(d);best=i;tt=d;} }
+  const u=Math.min(N-1,Math.max(0,best-tt)), i=Math.min(N-2,Math.floor(u)), f=u-i;
+  let e=Math.min(1,Math.max(0,(f-.25)/.5)); e=e*e*e*(e*(e*6-15)+10);
+  station(i,A); station(i+1,B);
+  T.lerpVectors(A.t,B.t,e);
+  const hop=A.t.distanceTo(B.t), arc=Math.sin(Math.PI*e)*(A.shift&&B.shift?1:0);
+  let hh=Math.exp(Math.log(A.h)+(Math.log(B.h)-Math.log(A.h))*e); hh*=1+arc*Math.min(1.6,hop/70);
+  let shift=A.shift+(B.shift-A.shift)*e;
+  if(focus){ if(now>focus.until||Math.abs(u-lastU)>0.004&&now>focus.until-2200||Math.round(u)!==focus.i+1) focus=null;
+    else { focus.p.pivot.getWorldPosition(fv); T.copy(fv); hh=focus.h; } }
+  lastU=u;
+  if(first){ ct.copy(T); ch=hh; first=false; } else { ct.lerp(T,k1); ch+=(hh-ch)*k1; }
+  shiftS+=(shift-shiftS)*k1; px+=(mx-px)*k2; py+=(my-py)*k2;
+  const asp=W/H;
+  camera.left=-ch*asp; camera.right=ch*asp; camera.top=ch; camera.bottom=-ch;
+  camera.position.copy(ct).addScaledVector(DIR,500); camera.lookAt(ct);
+  camera.translateX(-px*ch*0.08); camera.translateY(py*ch*0.08);
+  if(mobile) camera.setViewOffset(W,H,0,H*(0.2-0.04*shiftS),W,H); else camera.setViewOffset(W,H,-W*0.12*shiftS,0,W,H);
+  camera.updateProjectionMatrix(); UPX.value=2*ch/H;
+  const ext=ch*Math.max(asp,1)*1.5+20, sc=sun.shadow.camera;
+  sun.target.position.copy(ct); sun.position.copy(ct).addScaledVector(SUN,400);
+  sc.left=-ext; sc.right=ext; sc.top=ext; sc.bottom=-ext; sc.near=50; sc.far=900; sc.updateProjectionMatrix();
+  sun.shadow.normalBias=ext/400;
+  for(const h of HOUSES){
+    h.hop*=Math.exp(-dt*3.2); const sq=1+Math.sin(t*14)*0.05*h.hop; h.group.scale.set(1/Math.sqrt(sq),sq,1/Math.sqrt(sq));
+    for(const p of h.parts){
+      p.vel*=Math.exp(-dt*1.4); p.amp*=Math.exp(-dt*0.9);
+      const idle=reduce?0:1;
+      if(p.mode==='spin'){ p.ang+=(p.a*idle+p.vel)*dt; p.pivot.setRotationFromAxisAngle(p.axis,p.ang); }
+      else if(p.mode==='kick'){ p.ang+=p.vel*dt; p.pivot.setRotationFromAxisAngle(p.axis,p.ang+Math.sin(t*p.w)*p.a*idle); }
+      else if(p.mode==='swing'){ p.pivot.setRotationFromAxisAngle(p.axis,Math.sin(t*p.w*(1+p.amp*.6))*p.a*(idle+p.amp*3.2)); }
+      else { p.pivot.position.y=p.p[1]+Math.max(0,Math.sin(t*p.w*(1+p.amp)))*p.a*(idle+p.amp*4); }
+    }
+  }
+  UT.value=reduce?0:t;
+  for(const f of FX) f.update(dt,t);
+  weather(dt,t);
+  camera.updateMatrixWorld(); // pins must use this frame's camera, not last frame's
+  const pv=1-Math.min(1,Math.max(0,(shiftS-.15)/.35));
+  for(const h of HOUSES){ fv.set((h.min[0]+h.max[0])/2,h.max[1]+1,(h.min[2]+h.max[2])/2).project(camera);
+    const sx=(fv.x*.5+.5)*W, sy=(-fv.y*.5+.5)*H; h.pin.style.transform='translate('+(sx-14).toFixed(1)+'px,'+(sy-42).toFixed(1)+'px)'; h.pin.style.opacity=pv; h.pin.style.visibility=pv<.02?'hidden':'visible'; }
+  if(!reduce) for(const c of clouds){ c.position.x+=c.userData.v*dt; if(c.position.x>190) c.position.x=-190; }
+  const idx=Math.round(u), on=idx>=1&&idx<=HOUSES.length;
+  if(idx!==cur){ cur=idx; countEl.textContent='Лот '+(on?String(idx).padStart(2,'0'):'00')+' / 09';
+    navLinks.forEach((a,j)=>{ if(j===idx-1) a.setAttribute('aria-current','true'); else a.removeAttribute('aria-current'); }); }
+  renderer.render(scene,camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__act=act;
+})();
+</script>
+
+</body>
+</html>
