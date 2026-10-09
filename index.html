@@ -71,6 +71,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 section{display:block;min-height:0;height:190vh;height:190svh;padding:0}
 .pw{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:88px var(--gutter) 92px}
 @media (max-width:760px){ .pw{padding:76px var(--gutter) 84px} }
+/* desktop: bigger card */
+@media (min-width:761px){
+ .card{max-width:min(460px,100%);padding:30px 30px 26px;gap:14px;border-radius:18px}
+ .card h1,.card h2{font-size:clamp(28px,2.6vw,38px)}
+ .card p{font-size:16px}
+ .num,.meta,.state{font-size:12.5px}
+ .btn{font-size:12.5px;padding:10px 18px}
+ .facts li{font-size:12.5px;padding:6px 12px}
+ .logo{width:60px;height:60px} .logo .daisy{width:44px;height:44px}
+}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 .card h1{font-family:var(--mono);font-weight:500;font-size:clamp(22px,2.2vw,28px);letter-spacing:-.03em;line-height:1.15}
@@ -360,7 +370,7 @@ let focus=null; const fv=new THREE.Vector3();
 function act(i){ const h=HOUSES[i]; if(!h) return; h.hop=1;
   h.parts.forEach(p=>{ if(p.mode==='spin') p.vel+=14*Math.sign(p.a); else if(p.mode==='kick') p.vel+=11; else p.amp=1; });
   FX.forEach(f=>{ if(f.h===h) f.burst(6); });
-  const p=h.parts[0]; focus={until:performance.now()+(window.__focusMs||2600),h:mobile?4.2:3.2,i,p}; }
+  const p=h.parts[0]; focus={until:performance.now()+(window.__focusMs||2600),h:mobile?4.2:2.6,i,p}; }
 main.addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(b){ act(+b.dataset.act); return; }
   if(e.target.closest('.card')) return; if(cur>=1&&cur<=HOUSES.length) act(cur-1); });
 
@@ -368,7 +378,7 @@ function station(k,out){
   if(k<=0||k>HOUSES.length){ out.t.set(-8,0,6); out.h=mobile?150:92; out.shift=0; return; }
   const h=HOUSES[k-1], sx=h.max[0]-h.min[0], sy=h.max[1]-h.min[1], sz=h.max[2]-h.min[2];
   out.t.set((h.min[0]+h.max[0])/2,h.min[1]+sy*0.4,(h.min[2]+h.max[2])/2);
-  out.h=Math.max(sx,sz,sy*1.2)*(mobile?1.25:0.72)+2.5; out.shift=1;
+  out.h=Math.max(sx,sz,sy*1.2)*(mobile?1.25:0.5)+1.8; out.shift=1;
 }
 const A={t:new THREE.Vector3(),h:1,shift:0}, B={t:new THREE.Vector3(),h:1,shift:0}, T=new THREE.Vector3(), ct=new THREE.Vector3();
 let ch=100, first=true, last=performance.now(), shiftS=0, px=0, py=0, cur=-1, t0=last, lastU=0;
@@ -397,7 +407,7 @@ function frame(now){
   camera.left=-ch*asp; camera.right=ch*asp; camera.top=ch; camera.bottom=-ch;
   camera.position.copy(ct).addScaledVector(DIR,500); camera.lookAt(ct);
   camera.translateX(-px*ch*0.08); camera.translateY(py*ch*0.08);
-  if(mobile) camera.setViewOffset(W,H,0,H*(0.2-0.04*shiftS),W,H); else camera.setViewOffset(W,H,-W*0.12*shiftS,0,W,H);
+  if(mobile) camera.setViewOffset(W,H,0,H*(0.2-0.04*shiftS),W,H); else camera.setViewOffset(W,H,-W*0.16*shiftS,H*0.04*shiftS,W,H);
   camera.updateProjectionMatrix(); UPX.value=2*ch/H;
   const ext=ch*Math.max(asp,1)*1.5+20, sc=sun.shadow.camera;
   sun.target.position.copy(ct); sun.position.copy(ct).addScaledVector(SUN,400);
