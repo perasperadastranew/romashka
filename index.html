@@ -67,12 +67,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 .pin::after{content:"";position:absolute;left:13px;top:100%;width:1px;height:14px;background:var(--accent)}
 @media (max-width:760px){ .pin span{display:none} .pin{padding:4px}
  section{padding-block:76px 84px} .card{padding:18px} }
-/* mobile: each lot pins its card at the bottom for a while, the camera holds on the house, then moves on */
-.pw{display:contents}
-@media (max-width:760px){
- section{display:block;min-height:0;height:190vh;height:190svh;padding:0}
- .pw{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:76px var(--gutter) 84px}
-}
+/* each lot pins its card for a while, the camera holds on the house, then moves on */
+section{display:block;min-height:0;height:190vh;height:190svh;padding:0}
+.pw{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:88px var(--gutter) 92px}
+@media (max-width:760px){ .pw{padding:76px var(--gutter) 84px} }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 .card h1{font-family:var(--mono);font-weight:500;font-size:clamp(22px,2.2vw,28px);letter-spacing:-.03em;line-height:1.15}
@@ -379,12 +377,12 @@ function frame(now){
   const mid=H/2; let best=0,bd=1e9,tt=0;
   for(let i=0;i<N;i++){ const r=sections[i].getBoundingClientRect(); const d=(r.top+r.height/2-mid)/r.height; if(Math.abs(d)<bd){bd=Math.abs(d);best=i;tt=d;} }
   let u=Math.min(N-1,Math.max(0,best-tt));
-  if(mobile){ u=N-1;
+  { u=N-1;
     for(let j=0;j<N;j++){ const r=sections[j].getBoundingClientRect(), ph=sections[j].firstElementChild.offsetHeight||H, pin=Math.max(0,r.height-ph);
       if(r.bottom>0){ u=j+Math.min(1,Math.max(0,(-r.top-pin)/ph)); if(r.top>0&&j>0) u=j-1+Math.min(1,Math.max(0,1-r.top/ph)); break; } }
     u=Math.min(N-1,Math.max(0,u)); }
   const i=Math.min(N-2,Math.floor(u)), f=u-i;
-  let e=mobile?Math.min(1,Math.max(0,(f-.08)/.84)):Math.min(1,Math.max(0,(f-.25)/.5)); e=e*e*e*(e*(e*6-15)+10);
+  let e=Math.min(1,Math.max(0,(f-.08)/.84)); e=e*e*e*(e*(e*6-15)+10);
   station(i,A); station(i+1,B);
   T.lerpVectors(A.t,B.t,e);
   const hop=A.t.distanceTo(B.t), arc=Math.sin(Math.PI*e)*(A.shift&&B.shift?1:0);
