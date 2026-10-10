@@ -338,14 +338,28 @@ const PROPS={"ForestHouse":{"flower":[[-100.1,1.23,14.22,0,1.08],[-99.86,1.17,14
 { const M=new THREE.Matrix4(), Q=new THREE.Quaternion(), P=new V3(), SC=new V3(), E=new THREE.Euler();
   const all=k=>HOUSES.flatMap(h=>(PROPS[h.file][k]||[]));
   const inst=(geo,mat,items,fn,shadow)=>{ if(!items.length) return; patch(mat,'obj'); const m=new THREE.InstancedMesh(geo,mat,items.length); items.forEach((it,i)=>{ fn(it,i); M.compose(P,Q.setFromEuler(E),SC); m.setMatrixAt(i,M); }); m.castShadow=shadow!==false; m.receiveShadow=true; m.frustumCulled=false; scene.add(m); };
-  const fl=all('flower'), cols=[0xf6a9bf,0xffd166,0xffffff];
-  const petal=(()=>{ const s=new THREE.Shape(), n=6; for(let k=0;k<=n*16;k++){ const a=k/(n*16)*Math.PI*2, r=.06+.1*Math.pow(Math.abs(Math.cos(a*n/2)),.6); k?s.lineTo(Math.cos(a)*r,Math.sin(a)*r):s.moveTo(Math.cos(a)*r,Math.sin(a)*r); } const g=new THREE.ShapeGeometry(s); g.rotateX(-Math.PI/2); return g; })();
-  inst(new THREE.CylinderGeometry(.012,.016,.3,5),std(0x6fbf98),fl,it=>{ P.set(it[0],it[1]+.15*it[4],it[2]); E.set(0,0,0); SC.setScalar(it[4]); },false);
-  inst(new THREE.SphereGeometry(.07,8,6),std(0x8fd8b8),fl,(it,i)=>{ P.set(it[0]+.05*it[4],it[1]+.07*it[4],it[2]); E.set(0,i,0); SC.set(it[4]*1.3,it[4]*.35,it[4]*.7); },false);
-  cols.forEach((c,ci)=>inst(petal,std(c,{side:THREE.DoubleSide}),fl.filter(it=>it[3]===ci),(it,i)=>{ P.set(it[0],it[1]+.3*it[4],it[2]); E.set(.25*Math.sin(i*1.7),i*.9,.25*Math.cos(i*1.3)); SC.setScalar(it[4]); },false));
-  inst(new THREE.SphereGeometry(.045,8,6),std(0xf2b632,{roughness:.6}),fl,it=>{ P.set(it[0],it[1]+.31*it[4],it[2]); E.set(0,0,0); SC.set(it[4],it[4]*.6,it[4]); },false);
-  const lobe=new THREE.SphereGeometry(.5,18,12), LOBES=[[0,.36,0,1,0x7fcfac],[.42,.26,.18,.72,0x8fd8b8],[-.36,.24,.24,.68,0x8fd8b8],[.06,.22,-.4,.66,0x7fcfac],[.1,.68,.06,.6,0xa6e0c5],[-.2,.5,-.15,.5,0xa6e0c5]];
-  LOBES.forEach(([ox,oy,oz,s,c],k)=>inst(lobe,std(c,{roughness:.8}),all('bush'),(it,i)=>{ const a=i*2.1, ca=Math.cos(a), sa=Math.sin(a), q=it[3]; P.set(it[0]+(ox*ca-oz*sa)*q,it[1]+oy*q,it[2]+(ox*sa+oz*ca)*q); E.set(0,0,0); SC.setScalar(s*q*(0.92+((i*7+k*3)%5)*.04)); }));
+  // Low-poly greenery in the same faceted style as the forest: every piece is flat-shaded, colours vary per plant.
+  const C3=new THREE.Color(), lp=(c,o)=>std(c,Object.assign({flatShading:true,roughness:1},o||{}));
+  const instC=(geo,mat,items,fn,col,shadow)=>{ if(!items.length) return; patch(mat,'obj'); const m=new THREE.InstancedMesh(geo,mat,items.length); items.forEach((it,i)=>{ fn(it,i); M.compose(P,Q.setFromEuler(E),SC); m.setMatrixAt(i,M); if(col){ m.setColorAt(i,C3.set(col(it,i))); } }); if(m.instanceColor) m.instanceColor.needsUpdate=true; m.castShadow=shadow!==false; m.receiveShadow=true; m.frustumCulled=false; scene.add(m); };
+  const rnd=(i,k)=>{ const h=Math.sin(i*127.1+k*311.7)*43758.5453; return h-Math.floor(h); };
+  // Flowers: a stem, two pointed leaves, five faceted petals round a yellow heart, and a tuft of grass at the foot.
+  const fl=all('flower'), PET=[0xf4a7bd,0xffd166,0xffffff,0xf7895f,0xc5a8f0];
+  instC(new THREE.CylinderGeometry(.01,.014,.3,4),lp(0x4f9a68),fl,it=>{ P.set(it[0],it[1]+.15*it[4],it[2]); E.set(0,0,0); SC.setScalar(it[4]); },null,false);
+  const leafG=new THREE.OctahedronGeometry(.07,0); leafG.scale(1,.22,.42);
+  [-1,1].forEach(sd=>instC(leafG,lp(0xffffff),fl,(it,i)=>{ const a=i*1.9+(sd>0?0:Math.PI); P.set(it[0]+Math.cos(a)*.05*it[4],it[1]+(sd>0?.08:.12)*it[4],it[2]+Math.sin(a)*.05*it[4]); E.set(0,-a,sd*.5); SC.setScalar(it[4]); },(it,i)=>[0x52a45c,0x449654,0x63b266][i%3],false));
+  const petG=new THREE.IcosahedronGeometry(.075,0); petG.scale(1.25,.32,.7);
+  const petals=[]; fl.forEach((it,i)=>{ const c=PET[(it[3]+i)%PET.length]; for(let k=0;k<5;k++) petals.push([it,i,k,c]); });
+  instC(petG,lp(0xffffff),petals,([it,i,k])=>{ const a=k/5*Math.PI*2+i; P.set(it[0]+Math.cos(a)*.08*it[4],it[1]+.31*it[4],it[2]+Math.sin(a)*.08*it[4]); E.set(0,-a,.18); SC.setScalar(it[4]); },p=>p[3],false);
+  instC(new THREE.IcosahedronGeometry(.05,0),lp(0xf2b632),fl,it=>{ P.set(it[0],it[1]+.325*it[4],it[2]); E.set(0,0,0); SC.set(it[4],it[4]*.7,it[4]); },null,false);
+  const blade=new THREE.ConeGeometry(.035,.32,3); blade.translate(0,.16,0);
+  const tufts=[]; fl.forEach((it,i)=>{ if(i%2) return; for(let k=0;k<3;k++) tufts.push([it[0]+(rnd(i,k)-.5)*.35,it[1],it[2]+(rnd(i,k+5)-.5)*.35,.7+rnd(i,k+9)*.6,i*3+k]); });
+  instC(blade,lp(0xffffff),tufts,t=>{ P.set(t[0],t[1],t[2]); E.set((rnd(t[4],1)-.5)*.6,t[4],(rnd(t[4],2)-.5)*.6); SC.setScalar(t[3]); },t=>[0x5cae5e,0x4a9e58,0x74bd6a][t[4]%3],false);
+  // Bushes: a cluster of faceted lobes in one of a few greens; some carry berries or small white blossoms.
+  const lobe=new THREE.IcosahedronGeometry(.5,1), LOBES=[[0,.38,0,1],[.44,.26,.16,.74],[-.38,.24,.24,.7],[.06,.22,-.42,.68],[.12,.7,.04,.62],[-.2,.52,-.16,.52]];
+  const BG=[0x3c9a58,0x4aa862,0x5ab46a,0x2f8a52,0x6abd6c], bush=all('bush'), shade=(i,k)=>{ const c=new THREE.Color(BG[i%BG.length]); c.offsetHSL(0,0,(k>3?.06:0)+(rnd(i,k)-.5)*.04); return c.getHex(); };
+  LOBES.forEach(([ox,oy,oz,s],k)=>instC(lobe,lp(0xffffff),bush,(it,i)=>{ const a=i*2.1, ca=Math.cos(a), sa=Math.sin(a), q=it[3]; P.set(it[0]+(ox*ca-oz*sa)*q,it[1]+oy*q,it[2]+(ox*sa+oz*ca)*q); E.set(rnd(i,k),rnd(i,k+3)*3,0); SC.setScalar(s*q*(0.92+((i*7+k*3)%5)*.04)); },(it,i)=>shade(i,k)));
+  const dots=[]; bush.forEach((it,i)=>{ const kind=i%3; if(kind===2) return; for(let k=0;k<9;k++){ const a=rnd(i,k)*6.283, el=.25+rnd(i,k+20)*.9, q=it[3]; const ca=Math.cos(i*2.1), sa=Math.sin(i*2.1), ox=Math.cos(a)*Math.cos(el)*.62, oz=Math.sin(a)*Math.cos(el)*.62, oy=.4+Math.sin(el)*.5; dots.push([it[0]+(ox*ca-oz*sa)*q,it[1]+oy*q,it[2]+(ox*sa+oz*ca)*q,q,kind]); } });
+  instC(new THREE.IcosahedronGeometry(.06,0),lp(0xffffff,{roughness:.7}),dots,d=>{ P.set(d[0],d[1],d[2]); E.set(d[1],d[0],0); SC.setScalar(d[3]); },d=>d[4]?0xffffff:0xe2553f,false);
   inst(new THREE.IcosahedronGeometry(.2,0),std(0xd9d6cf,{flatShading:true}),all('stone'),(it,i)=>{ P.set(it[0],it[1]+.06,it[2]); E.set(i,i*2.1,i*.7); SC.set(it[3]*1.2,it[3]*.7,it[3]); });
   const lamps=all('lamp');
   inst(new THREE.CylinderGeometry(.035,.05,1.5,6),std(0x7d8792,{roughness:.5}),lamps,it=>{ P.set(it[0],it[1]+.75,it[2]); E.set(0,0,0); SC.setScalar(1); });
