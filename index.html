@@ -75,7 +75,11 @@ section{display:block;min-height:0;height:190vh;height:190svh;padding:0}
 @media (max-width:760px){ .pw{padding:76px var(--gutter) 84px} }
 /* desktop: bigger card */
 @media (min-width:761px){
- .card{max-width:min(460px,100%);padding:30px 30px 26px;gap:14px;border-radius:18px}
+ .card{max-width:min(400px,100%);min-height:min(560px,calc(100svh - 200px));padding:44px 40px 40px;gap:20px;border-radius:22px}
+ .card .num{margin-bottom:6px}
+ .card p{line-height:1.6}
+ .card .meta,.card>.facts{margin-top:auto;padding-top:18px}
+ .card .facts+.state,.card .meta+.btn{margin-top:4px}
  .card h1,.card h2{font-size:clamp(28px,2.6vw,38px)}
  .card p{font-size:16px}
  .num,.meta,.state{font-size:12.5px}
