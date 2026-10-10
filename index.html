@@ -180,30 +180,55 @@ for(let i=0;i<7;i++){ const g=new THREE.Group(); const n=3+i%2;
 try{ window.createImageBitmap=undefined; }catch(e){} // textures load through <img>, which the page's CSP allows for data: URIs
 const loader=new THREE.GLTFLoader();
 const lin=h=>'vec3('+[1,3,5].map(i=>{const v=parseInt(h.slice(i,i+2),16)/255;return (v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)).toFixed(4);}).join(',')+')';
-const PATH=lin('#E2DDD0'), TERR=lin('#F4F3EE'), DOT=lin('#D3D8D4'), UPX={value:0.1}, UMASK={value:null}, UH={value:[]}, USNOW={value:0}, UWET={value:0}, UT={value:0}, SHALLOW=lin('#E6F6F7'), SAND=lin('#F3EBD9'), LAWN=lin('#D5EBC9'), LAWN2=lin('#E1F2D8');
+const PATH=lin('#E2DDD0'), TERR=lin('#F4F3EE'), DOT=lin('#D3D8D4'), UPX={value:0.1}, UMASK={value:null}, UH={value:[]}, USNOW={value:0}, UWET={value:0}, UT={value:0}, UPTR={value:new THREE.Vector4(0,0,0,0)}, BLOSSOM=lin('#F6BFD0'), AUTUMN=lin('#F2B44E'), LILAC=lin('#C9B6F0'), FROST=lin('#A9DDE6'), SHALLOW=lin('#E6F6F7'), SAND=lin('#F3EBD9'), LAWN=lin('#D5EBC9'), LAWN2=lin('#E1F2D8');
 UMASK.value=new THREE.TextureLoader().load('map/paths.png'); UMASK.value.flipY=false; UMASK.value.minFilter=UMASK.value.magFilter=THREE.LinearFilter; UMASK.value.generateMipmaps=false;
 // Paths are not geometry: a top-down mask (paths joined into one network, a link and a pad for every house)
 // is drawn onto the ground as a fine pattern of pale dots.
 function patch(mat,kind,extra){
-  mat.customProgramCacheKey=()=>kind;
+  mat.customProgramCacheKey=()=>kind; const K=kind==='forest'?'land':kind;
   mat.onBeforeCompile=sh=>{
-    sh.uniforms.uPx=UPX; sh.uniforms.uMask=UMASK; sh.uniforms.uH=UH; sh.uniforms.uSnow=USNOW; sh.uniforms.uWet=UWET; sh.uniforms.uT=UT; if(extra) Object.assign(sh.uniforms,extra);
+    sh.uniforms.uPx=UPX; sh.uniforms.uMask=UMASK; sh.uniforms.uH=UH; sh.uniforms.uSnow=USNOW; sh.uniforms.uWet=UWET; sh.uniforms.uT=UT; sh.uniforms.uPtr=UPTR; if(extra) Object.assign(sh.uniforms,extra);
     sh.vertexShader='varying vec3 vWp;varying float vUp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vUp=normalize(mat3(modelMatrix)*objectNormal).y;');
     let f='varying vec3 vWp;uniform float uPx;\nuniform sampler2D uMask;uniform vec3 uH[9];uniform float uSnow;uniform float uWet;uniform float uT;varying float vUp;float gTerr;\nfloat dotMask(vec2 p){vec2 g=fract(p/0.2)-.5;float m=1.-smoothstep(.2-uPx*3.2,.2+uPx*3.2,length(g));return mix(m,.12,smoothstep(.02,.07,uPx));}\n'+sh.fragmentShader;
-    if(kind==='land') f=f.replace('#include <map_fragment>','#include <map_fragment>\n gTerr=step(distance(diffuseColor.rgb,'+TERR+'),0.05);\n vec2 mu=(vWp.xz+vec2(125.,110.))/vec2(250.,220.); if(mu.x>0.&&mu.x<1.&&mu.y>0.&&mu.y<1.&&distance(diffuseColor.rgb,'+TERR+')<0.05){ vec4 mk=texture2D(uMask,mu); float stripe=step(.5,fract((vWp.x+vWp.z)/2.6)); diffuseColor.rgb=mix(diffuseColor.rgb,mix('+LAWN+','+LAWN2+',stripe),smoothstep(.35,.6,mk.g)*(1.-uSnow)); diffuseColor.rgb=mix(diffuseColor.rgb,'+DOT+',dotMask(vWp.xz)*smoothstep(.25,.6,mk.r)); }\n if(gTerr>.5){ diffuseColor.rgb=mix(diffuseColor.rgb*vec3(.975,1.,.955),diffuseColor.rgb,smoothstep(.8,7.,vWp.y)); diffuseColor.rgb=mix(diffuseColor.rgb,'+SAND+',smoothstep(.3,-.25,vWp.y)*.9); }');
-    if(kind==='land'||kind==='water') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.957,.955,.937),'+(kind==='land'?'mix(.04+.12*smoothstep(.05,.2,uPx),.2+.42*smoothstep(.05,.2,uPx),gTerr)':'.3*smoothstep(.05,.2,uPx)')+');');
+    if(K==='land') f=f.replace('#include <map_fragment>','#include <map_fragment>\n gTerr=step(distance(diffuseColor.rgb,'+TERR+'),0.05);\n vec2 mu=(vWp.xz+vec2(125.,110.))/vec2(250.,220.); if(mu.x>0.&&mu.x<1.&&mu.y>0.&&mu.y<1.&&distance(diffuseColor.rgb,'+TERR+')<0.05){ vec4 mk=texture2D(uMask,mu); float stripe=step(.5,fract((vWp.x+vWp.z)/2.6)); diffuseColor.rgb=mix(diffuseColor.rgb,mix('+LAWN+','+LAWN2+',stripe),smoothstep(.35,.6,mk.g)*(1.-uSnow)); diffuseColor.rgb=mix(diffuseColor.rgb,'+DOT+',dotMask(vWp.xz)*smoothstep(.25,.6,mk.r)); }\n if(gTerr>.5){ diffuseColor.rgb=mix(diffuseColor.rgb*vec3(.975,1.,.955),diffuseColor.rgb,smoothstep(.8,7.,vWp.y)); diffuseColor.rgb=mix(diffuseColor.rgb,'+SAND+',smoothstep(.3,-.25,vWp.y)*.9); }');
+    if(K==='land'||kind==='water') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.957,.955,.937),'+(K==='land'?'mix(.04+.12*smoothstep(.05,.2,uPx),.2+.42*smoothstep(.05,.2,uPx),gTerr)':'.3*smoothstep(.05,.2,uPx)')+');');
     // No environment map: glass, metal and glazed surfaces get a painted-in sky reflection and one softbox highlight.
     if(kind==='obj') f=f.replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );','vec3 rr=reflect(-geometry.viewDir,geometry.normal); float gls=(1.-roughnessFactor)*(1.-roughnessFactor); float fr=mix(.05,1.,pow(1.-saturate(dot(geometry.normal,geometry.viewDir)),5.)); vec3 F0=mix(vec3(fr),diffuseColor.rgb,metalnessFactor); vec3 sky=mix(vec3(.62,.6,.56),vec3(1.),smoothstep(-.4,.7,rr.y)); outgoingLight+=F0*gls*(sky*(.35+.65*metalnessFactor)+1.6*smoothstep(.8,.97,dot(rr,normalize(vec3(.35,.62,.7)))));\n gl_FragColor = vec4( outgoingLight, diffuseColor.a );');
     if(kind==='obj') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n float rim=pow(1.-abs(normal.z),3.); gl_FragColor.rgb=gl_FragColor.rgb+rim*.06;');
-    if(kind==='land') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n float co=0.; for(int i=0;i<9;i++){ vec2 dd=(vWp.xz-uH[i].xy)/uH[i].z; co+=exp(-dot(dd,dd)*2.2); } gl_FragColor.rgb*=1.-.085*min(co,1.)*gTerr;');
+    if(K==='land') f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n float co=0.; for(int i=0;i<9;i++){ vec2 dd=(vWp.xz-uH[i].xy)/uH[i].z; co+=exp(-dot(dd,dd)*2.2); } gl_FragColor.rgb*=1.-.085*min(co,1.)*gTerr;');
     if(kind==='water') f=f.replace('#include <map_fragment>','#include <map_fragment>\n vec2 wu=(vWp.xz+vec2(125.,110.))/vec2(250.,220.); wu=abs(mod(wu+1.,2.)-1.); float shl=texture2D(uMask,wu).b; diffuseColor.rgb=mix(diffuseColor.rgb,'+SHALLOW+',smoothstep(.1,.95,shl)*.8); float ww=fract(shl*3.5-uT*.05); float ring=smoothstep(0.,.07,ww)*smoothstep(.2,.09,ww); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.),ring*smoothstep(.3,.85,shl)*.5*(1.-uSnow));');
     // Weather: snow settles on whatever faces up; rain cools and darkens everything a little.
     f=f.replace('#include <dithering_fragment>','#include <dithering_fragment>\n float sn=uSnow*smoothstep(.35,.8,abs(vUp))'+(kind==='water'?'*.35':'')+'; float lm=dot(gl_FragColor.rgb,vec3(.333)); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.955,.972,1.)*clamp(lm*.9+.36,.7,1.),sn); gl_FragColor.rgb*=mix(vec3(1.),vec3(.86,.9,.95),uWet);');
+    if(kind==='forest'){
+      // Trees: each one sways from its foot, a slow gust rolls across the valley, and trees near the pointer shiver.
+      sh.vertexShader='attribute vec4 aTree;attribute vec2 aTc;uniform float uT;uniform vec4 uPtr;varying float vSeed;varying float vK;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n float hk=clamp((position.y-aTree.x)/max(aTree.y,1e-5),0.,1.); vK=hk; vSeed=aTree.z; float wk=hk*hk;\n vec4 cw=modelMatrix*vec4(aTc.x,aTree.x,aTc.y,1.); float ph=aTree.z*6.2831+cw.x*.07+cw.z*.05; float gust=.55+.45*sin(uT*.4-cw.x*.035+cw.z*.02);\n vec2 sw=vec2(sin(uT*1.7+ph),cos(uT*1.35+ph*1.3))*.045*gust; vec2 dp=cw.xz-uPtr.xy; float near=uPtr.z*exp(-dot(dp,dp)/36.);\n sw+=vec2(sin(uT*12.+ph),cos(uT*10.+ph*1.7))*.16*near; transformed.xz+=sw*aTree.y*wk; transformed.y-=near*.05*aTree.y*wk*(.5+.5*sin(uT*14.+ph));');
+      f='varying float vSeed;varying float vK;\n'+f.replace('#include <map_fragment>','#include <map_fragment>\n if(diffuseColor.g>diffuseColor.r*1.1){ vec3 c=diffuseColor.rgb; float s=vSeed, r=fract(s*7.31);\n  c*=mix(vec3(.82,.93,.86),vec3(1.15,1.1,.86),r);\n  if(s<.035) c=mix(c,'+BLOSSOM+',.78); else if(s<.065) c=mix(c,'+AUTUMN+',.72); else if(s<.085) c=mix(c,'+LILAC+',.6); else if(s<.1) c=mix(c,'+FROST+',.5);\n  c*=.9+.22*vK; diffuseColor.rgb=c; }');
+    }
     sh.fragmentShader=f;
   };
   mat.needsUpdate=true;
 }
-function prep(root,kind){ root.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; const m=o.material; if(kind==='land'){ m.metalness=0; m.roughness=1; m.metalnessMap=m.roughnessMap=null; } else m.metalness=0.62; m.side=THREE.DoubleSide; patch(m,kind||'obj'); for(const t of [m.map,m.roughnessMap,m.metalnessMap]) if(t){ t.minFilter=t.magFilter=THREE.NearestFilter; t.generateMipmaps=false; } } }); }
+function prep(root,kind){ root.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; let m=o.material; const isF=kind==='land'&&/forest/i.test(o.name); if(isF){ m=o.material=m.clone(); grove(o.geometry); } if(kind==='land'){ m.metalness=0; m.roughness=1; m.metalnessMap=m.roughnessMap=null; } else m.metalness=0.62; m.side=THREE.DoubleSide; patch(m,isF?'forest':(kind||'obj')); for(const t of [m.map,m.roughnessMap,m.metalnessMap]) if(t){ t.minFilter=t.magFilter=THREE.NearestFilter; t.generateMipmaps=false; } } }); }
+// Split the baked forest into trees: weld the mesh, join touching faces into parts, then join parts that stand on one spot.
+// Each vertex learns its tree's foot, height, centre and a seed, so the shader can sway and tint every tree on its own.
+function grove(g){ const pa=g.attributes.position, n=pa.count, ar=pa.array||(pa.data&&pa.data.array), d=pa.normalized?(ar instanceof Int16Array?32767:ar instanceof Int8Array?127:ar instanceof Uint16Array?65535:ar instanceof Uint8Array?255:1):1, ix=g.index&&g.index.array; if(!ix) return;
+  const a=new Float32Array(n*3); for(let i=0;i<n;i++){ a[i*3]=pa.getX(i); a[i*3+1]=pa.getY(i); a[i*3+2]=pa.getZ(i); } // the attribute may be interleaved and quantized
+  const key=new Map(), w=new Int32Array(n); let k=0;
+  for(let i=0;i<n;i++){ const s=a[i*3]+','+a[i*3+1]+','+a[i*3+2]; let v=key.get(s); if(v===undefined){ v=k++; key.set(s,v); } w[i]=v; }
+  const par=new Int32Array(k); for(let i=0;i<k;i++) par[i]=i;
+  const f=x=>{ while(par[x]!==x){ par[x]=par[par[x]]; x=par[x]; } return x; }, un=(x,y)=>{ x=f(x); y=f(y); if(x!==y) par[y]=x; };
+  for(let t=0;t<ix.length;t+=3){ un(w[ix[t]],w[ix[t+1]]); un(w[ix[t]],w[ix[t+2]]); }
+  const C=new Map(), cid=new Int32Array(n);
+  for(let i=0;i<n;i++){ const r=f(w[i]); let c=C.get(r); if(!c){ c={sx:0,sz:0,m:0,y0:1e9,y1:-1e9}; C.set(r,c); c.t=c; } const y=a[i*3+1]/d; c.sx+=a[i*3]/d; c.sz+=a[i*3+2]/d; c.m++; if(y<c.y0)c.y0=y; if(y>c.y1)c.y1=y; cid[i]=r; }
+  const parts=[...C.values()], grid=new Map(), tf=c=>{ while(c.t!==c){ c.t=c.t.t; c=c.t; } return c; };
+  parts.forEach(c=>{ c.x=c.sx/c.m; c.z=c.sz/c.m; const gx=Math.floor(c.x/.004), gz=Math.floor(c.z/.004);
+    for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++){ const L=grid.get((gx+dx)+'_'+(gz+dz)); if(L) for(const o of L) if(Math.hypot(o.x-c.x,o.z-c.z)<.003){ const A=tf(o), B=tf(c); if(A!==B) B.t=A; } }
+    const kk=gx+'_'+gz; let L=grid.get(kk); if(!L) grid.set(kk,L=[]); L.push(c); });
+  parts.forEach(c=>{ const r=tf(c); if(r.ty0===undefined){ r.ty0=1e9; r.ty1=-1e9; const h=Math.sin(r.x*12.9898+r.z*78.233)*43758.5453; r.seed=h-Math.floor(h); } if(c.y0<r.ty0)r.ty0=c.y0; if(c.y1>r.ty1)r.ty1=c.y1; });
+  const T=new Float32Array(n*4), Q=new Float32Array(n*2);
+  for(let i=0;i<n;i++){ const r=tf(C.get(cid[i])); T[i*4]=r.ty0; T[i*4+1]=r.ty1-r.ty0; T[i*4+2]=r.seed; Q[i*2]=r.x; Q[i*2+1]=r.z; }
+  g.setAttribute('aTree',new THREE.BufferAttribute(T,4)); g.setAttribute('aTc',new THREE.BufferAttribute(Q,2));
+}
 function get(file){ return new Promise(res=>loader.load('map/'+file+'.json',gl=>{ prep(gl.scene,file==='land'?'land':'obj'); res(gl.scene); },undefined,()=>res(null))); }
 // Each house: a group at its spot on the map; a body, and moving parts that turn around their own pivot.
 patch(water.material,'water');
@@ -369,7 +394,8 @@ function weather(dt,t){
 let W=0,H=0,mobile=false;
 function resize(){ W=window.innerWidth; H=window.innerHeight; mobile=W<=760; renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); renderer.setSize(W,H,false); }
 addEventListener('resize',resize); resize();
-let mx=0,my=0; addEventListener('pointermove',e=>{ mx=e.clientX/W-.5; my=e.clientY/H-.5; });
+let mx=0,my=0,pen=0,pin=false; addEventListener('pointermove',e=>{ mx=e.clientX/W-.5; my=e.clientY/H-.5; pin=true; pen=Math.min(1,pen+Math.hypot(e.movementX||0,e.movementY||0)*.012); });
+const RAY=new THREE.Raycaster(), PL=new THREE.Plane(new THREE.Vector3(0,1,0),-3), PW=new THREE.Vector3(), NDC=new THREE.Vector2();
 
 // Interaction: the button in a card, or a click anywhere on the scene, kicks the current house's moving parts
 // and pulls the camera in on them for a moment.
@@ -442,6 +468,7 @@ function frame(now){
   const idx=Math.round(u), on=idx>=1&&idx<=HOUSES.length;
   if(idx!==cur){ cur=idx; countEl.textContent='Лот '+(on?String(idx).padStart(2,'0'):'00')+' / 09';
     navLinks.forEach((a,j)=>{ if(j===idx-1) a.setAttribute('aria-current','true'); else a.removeAttribute('aria-current'); }); }
+  pen*=Math.exp(-dt*1.4); if(pin){ NDC.set(mx*2,-my*2); RAY.setFromCamera(NDC,camera); if(RAY.ray.intersectPlane(PL,PW)) UPTR.value.set(PW.x,PW.z,reduce?0:pen,0); }
   renderer.render(scene,camera);
   requestAnimationFrame(frame);
 }
