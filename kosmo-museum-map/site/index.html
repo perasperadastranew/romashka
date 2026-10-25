@@ -1,0 +1,639 @@
+<title>Карта Музея космонавтики</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-bleed isometric maquette; floating instrument panels over it (brand+floors top-left, index left, exhibit card right, zoom bottom-right) */
+:root{
+  --scene:#DDE1E8; --ground:#DDE1E8;
+  --panel:rgba(251,250,247,.94); --panel-solid:#FBFAF7;
+  --ink:#1D2333; --muted:#5E6677; --line:#D5D9E1; --chip:#EEF0F4;
+  --accent:#D9532C; --accent-ink:#FFFFFF; --focus:#3A5DAE;
+  --shadow:0 10px 30px rgba(30,36,51,.12),0 1px 2px rgba(30,36,51,.08);
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --scene:#151925; --ground:#1A1F2D;
+  --panel:rgba(27,31,44,.94); --panel-solid:#1B1F2C;
+  --ink:#ECEEF3; --muted:#9AA2B4; --line:#2E3446; --chip:#262C3D;
+  --accent:#FF7A4D; --accent-ink:#1B1F2C; --focus:#8FB0FF;
+  --shadow:0 10px 30px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --scene:#151925; --ground:#1A1F2D;
+  --panel:rgba(27,31,44,.94); --panel-solid:#1B1F2C;
+  --ink:#ECEEF3; --muted:#9AA2B4; --line:#2E3446; --chip:#262C3D;
+  --accent:#FF7A4D; --accent-ink:#1B1F2C; --focus:#8FB0FF;
+  --shadow:0 10px 30px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--scene);color:var(--ink);font-family:var(--f-body);font-size:14px;overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#gl.dragging{cursor:grabbing} #gl.hovering{cursor:pointer}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.panel{background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+/* brand + floors */
+#brand{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));width:min(340px,calc(100vw - 32px));padding:14px 16px 14px;display:grid;gap:12px;z-index:5}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:19px;line-height:1.15;margin:2px 0 0;text-wrap:balance;letter-spacing:-.01em}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--chip);border-radius:10px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;padding:7px 4px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--panel-solid);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#hideIndex{border:0;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px;justify-self:start}
+body.index-hidden #index{display:none}
+#toggleIndex{display:none;border:1px solid var(--line);background:var(--panel-solid);border-radius:10px;padding:8px 10px;font-weight:500;cursor:pointer}
+
+/* index */
+#index{position:fixed;left:max(16px,env(safe-area-inset-left,0px));top:calc(212px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 32px));overflow:auto;padding:6px;z-index:4}
+.hall{border-radius:10px}
+.hall>button{width:100%;display:grid;grid-template-columns:12px 1fr auto;align-items:center;gap:10px;text-align:left;border:0;background:transparent;padding:10px;border-radius:10px;cursor:pointer}
+.hall>button:hover{background:var(--chip)}
+.sw{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.hall-name{font-weight:600;font-size:13.5px;line-height:1.25}
+.hall-floor{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);letter-spacing:.04em}
+.hall ul{list-style:none;margin:0 0 6px;padding:0 0 0 22px;display:grid;gap:1px}
+.hall li button{width:100%;text-align:left;border:0;background:transparent;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink);line-height:1.3}
+.hall li button:hover{background:var(--chip)}
+.hall li button[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.hall.collapsed ul{display:none}
+.floor-head{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px}
+
+/* card */
+#card{position:fixed;right:max(16px,env(safe-area-inset-right,0px));top:calc(16px + env(safe-area-inset-top,0px));width:min(370px,calc(100vw - 32px));padding:18px 18px 16px;z-index:6;display:grid;gap:10px;max-height:calc(100% - 120px);overflow:auto}
+#card .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.inv{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:500;background:var(--chip);border-radius:999px;padding:4px 10px 4px 8px}
+#card h2{font-family:var(--f-display);font-weight:500;font-size:18px;line-height:1.25;margin:0;text-wrap:balance}
+#card p{margin:0;line-height:1.55;color:var(--ink);max-width:62ch}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.btn{border:1px solid var(--line);background:var(--panel-solid);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:500;font-size:13px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.x{border:0;background:transparent;font-size:20px;line-height:1;padding:4px 6px;border-radius:8px;cursor:pointer;color:var(--muted)}
+.x:hover{background:var(--chip)}
+.spacer{flex:1}
+
+/* zoom */
+#zoom{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:0;overflow:hidden;z-index:5}
+#zoom button{width:42px;height:40px;border:0;background:transparent;cursor:pointer;font-size:18px;display:grid;place-items:center}
+#zoom button+button{border-top:1px solid var(--line)}
+#zoom button:hover{background:var(--chip)}
+
+/* labels */
+#labels{position:fixed;inset:0;pointer-events:none;z-index:2}
+.lbl{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-display);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:5px 9px;border-radius:999px;white-space:nowrap;pointer-events:auto;cursor:pointer;transition:opacity .25s}
+.lbl i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
+.pin{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;font-family:var(--f-body);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel-solid);border:1px solid var(--line);padding:3px 8px;border-radius:8px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:opacity .2s}
+.pin::after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;background:inherit;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.pin.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.floor-tag{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px dashed var(--line);padding:3px 8px;border-radius:6px;white-space:nowrap;transition:opacity .25s}
+.hide{opacity:0!important;pointer-events:none!important}
+
+#loading{position:fixed;inset:0;display:grid;place-items:center;z-index:10;background:var(--scene);transition:opacity .5s}
+#loading div{display:grid;gap:10px;justify-items:center;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+#bar{width:180px;height:3px;background:var(--line);border-radius:3px;overflow:hidden}
+#bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#hint{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:999px;z-index:3;white-space:nowrap}
+
+@media (max-width:760px){
+  #brand{width:calc(100vw - 32px);padding:12px 14px;gap:10px}
+  h1{font-size:16px}
+  .brand-row{display:flex;gap:8px;align-items:end;justify-content:space-between}
+  #toggleIndex{display:inline-block}
+  #hideIndex{display:none}
+  #index{top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-height:52%;width:calc(100vw - 32px)}
+  body:not(.index-open) #index{display:none}
+  #card{top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:calc(100vw - 32px);max-height:55%}
+  #zoom{bottom:auto;top:calc(150px + env(safe-area-inset-top,0px))}
+  #hint{display:none}
+  .lbl{font-size:9.5px;padding:4px 7px}
+}
+
+/* tour */
+#tourBtn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:9px 12px;font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center}
+#tourBtn .paw{font-family:var(--f-mono);font-size:11px;opacity:.85;font-weight:500}
+#tour{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100vw - 32px));padding:16px 18px 14px;z-index:7;display:grid;gap:10px}
+#tour .who{display:flex;align-items:center;gap:10px}
+#tour .ava{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:14px;color:#fff;flex:none}
+#tour .name{font-family:var(--f-display);font-weight:500;font-size:15px}
+#tour .stop{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+#tour p{margin:0;font-size:15px;line-height:1.55;max-width:62ch;text-wrap:pretty}
+#tour .bar{height:3px;background:var(--line);border-radius:3px;overflow:hidden}
+#tour .bar i{display:block;height:100%;background:var(--accent);transition:width .4s}
+.dogtag{position:absolute;transform:translate(-50%,-100%);font-family:var(--f-display);font-size:11px;font-weight:500;color:#fff;padding:3px 8px;border-radius:999px;white-space:nowrap;pointer-events:none;transition:opacity .2s, transform .2s}
+.dogtag.talk{transform:translate(-50%,-115%) scale(1.08)}
+.dogtag.talk::after{content:"…";margin-left:4px}
+body.touring #index{display:none} body.touring #card{display:none!important} body.touring #hint{display:none}
+@media (max-width:760px){ #tour{bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:14px} #tour p{font-size:14px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<canvas id="gl" aria-label="Изометрическая 3D-карта Музея космонавтики"></canvas>
+<div id="labels" aria-hidden="true"></div>
+
+<header id="brand" class="panel">
+  <div class="brand-row">
+    <div>
+      <div class="eyebrow">Москва · ВДНХ · 2 уровня</div>
+      <h1>Карта Музея космонавтики</h1>
+    </div>
+    <button id="toggleIndex" aria-expanded="false" aria-controls="index">Залы</button>
+  </div>
+  <div class="seg" role="group" aria-label="Этаж">
+    <button data-floor="all" aria-pressed="true">Оба этажа</button>
+    <button data-floor="upper" aria-pressed="false">Верхний</button>
+    <button data-floor="lower" aria-pressed="false">Нижний</button>
+  </div>
+  <button id="tourBtn" type="button">Экскурсия с Белкой и Стрелкой <span class="paw">15 остановок</span></button>
+  <button id="hideIndex" aria-expanded="true" aria-controls="index">Скрыть список</button>
+</header>
+
+<nav id="index" class="panel" aria-label="Залы и экспонаты"></nav>
+
+<section id="tour" class="panel" hidden aria-live="polite" aria-label="Экскурсия">
+  <div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <div class="who"><span class="ava" id="tAva">Б</span><div><div class="name" id="tName">Белка</div><div class="stop" id="tStop">Остановка 1 из 15</div></div></div>
+    <button class="x" id="tClose" aria-label="Завершить экскурсию">×</button>
+  </div>
+  <p id="tText"></p>
+  <div class="bar"><i id="tBar"></i></div>
+  <div class="card-actions">
+    <button class="btn" id="tPrev">← Назад</button>
+    <span class="spacer"></span>
+    <button class="btn" id="tCard">Карточка экспоната</button>
+    <button class="btn primary" id="tNext">Дальше →</button>
+  </div>
+</section>
+<section id="card" class="panel" hidden aria-live="polite">
+  <div class="row"><span class="inv" id="cInv"></span><button class="x" id="cClose" aria-label="Закрыть карточку">×</button></div>
+  <h2 id="cTitle"></h2>
+  <div><span class="chip" id="cHall"><i class="sw" id="cSw"></i><span></span></span></div>
+  <p id="cDesc"></p>
+  <div class="card-actions">
+    <button class="btn" id="cPrev" aria-label="Предыдущий экспонат">←</button>
+    <button class="btn" id="cNext" aria-label="Следующий экспонат">→</button>
+    <span class="spacer"></span>
+    <a class="btn primary" id="cLink" target="_blank" rel="noopener">Карточка музея ↗</a>
+  </div>
+</section>
+
+<div id="zoom" class="panel" role="group" aria-label="Масштаб">
+  <button id="zIn" aria-label="Приблизить">+</button>
+  <button id="zOut" aria-label="Отдалить">−</button>
+  <button id="zHome" aria-label="Показать всю карту">⌂</button>
+</div>
+<div id="hint">Перетаскивайте карту, колесо — масштаб, клик по экспонату — карточка. Нижний этаж — на ступень ниже, вокруг «А»-зала</div>
+<div id="loading"><div><span id="ltext">Загружаем макет музея…</span><div id="bar"><i></i></div></div></div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MapControls } from 'three/addons/controls/MapControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const HALLS = {
+  utro:{name:'Утро космической эры',floor:'upper',color:'#F0B898',desc:'Мемориальный зал: первый спутник, «Восток» Гагарина, Белка и Стрелка, первые скафандры и аппараты к Луне и Венере.'},
+  tvortsy:{name:'Творцы',floor:'upper',color:'#EDCB6E',desc:'Циолковский, Цандер, Королёв и первые ракеты ГИРД.'},
+  dom:{name:'Космический дом на орбите',floor:'upper',color:'#9CC4EA',desc:'Станция «Мир», корабли «Союз», скафандры для выхода в открытый космос.'},
+  vest:{name:'Вестибюль',floor:'upper',color:'#E6D6BC',desc:'Кассы, гардероб, сувенирный магазин и аттракцион «Орион».'},
+  kino:{name:'Кинозал',floor:'upper',color:'#C9BCE4',desc:'Зал для фильмов о космосе.'},
+  luna:{name:'Исследования Луны и планет',floor:'lower',color:'#BDB0EA',desc:'«Луноход-1», «Луна-16», спускаемые аппараты «Венеры» и «Марса», лунный скафандр «Кречет».'},
+  mezhdu:{name:'Международное сотрудничество',floor:'lower',color:'#98D7B9',desc:'«Союз — Аполлон», «Интеркосмос», стыковочный агрегат АПАС и модель МКС.'},
+  chelovechestvu:{name:'Космонавтика — человечеству',floor:'lower',color:'#E8A8BF',desc:'Спутники навигации, связи и наблюдения Земли.'},
+  park:{name:'Международный космический парк',floor:'lower',color:'#B5D592',desc:'Модели ракет-носителей и стартовых комплексов СССР, России, США и Китая.'},
+};
+const EX = [
+ [12,'Вс 882/1','Спускаемый аппарат «Восток»','utro','Подлинный аппарат, на котором Юрий Гагарин 12 апреля 1961 года совершил первый в истории полёт человека в космос.'],
+ [13,'Кп 2380/2','Скафандр «СК-1»','utro','Скафандр космонавтов кораблей «Восток». В «СК-1» Гагарин совершил первый полёт; система жизнеобеспечения была рассчитана на 10 суток.'],
+ [11,'Кп 411','Катапультируемый контейнер с Белкой и Стрелкой','utro','Подлинный контейнер второго корабля-спутника. В нём Белка и Стрелка вернулись на Землю 20 августа 1960 года; на корпусе видны вмятины от приземления.'],
+ [10,'Гик 26','Первый искусственный спутник Земли','utro','Простейший спутник ПС-1 открыл космическую эру 4 октября 1957 года.'],
+ [16,'Вс 388','АМС «Венера-1»','utro','Первый аппарат, направленный к Венере. Запущен в феврале 1961 года и прошёл в 100 тыс. км от планеты.'],
+ [14,'Кп 2380/1','Скафандр «Беркут»','utro','В этом скафандре Алексей Леонов 18 марта 1965 года впервые вышел в открытый космос.'],
+ [24,'Кп 1102','Спускаемый аппарат «Луна-9»','utro','3 февраля 1966 года впервые в мире совершил мягкую посадку на Луну и передал панорамы её поверхности.'],
+ [17,'Кп 3756','Ракета «ГИРД-09»','tvortsy','Первая отечественная ракета на гибридном топливе конструкции Михаила Тихонравова. В 1933 году в Нахабине поднялась примерно на 400 м.'],
+ [50,'—','Интерьер веранды дома К.Э. Циолковского','tvortsy','Инсталляция калужского дома основоположника космонавтики Константина Циолковского.'],
+ [44,'Кп 3751','Корабли «Союз-4» и «Союз-5»','dom','14–18 января 1969 года два пилотируемых корабля впервые состыковались на орбите, и космонавты перешли из одного в другой.'],
+ [49,'Кп 399','Скафандр «Ястреб»','dom','В «Ястребах» Елисеев и Хрунов в 1969 году через открытый космос перешли из «Союза-5» в «Союз-4».'],
+ [36,'Вс 2724','Базовый блок станции «Мир»','dom','Базовый блок запущен в феврале 1986 года, станция проработала почти 15 лет. В экспонат можно зайти: каюты, рабочие места, стол, санузел.'],
+ [45,'Кп 3661','Шлюзовой отсек станции «Мир»','dom','Шлюзовой специальный отсек, через который космонавт в скафандре «Орлан-Д» выходил в открытый космос.'],
+ [19,'Кп 3272','Скафандр «Орлан-Д»','dom','Полужёсткий скафандр для выхода в открытый космос со станций «Салют» и «Мир»; надевается через дверцу в спинке.'],
+ [114,'ГИК 242','Картина А.К. Соколова «Впервые на Луне»','luna','Холст, масло, 1972 год. Автор — народный художник РФ Андрей Соколов.'],
+ [21,'Вс 2384/1','Автоматическая станция «Луна-16»','luna','В сентябре 1970 года впервые в автоматическом режиме доставила на Землю лунный грунт — 101 грамм.'],
+ [22,'Кп 1101','«Луноход-1»','luna','Первый в мире самоходный аппарат на другом небесном теле. Доставлен на Луну станцией «Луна-17» в 1970 году; размером с «Жигули».'],
+ [47,'Вр 971','Скафандр «Кречет»','luna','Скафандр для выхода в открытый космос и работы на поверхности Луны по советской лунной программе.'],
+ [23,'Кп 473','Спускаемый аппарат «Венера-4»','luna','18 октября 1967 года впервые в мире вошёл в атмосферу другой планеты и передал данные о ней.'],
+ [15,'Вс 670','Спускаемый аппарат «Марс-3»','luna','2 декабря 1971 года впервые совершил мягкую посадку на Марс.'],
+ [56,'Кп 3714','Спутник «Глонасс-М»','chelovechestvu','Спутник отечественной навигационной системы ГЛОНАСС.'],
+ [26,'Кп 3683','Корабли «Союз-Аполлон»','mezhdu','В июле 1975 года советский и американский корабли впервые состыковались на орбите. Экипажи: Леонов, Кубасов, Стаффорд, Бранд и Слейтон.'],
+ [27,'Гик 2401','Спускаемый аппарат «Союз-37»','mezhdu','В августе 1980 года на «Союзе-37» стартовал советско-вьетнамский экипаж по программе «Интеркосмос».'],
+ [25,'Гик 1103','Стыковочный агрегат АПАС','mezhdu','Андрогинный периферийный агрегат стыковки: любой из двух узлов может быть и активным, и пассивным.'],
+ [30,'Кп 3715','Аппарат «КОСПАС-САРСАТ»','mezhdu','Спутник международной системы, которая определяет координаты терпящих бедствие на суше и на море.'],
+ [29,'Кп 3748','Международная космическая станция','mezhdu','Модель МКС — пилотируемой станции, в проекте которой участвуют 16 стран.'],
+ [31,'Кп 3703','Стартовый комплекс Байконура с РН «Союз»','park','Модель стартового комплекса космодрома Байконур с ракетой-носителем «Союз» в опорах-«тюльпане».'],
+ [38,'Кп 3747','Стартовый комплекс «Спейс шаттл»','park','Модель стартового комплекса 39 в Космическом центре Кеннеди с системой «Спейс шаттл».'],
+ [900,'—','Ракета-носитель «Сатурн-5»','park','Модель американской сверхтяжёлой ракеты, доставившей экипажи «Аполлонов» к Луне.'],
+ [33,'Кп 3681','Ракета-носитель «Протон»','park','Выводил на орбиту станции «Салют», «Мир», модули МКС и спутники связи.'],
+ [41,'Кп 3744','Ракета-носитель «Великий поход-2F»','park','Китайская ракета для кораблей «Шэньчжоу». 15 октября 2003 года с её помощью состоялся первый пилотируемый полёт Китая.'],
+ [32,'Кп 3640','Жидкостный ракетный двигатель РД-107','park','Двигатель первой ступени ракеты-носителя «Восток»: четыре основные камеры и две рулевые.'],
+ [37,'Кп 3688','«Эксплорер-1»','park','Первый американский искусственный спутник Земли, запущен 31 января 1958 года.'],
+ [34,'Кп 3755','Комплекс «Морской старт»','park','Международный ракетно-космический комплекс: ракеты стартовали с плавучей платформы в Тихом океане.'],
+ [35,'Кп 3743','Система «Энергия-Буран»','park','Многоразовая система: сверхтяжёлая «Энергия» и орбитальный корабль «Буран». Единственный полёт 15 ноября 1988 года закончился полностью автоматической посадкой.'],
+ [20,'Кп 3700','Космический корабль «Союз»','park','Полноразмерный корабль: бытовой отсек, спускаемый аппарат «Союза ТМА-4» и приборно-агрегатный отсек.'],
+];
+const EXTRA = {LM_monument:{title:'Монумент «Покорителям космоса»',inv:'1964',hall:null,desc:'107-метровый титановый монумент с ракетой на вершине. Музей открылся в его стилобате в 1981 году. На карте монумент уменьшен и вынесен рядом с музеем.'}};
+
+const $ = s=>document.querySelector(s);
+const canvas = $('#gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const AZ = THREE.MathUtils.degToRad(-35), EL = THREE.MathUtils.degToRad(36);
+const VIEW = new THREE.Vector3(Math.sin(AZ)*Math.cos(EL), Math.sin(EL), Math.cos(AZ)*Math.cos(EL)).normalize();
+const camera = new THREE.OrthographicCamera(-1,1,1,-1,1,3000);
+const BASE_H = 120;  // world units visible vertically at zoom 1
+function setFrustum(){ const a = innerWidth/innerHeight; camera.left=-BASE_H*a/2; camera.right=BASE_H*a/2; camera.top=BASE_H/2; camera.bottom=-BASE_H/2; camera.updateProjectionMatrix(); }
+const controls = new MapControls(camera, canvas);
+controls.enableRotate = false; controls.enableDamping = true; controls.dampingFactor = .12;
+controls.screenSpacePanning = true; controls.zoomToCursor = true; controls.minZoom = .4; controls.maxZoom = 14;
+function place(target){ controls.target.copy(target); camera.position.copy(target).addScaledVector(VIEW, 800); camera.lookAt(target); }
+place(new THREE.Vector3(0,0,0)); setFrustum();
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0xb9bfcc, 1.25); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff3e4, 2.3);
+const SUN_DIR = new THREE.Vector3(0.384,0.743,0.548).normalize();
+sun.castShadow = true; sun.shadow.mapSize.set(4096,4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
+const sc = sun.shadow.camera; sc.left=-170; sc.right=170; sc.top=150; sc.bottom=-150; sc.near=1; sc.far=700;
+scene.add(sun, sun.target);
+const groundMat = new THREE.MeshStandardMaterial({color:0xdde1e8, roughness:1});
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(3000,3000), groundMat);
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.01; ground.receiveShadow = true; scene.add(ground);
+
+function themeColors(){
+  const cs = getComputedStyle(document.documentElement);
+  const bg = new THREE.Color(cs.getPropertyValue('--scene').trim());
+  scene.background = bg; groundMat.color.set(cs.getPropertyValue('--ground').trim());
+  const dark = bg.getHSL({}).l < .3;
+  hemi.intensity = dark ? .75 : 1.25; hemi.groundColor.set(dark ? 0x30364a : 0xb9bfcc);
+  sun.intensity = dark ? 1.9 : 2.3;
+}
+themeColors();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', themeColors);
+new MutationObserver(themeColors).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+// ------------------------------------------------------------------ data & UI
+const exById = new Map(EX.map(([id,inv,title,hall,desc])=>[id,{id,inv,title,hall,desc}]));
+const order = EX.map(e=>e[0]);
+const nodes = {};       // EX_id -> Object3D
+const zones = {};       // hall id -> {box, center}
+const floors = {};
+let selected = null, hovered = null, floorMode = 'all';
+
+const idx = $('#index');
+function buildIndex(){
+  idx.innerHTML = '';
+  for (const fl of ['upper','lower']){
+    const h = document.createElement('div'); h.className='floor-head'; h.textContent = fl==='upper' ? 'Верхний этаж' : 'Нижний этаж'; idx.append(h);
+    for (const [hid,H] of Object.entries(HALLS)){
+      if (H.floor!==fl) continue;
+      const list = EX.filter(e=>e[3]===hid);
+      const wrap = document.createElement('div'); wrap.className='hall'+(list.length?'':' empty'); wrap.dataset.hall=hid;
+      const b = document.createElement('button');
+      b.innerHTML = `<i class="sw" style="background:${H.color}"></i><span><span class="hall-name"></span></span><span class="hall-floor">${list.length||''}</span>`;
+      b.querySelector('.hall-name').textContent = H.name;
+      b.addEventListener('click',()=>{ flyToHall(hid); closeIndexOnMobile(); });
+      wrap.append(b);
+      if (list.length){
+        const ul = document.createElement('ul');
+        for (const e of list){ const li=document.createElement('li'); const eb=document.createElement('button'); eb.textContent=e[2]; eb.dataset.id=e[0]; eb.addEventListener('click',()=>{ select(e[0],true); closeIndexOnMobile(); }); li.append(eb); ul.append(li); }
+        wrap.append(ul);
+      }
+      idx.append(wrap);
+    }
+  }
+}
+buildIndex();
+function closeIndexOnMobile(){ if (innerWidth<=760){ document.body.classList.remove('index-open'); $('#toggleIndex').setAttribute('aria-expanded','false'); } }
+$('#hideIndex').addEventListener('click',e=>{ const h=document.body.classList.toggle('index-hidden'); e.currentTarget.textContent = h ? 'Показать список залов' : 'Скрыть список'; e.currentTarget.setAttribute('aria-expanded',String(!h)); });
+$('#toggleIndex').addEventListener('click',e=>{ const o=document.body.classList.toggle('index-open'); e.currentTarget.setAttribute('aria-expanded',String(o)); if(o) $('#card').hidden=true; });
+
+const floorObjs = {upper:[], lower:[]};
+const ghostCache = new Map();
+function ghostMat(m){ let g = ghostCache.get(m); if (!g){ g = new THREE.MeshStandardMaterial({color: m.color.clone().lerp(scene.background||new THREE.Color(0xdde1e8), .55), roughness:1, transparent:true, opacity:.3, depthWrite:false}); ghostCache.set(m,g); } return g; }
+function setGhost(obj, on){
+  obj.userData.ghost = on;
+  obj.traverse(m=>{ if (!m.isMesh) return;
+    if (on){ if (!m.userData.orig) m.userData.orig = m.material; m.material = ghostMat(m.userData.orig); m.castShadow = false; }
+    else if (m.userData.orig){ m.material = m.userData.orig; m.castShadow = true; } });
+}
+function setFloor(mode, fly=true){
+  floorMode = mode;
+  document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed', String(x.dataset.floor===mode)));
+  for (const fl of ['upper','lower']) for (const o of floorObjs[fl]) setGhost(o, mode!=='all' && fl!==mode);
+  if (fly){ if (mode==='all') flyToBox(floors.all, .06); else flyToBox(floors[mode], .1); }
+}
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+  setFloor(b.dataset.floor);
+  const heads=[...document.querySelectorAll('.floor-head')]; const h = floorMode==='lower'?heads[1]:heads[0]; if (h) idx.scrollTo({top:h.offsetTop-6, behavior: reduce?'auto':'smooth'});
+}));
+
+// ------------------------------------------------------------------ camera flights
+let flight = null;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function zoomForBox(box, pad=.12){
+  const corners=[]; for (const x of [box.min.x,box.max.x]) for (const y of [box.min.y,box.max.y]) for (const z of [box.min.z,box.max.z]) corners.push(new THREE.Vector3(x,y,z));
+  const m = new THREE.Matrix4().lookAt(VIEW, new THREE.Vector3(), new THREE.Vector3(0,1,0)).invert();
+  let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+  for (const c of corners){ c.applyMatrix4(m); minx=Math.min(minx,c.x); maxx=Math.max(maxx,c.x); miny=Math.min(miny,c.y); maxy=Math.max(maxy,c.y); }
+  const a = innerWidth/innerHeight;
+  const panelW = (innerWidth>760 && !document.body.classList.contains('index-hidden')) ? 380/innerWidth : 0;   // keep clear of the index panel
+  const w = (maxx-minx)/(1-panelW*1.1), h = (maxy-miny);
+  const z = Math.min(BASE_H*a/(w*(1+pad*2)), BASE_H/(h*(1+pad*2)));
+  return THREE.MathUtils.clamp(z, controls.minZoom, controls.maxZoom);
+}
+function boxCenterOnScreen(box){
+  const c = box.getCenter(new THREE.Vector3());
+  // shift target so content sits right of the side panel on desktop
+  if (innerWidth>760 && !document.body.classList.contains('index-hidden')){ const z = zoomForBox(box); const worldPerPx = BASE_H/(innerHeight*z); const shift = 190*worldPerPx;
+    const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), VIEW).normalize().negate(); c.addScaledVector(right, shift); }
+  return c;
+}
+function flyTo(target, zoom, dur=1100){
+  const from = controls.target.clone(), z0 = camera.zoom;
+  if (reduce){ place(target); camera.zoom=zoom; camera.updateProjectionMatrix(); return; }
+  flight = {from, to:target.clone(), z0, z1:zoom, t0:performance.now(), dur};
+}
+function flyToBox(box, pad){ flyTo(boxCenterOnScreen(box), zoomForBox(box,pad)); }
+function flyToHall(hid){ const z = zones[hid]; if (z) flyToBox(z.box, .08); }
+function ease(t){ return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+// ------------------------------------------------------------------ labels
+const labelsEl = $('#labels');
+const labels = [];
+function addLabel(text, pos, cls, color, onClick, floor){
+  const el = document.createElement('div'); el.className = cls;
+  if (cls==='lbl'){ el.innerHTML = `<i style="background:${color}"></i>`; el.append(document.createTextNode(text)); }
+  else el.textContent = text;
+  if (onClick) el.addEventListener('click', onClick);
+  labelsEl.append(el); const L = {el, pos, cls, floor}; labels.push(L); return L;
+}
+const v = new THREE.Vector3();
+function updateLabels(){
+  const z = camera.zoom;
+  for (const L of labels){
+    v.copy(L.pos).project(camera);
+    const x = (v.x+1)/2*innerWidth, y = (1-v.y)/2*innerHeight;
+    L.el.style.left = x+'px'; L.el.style.top = y+'px';
+    let show = v.z<1 && x>-100 && x<innerWidth+100 && y>-60 && y<innerHeight+60;
+    if (L.cls==='lbl') show = show && z < 3.6;
+    if (L.cls.startsWith('pin')) show = show && (z >= 2.4 || L.id===selected);
+    if (L.cls==='floor-tag') show = show && z < 4;
+    if (L.floor && floorMode!=='all' && L.floor!==floorMode) show = false;
+    L.show = show; L.x = x; L.y = y;
+  }
+  const taken = [];
+  const prio = l => l.cls.startsWith('pin') ? (l.id===selected ? 0 : 2) : (l.cls==='lbl' ? 1 : 3);
+  for (const L of [...labels].sort((a,b)=>prio(a)-prio(b))){
+    if (L.show){
+      const w = L.w || (L.w = L.el.offsetWidth || 80), h = L.h || (L.h = L.el.offsetHeight || 20);
+      const r = L.cls.startsWith('pin') ? [L.x-w/2, L.y-h-6, L.x+w/2, L.y] : [L.x-w/2, L.y-h/2, L.x+w/2, L.y+h/2];
+      if (L.id!==selected && taken.some(t=>r[0]<t[2]+4 && r[2]>t[0]-4 && r[1]<t[3]+2 && r[3]>t[1]-2)) L.show = false;
+      else taken.push(r);
+    }
+    L.el.classList.toggle('hide', !L.show);
+  }
+}
+
+// ------------------------------------------------------------------ picking & highlight
+const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
+const pickables = [];
+function rootOf(o){ while (o && !(o.userData.pick)) o = o.parent; return o; }
+function setGlow(root, amt){ if(!root) return; root.traverse(m=>{ if(m.isMesh){ m.material.emissive.setRGB(amt*0.9, amt*0.45, amt*0.25); } }); }
+function pickAt(cx, cy){
+  ndc.set(cx/innerWidth*2-1, -(cy/innerHeight)*2+1); ray.setFromCamera(ndc, camera);
+  for (const hit of ray.intersectObjects(pickables, true)){ const r = rootOf(hit.object); if (r && !r.userData.ghost) return r; } return null;
+}
+let down = null;
+canvas.addEventListener('pointerdown', e=>{ down = {x:e.clientX, y:e.clientY}; canvas.classList.add('dragging'); });
+addEventListener('pointerup', e=>{ canvas.classList.remove('dragging');
+  if (down && Math.hypot(e.clientX-down.x, e.clientY-down.y) < 6 && e.target===canvas){
+    const r = pickAt(e.clientX, e.clientY); if (r) select(r.userData.pick, false); else closeCard();
+  } down = null; });
+canvas.addEventListener('pointermove', e=>{
+  if (e.pointerType!=='mouse' || down) return;
+  const r = pickAt(e.clientX, e.clientY);
+  if (r!==hovered){ if (hovered && hovered.userData.pick!==selected) setGlow(hovered,0); hovered=r; if (r && r.userData.pick!==selected) setGlow(r,.18); }
+  canvas.classList.toggle('hovering', !!r);
+});
+
+const card = $('#card');
+function select(id, fly){
+  if (selected!=null && nodes[selected]) setGlow(nodes[selected], 0);
+  selected = id; const n = nodes[id]; if (!n) return;
+  if (n.userData.ghost) setFloor(n.userData.floor, false);
+  setGlow(n, .32);
+  const isEx = typeof id === 'number';
+  const d = isEx ? exById.get(id) : EXTRA[id];
+  $('#cInv').textContent = isEx ? (d.inv!=='—' ? 'Учётный № '+d.inv : 'Экспозиция музея') : 'Установлен в '+d.inv+' году';
+  $('#cTitle').textContent = d.title; $('#cDesc').textContent = d.desc;
+  const H = d.hall ? HALLS[d.hall] : null;
+  $('#cHall').hidden = !H; if (H){ $('#cSw').style.background = H.color; $('#cHall span').textContent = H.name + ' · ' + (H.floor==='upper'?'верхний этаж':'нижний этаж'); }
+  const link = $('#cLink');
+  if (isEx && id < 900 && id!==50){ link.hidden=false; link.href = 'https://kosmo-museum.ru/map?exhibit_id='+id; }
+  else if (isEx && id===50){ link.hidden=false; link.href='https://kosmo-museum.ru/exposition'; }
+  else { link.hidden=false; link.href='https://kosmo-museum.ru/static_pages/istoriya-muzeya'; }
+  $('#cPrev').hidden = $('#cNext').hidden = !isEx;
+  card.hidden = false; document.body.classList.remove('index-open');
+  document.querySelectorAll('#index li button').forEach(b=>b.setAttribute('aria-current', String(Number(b.dataset.id)===id)));
+  for (const L of labels) if (L.cls.startsWith('pin')) L.el.classList.toggle('sel', L.id===id);
+  if (fly){
+    const box = new THREE.Box3().setFromObject(n); const s = box.getSize(new THREE.Vector3());
+    const big = box.clone().expandByVector(new THREE.Vector3(Math.max(6,s.x),Math.max(3,s.y*.4),Math.max(6,s.z)));
+    const c = box.getCenter(new THREE.Vector3());
+    if (innerWidth<=760) { const z=zoomForBox(big,.15); const wpp = BASE_H/(innerHeight*z); c.addScaledVector(new THREE.Vector3(0,1,0), -0.22*innerHeight*wpp); }
+    flyTo(c, zoomForBox(big,.15));
+  }
+}
+function closeCard(){ if (selected!=null && nodes[selected]) setGlow(nodes[selected],0); selected=null; card.hidden=true;
+  document.querySelectorAll('#index li button').forEach(b=>b.setAttribute('aria-current','false'));
+  for (const L of labels) if (L.cls.startsWith('pin')) L.el.classList.remove('sel'); }
+$('#cClose').addEventListener('click', closeCard);
+function step(dir){ const i = order.indexOf(selected); if (i<0) return; select(order[(i+dir+order.length)%order.length], true); }
+$('#cNext').addEventListener('click',()=>step(1)); $('#cPrev').addEventListener('click',()=>step(-1));
+addEventListener('keydown', e=>{ if (e.key==='Escape') closeCard(); if (!card.hidden && (e.key==='ArrowRight'||e.key==='ArrowLeft') && document.activeElement.tagName!=='INPUT') step(e.key==='ArrowRight'?1:-1); });
+$('#zIn').addEventListener('click',()=>flyTo(controls.target.clone(), Math.min(camera.zoom*1.6, controls.maxZoom), 450));
+$('#zOut').addEventListener('click',()=>flyTo(controls.target.clone(), Math.max(camera.zoom/1.6, controls.minZoom), 450));
+$('#zHome').addEventListener('click',()=>setFloor('all'));
+
+// ------------------------------------------------------------------ load
+const spinners = [];
+new GLTFLoader().load('kosmo_map.json', gltf=>{
+  const root = gltf.scene; scene.add(root);
+  root.traverse(o=>{ if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; o.material.side = THREE.FrontSide; o.material.envMapIntensity = .55; } });
+  for (const id of order){
+    const n = root.getObjectByName('EX_'+id); if (!n) continue;
+    n.userData.pick = id; nodes[id] = n; pickables.push(n);
+    n.traverse(m=>{ if (m.isMesh){ m.material = m.material.clone(); m.material.emissive = new THREE.Color(0); } });
+  }
+  const mon = root.getObjectByName('LM_monument');
+  if (mon){ mon.userData.pick='LM_monument'; nodes.LM_monument = mon; pickables.push(mon); mon.traverse(m=>{ if(m.isMesh){ m.material=m.material.clone(); m.material.emissive=new THREE.Color(0);} }); }
+  for (const id of [10,30,16]) if (nodes[id]) spinners.push(nodes[id]);
+  for (const hid of Object.keys(HALLS)){
+    const z = root.getObjectByName('Zone_'+hid); if (!z) continue;
+    const box = new THREE.Box3().setFromObject(z); zones[hid] = {box};
+    const c = box.getCenter(new THREE.Vector3()); c.y += 3;
+    const L = addLabel(HALLS[hid].name, c, 'lbl', HALLS[hid].color, ()=>flyToHall(hid), HALLS[hid].floor);
+  }
+  for (const fl of ['upper','lower']){ const f = root.getObjectByName('Floor_'+fl); if (f) floors[fl] = new THREE.Box3().setFromObject(f); }
+  floors.all = floors.upper.clone().union(floors.lower);
+  if (mon) floors.all.union(new THREE.Box3().setFromObject(mon));
+  root.children.forEach(o=>{ const f = o.userData.floor; if (f==='upper'||f==='lower') floorObjs[f].push(o); });
+  for (const sid of ['Stairs_L','Stairs_R']){ const st = root.getObjectByName(sid); if (!st) continue; const b = new THREE.Box3().setFromObject(st);
+    addLabel('↕ лестница между этажами', new THREE.Vector3((b.min.x+b.max.x)/2, b.max.y+1.5, (b.min.z+b.max.z)/2), 'floor-tag', null, null, null); }
+  { const b = floors.upper; addLabel('вход', new THREE.Vector3((b.min.x+b.max.x)/2, 1.5, b.max.z + 4), 'floor-tag', null, null, null); }
+  for (const id of order){ const n = nodes[id]; if (!n) continue; const b = new THREE.Box3().setFromObject(n);
+    const p = new THREE.Vector3((b.min.x+b.max.x)/2, b.max.y + .6, (b.min.z+b.max.z)/2);
+    const L = addLabel(exById.get(id).title.replace(/^(Спускаемый аппарат|Скафандр|Ракета-носитель|Автоматическая станция|Стартовый комплекс) /,'').replace(/^«|»$/g,''), p, 'pin', null, ()=>select(id,true), HALLS[exById.get(id).hall].floor); L.id = id; }
+  if (mon){ const b=new THREE.Box3().setFromObject(mon); const L=addLabel('Монумент «Покорителям космоса»', new THREE.Vector3((b.min.x+b.max.x)/2, b.max.y+1, (b.min.z+b.max.z)/2), 'pin', null, ()=>select('LM_monument',true), null); L.id='LM_monument'; }
+  const c = floors.all.getCenter(new THREE.Vector3());
+  sun.position.copy(c).addScaledVector(SUN_DIR, 300); sun.target.position.copy(c);
+  place(boxCenterOnScreen(floors.all)); camera.zoom = zoomForBox(floors.all, .04); camera.updateProjectionMatrix();
+  initDogs(root);
+  const L = $('#loading'); L.style.opacity = 0; setTimeout(()=>L.remove(), 600);
+  const hint = $('#hint'); setTimeout(()=>hint.classList.add('hide'), 7000);
+  const tag = location.hash.slice(1); const m = tag.match(/^ex(\d+)$/); if (m && nodes[+m[1]]) select(+m[1], true); else if (tag==='tour') startTour();
+}, p=>{ if (p.total) $('#bar i').style.width = (p.loaded/p.total*100).toFixed(0)+'%'; },
+err=>{ $('#ltext').textContent = 'Не удалось загрузить 3D-макет. Обновите страницу.'; console.error(err); });
+
+addEventListener('resize',()=>{ renderer.setSize(innerWidth, innerHeight, false); setFrustum(); });
+renderer.setSize(innerWidth, innerHeight, false);
+
+
+// ------------------------------------------------------------------ tour with Belka & Strelka
+const DOGS = {belka:{name:'Белка', color:'#E8743B', ini:'Б'}, strelka:{name:'Стрелка', color:'#3A5DAE', ini:'С'}};
+const TOUR = [
+ {at:'vest', who:'belka', text:'Привет! Я Белка, а это Стрелка. 19 августа 1960 года мы слетали в космос и вернулись домой. Теперь покажем вам музей.'},
+ {at:'vest', who:'strelka', text:'Идите за нами. Начнём с мемориального зала: здесь собрано всё самое первое.'},
+ {at:10, who:'belka', text:'С него всё началось. Первый спутник, 4 октября 1957 года: шар чуть больше полуметра и четыре антенны. Его «бип-бип» слышал весь мир.'},
+ {at:11, who:'strelka', text:'А это наш контейнер. В нём мы облетели Землю 17 раз и приземлились 20 августа. Вмятины на корпусе остались от посадки, честное слово.'},
+ {at:12, who:'belka', text:'Через восемь месяцев после нас полетел человек. На этом «Востоке» Юрий Гагарин 12 апреля 1961 года облетел планету за 108 минут.'},
+ {at:14, who:'strelka', text:'Скафандр «Беркут». В нём Алексей Леонов в 1965 году первым вышел в открытый космос. Скафандр так раздуло, что в люк он вернулся с огромным трудом.'},
+ {at:17, who:'belka', text:'Заглянем к Творцам. Ракета ГИРД-09 в 1933 году поднялась всего на 400 метров, но с неё началась вся наша ракетная техника.'},
+ {at:36, who:'strelka', text:'А это космический дом: базовый блок станции «Мир». Внутрь можно зайти и посмотреть, где космонавты спали, ели и работали. Станция летала почти 15 лет.'},
+ {at:'Stairs_L', who:'belka', text:'Спускаемся по лестнице на нижний этаж. Он огибает весь «А»-зал: там Луна, планеты и большие ракеты.'},
+ {at:22, who:'strelka', text:'«Луноход-1», первый в мире самоходный аппарат на другом небесном теле. Им управляли с Земли, как машинкой на пульте, только сигнал шёл с задержкой.'},
+ {at:21, who:'belka', text:'«Луна-16» сама долетела до Луны и привезла 101 грамм лунного грунта. Несколько крупинок хранятся здесь, в музее.'},
+ {at:26, who:'strelka', text:'1975 год: «Союз» и «Аполлон» состыковались прямо на орбите, и экипажи пожали друг другу руки через люк.'},
+ {at:29, who:'belka', text:'А это МКС, станция, в проекте которой участвуют 16 стран. Отсюда видно, какой она стала большой.'},
+ {at:35, who:'strelka', text:'Гордость космического парка, «Энергия-Буран». В 1988 году «Буран» слетал в космос и приземлился сам, без экипажа.'},
+ {at:'LM_monument', who:'belka', text:'Спасибо, что прогулялись с нами! Над музеем стоит монумент «Покорителям космоса». Обязательно посмотрите на него, когда будете уходить.'},
+];
+const dogs = {}; const dogHome = {}; const dogTags = {};
+const dogMove = {};   // id -> {from,to,yaw0,yaw1,t0,dur}
+let tourIdx = -1;
+const tourEl = $('#tour');
+function nodeFor(at){ if (typeof at==='number') return nodes[at]; if (at==='vest') return sceneRoot && sceneRoot.getObjectByName('Zone_vest'); return sceneRoot && sceneRoot.getObjectByName(at); }
+let sceneRoot = null;
+const FWD = new THREE.Vector3(VIEW.x,0,VIEW.z).normalize();          // towards the viewer, on the ground
+const SIDE = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), FWD).normalize();
+function yawTowards(from, to){ const d = to.clone().sub(from); return Math.atan2(-d.z, d.x); }
+function moveDog(id, to, faceTarget){
+  const d = dogs[id]; if (!d) return;
+  const from = d.position.clone();
+  const yawWalk = from.distanceTo(to) > .5 ? yawTowards(from, to) : d.rotation.y;
+  const look = faceTarget.clone().lerp(to.clone().addScaledVector(FWD, 30), .5);
+  dogMove[id] = {from, to:to.clone(), yawWalk, yawEnd: yawTowards(to, look), y0:d.rotation.y, t0:performance.now(), dur: reduce ? 1 : Math.min(2200, 700 + from.distanceTo(to)*14)};
+}
+function tourStep(i){
+  tourIdx = Math.max(0, Math.min(TOUR.length-1, i));
+  const st = TOUR[tourIdx], n = nodeFor(st.at); if (!n) return;
+  for (const id of order) if (nodes[id]) setGlow(nodes[id], 0);
+  const box = new THREE.Box3().setFromObject(n); const c = box.getCenter(new THREE.Vector3()); const s = box.getSize(new THREE.Vector3());
+  let base;
+  if (st.at==='vest') base = new THREE.Vector3(c.x, box.max.y, c.z);
+  else { const r = Math.max(s.x, s.z)/2 + 2.2; base = new THREE.Vector3(c.x, box.min.y, c.z).addScaledVector(FWD, r); }
+  if (st.at==='LM_monument'){ base = new THREE.Vector3(c.x, 3.25, c.z).addScaledVector(FWD, 6); }
+  if (String(st.at).startsWith('Stairs')) base = new THREE.Vector3(c.x, box.max.y, c.z).addScaledVector(FWD, 3);
+  moveDog('belka', base.clone().addScaledVector(SIDE, 1.4), c);
+  moveDog('strelka', base.clone().addScaledVector(SIDE, -1.4), c);
+  if (typeof st.at==='number') setGlow(n, .28);
+  const D = DOGS[st.who];
+  $('#tAva').textContent = D.ini; $('#tAva').style.background = D.color; $('#tName').textContent = D.name;
+  $('#tStop').textContent = `Остановка ${tourIdx+1} из ${TOUR.length}`;
+  $('#tText').textContent = st.text; $('#tBar').style.width = ((tourIdx+1)/TOUR.length*100)+'%';
+  $('#tPrev').disabled = tourIdx===0; $('#tNext').textContent = tourIdx===TOUR.length-1 ? 'Завершить' : 'Дальше →';
+  $('#tCard').hidden = typeof st.at!=='number';
+  for (const k of Object.keys(dogTags)) dogTags[k].classList.toggle('talk', k===st.who);
+  // frame exhibit + dogs, keep clear of the tour panel at the bottom
+  const fr = st.at==='vest' ? new THREE.Box3(base.clone().add(new THREE.Vector3(-9,0,-9)), base.clone().add(new THREE.Vector3(9,4,9))) : box.clone().expandByPoint(base.clone().addScaledVector(SIDE, 2.5)).expandByPoint(base.clone().addScaledVector(SIDE,-2.5));
+  if (st.at==='LM_monument') fr.expandByScalar(4);
+  const z = Math.min(zoomForBox(fr, .35), 5);
+  const wpp = BASE_H/(innerHeight*z); const tgt = fr.getCenter(new THREE.Vector3()).addScaledVector(new THREE.Vector3(0,1,0), -0.16*innerHeight*wpp);
+  flyTo(tgt, z, 1300);
+}
+function startTour(){ closeCard(); setFloor('all', false); document.body.classList.add('touring'); tourEl.hidden = false; tourStep(0); }
+function endTour(){ document.body.classList.remove('touring'); tourEl.hidden = true; tourIdx = -1;
+  for (const id of order) if (nodes[id]) setGlow(nodes[id], 0);
+  for (const k of Object.keys(dogs)){ moveDog(k, dogHome[k].pos, dogHome[k].pos.clone().addScaledVector(FWD, 10)); dogTags[k].classList.remove('talk'); }
+  setFloor('all'); }
+$('#tourBtn').addEventListener('click', startTour);
+$('#tClose').addEventListener('click', endTour);
+$('#tPrev').addEventListener('click', ()=>tourStep(tourIdx-1));
+$('#tNext').addEventListener('click', ()=>{ if (tourIdx>=TOUR.length-1) endTour(); else tourStep(tourIdx+1); });
+$('#tCard').addEventListener('click', ()=>{ const st = TOUR[tourIdx]; if (typeof st.at==='number'){ endTourKeep(st.at); } });
+function endTourKeep(id){ document.body.classList.remove('touring'); tourEl.hidden = true; tourIdx = -1; select(id, true); }
+addEventListener('keydown', e=>{ if (tourIdx<0) return; if (e.key==='ArrowRight') $('#tNext').click(); if (e.key==='ArrowLeft' && tourIdx>0) tourStep(tourIdx-1); if (e.key==='Escape') endTour(); });
+function initDogs(root){
+  sceneRoot = root;
+  for (const id of Object.keys(DOGS)){
+    const d = root.getObjectByName('MS_'+id); if (!d) continue;
+    dogs[id] = d; dogHome[id] = {pos:d.position.clone(), yaw:d.rotation.y};
+    d.traverse(m=>{ if (m.isMesh) m.castShadow = true; });
+    const tag = document.createElement('div'); tag.className='dogtag'; tag.textContent = DOGS[id].name; tag.style.background = DOGS[id].color;
+    labelsEl.append(tag); dogTags[id] = tag;
+  }
+}
+const tv = new THREE.Vector3();
+function updateDogs(){
+  const now = performance.now();
+  for (const [id, d] of Object.entries(dogs)){
+    const m = dogMove[id];
+    if (m){ const t = Math.min(1,(now-m.t0)/m.dur); const k = ease(t);
+      d.position.lerpVectors(m.from, m.to, k);
+      if (!reduce) d.position.y += Math.abs(Math.sin(t*Math.PI*Math.max(2, Math.round(m.dur/260))))*0.55*(1-t*t);
+      const yawT = t<.85 ? m.yawWalk : m.yawEnd; d.rotation.y += (yawT - d.rotation.y)*0.2;
+      if (t>=1){ d.rotation.y = m.yawEnd; delete dogMove[id]; } }
+    else if (!reduce){ const talking = tourIdx>=0 && TOUR[tourIdx].who===id; d.position.y = (dogMove[id]?d.position.y:d.position.y); 
+      const base = d.userData.baseScale || (d.userData.baseScale = d.scale.x);
+      const sq = talking ? 1 + Math.sin(now/140)*0.035 : 1 + Math.sin(now/600 + (id==='belka'?0:1.7))*0.012;
+      d.scale.set(base, base*sq, base); }
+    const b = new THREE.Box3().setFromObject(d); tv.set((b.min.x+b.max.x)/2, b.max.y+.4, (b.min.z+b.max.z)/2).project(camera);
+    const tag = dogTags[id]; tag.style.left = ((tv.x+1)/2*innerWidth)+'px'; tag.style.top = ((1-tv.y)/2*innerHeight)+'px';
+    tag.classList.toggle('hide', camera.zoom < 1.3 && tourIdx<0);
+  }
+}
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(()=>{
+  const dt = clock.getDelta();
+  if (flight){ const t = Math.min(1,(performance.now()-flight.t0)/flight.dur), k = ease(t);
+    const p = flight.from.clone().lerp(flight.to,k); place(p);
+    camera.zoom = flight.z0*Math.pow(flight.z1/flight.z0, k); camera.updateProjectionMatrix();
+    if (t>=1) flight = null; }
+  if (!reduce) for (const s of spinners) s.rotation.y += dt*.35;
+  if (selected!=null && nodes[selected] && !reduce){ const a = .22+.12*Math.sin(performance.now()/380); setGlow(nodes[selected], a); }
+  updateDogs(); controls.update(); updateLabels(); renderer.render(scene, camera);
+});
+</script>

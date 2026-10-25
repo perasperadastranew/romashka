@@ -6,3 +6,7 @@
 - `map/` — модели (glTF в JSON) и маска дорожек и газонов `paths.png`.
 
 Статичный сайт, сборка не нужна. Для GitHub Pages: Settings → Pages → Deploy from a branch → `main` / root.
+
+## Другие проекты в репозитории
+
+- [`kosmo-museum-map/`](kosmo-museum-map/) — изометрическая 3D-карта Музея космонавтики с экскурсией Белки и Стрелки.
