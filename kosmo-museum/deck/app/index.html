@@ -276,6 +276,10 @@
 .tourbar{position:sticky;bottom:12px;z-index:6;display:flex;align-items:center;gap:12px;margin:18px 12px 12px;padding:10px 10px 10px 16px;border-radius:22px;background:rgba(20,22,26,.94);backdrop-filter:blur(12px);border:1px solid rgba(255,138,74,.45);box-shadow:0 12px 30px rgba(0,0,0,.5);cursor:pointer}
 .tourbar small{display:block;font:500 10.5px var(--m);letter-spacing:.06em;text-transform:uppercase;color:var(--ac)}.tourbar b{display:block;font:500 15px/1.25 var(--f);color:#fff;margin-top:3px}
 .tourbar i{margin-left:auto;width:42px;height:42px;border-radius:21px;background:var(--ac2);display:grid;place-items:center;flex:none}.tourbar i svg{width:18px;height:18px;color:#fff}
+/* v80: жесты на схеме */
+#m3hl .m3hlk,#m3hl .m3hlr{z-index:3;pointer-events:none}#m3hl .m3hlk{background:linear-gradient(#06080C 60%,transparent);padding-bottom:10px}#m3hl .m3hlr{background:linear-gradient(transparent,#06080C 45%);padding-top:10px}
+#m3hl{overflow:hidden}#m3hl .pzh{position:absolute;left:0;right:0;bottom:8px;text-align:center;z-index:3;pointer-events:none;transition:opacity .4s}#m3hl .pzh.gone{opacity:0}
+#m3s:has(#m3hlGo:not([hidden])) .pzh{opacity:0}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -8821,6 +8825,38 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const done = (open) => { const keep = opt.loop; close(); if (!keep){ after && after(); if (open) setTimeout(() => window.openStop && openStop(id), 120); } };
     o.querySelector('#nfOpen').onclick = () => done(true); o.querySelector('#nfNext').onclick = () => done(false);
     o.querySelector('.nfskip').onclick = () => done(false); };
+})();
+
+</script>
+<script>
+/* схема зала: пальцем двигать, щипком приближать, колесом на компьютере, двойной тап — сброс (v80). Внутренности схемы не трогаем: трансформация снаружи */
+(() => { const $ = s => document.querySelector(s); const box = $('#m3hl'), stage = $('#m3hlStage'); if (!box || !stage) return;
+  box.style.touchAction = 'none'; stage.style.transformOrigin = '0 0'; stage.style.willChange = 'transform';
+  let s = 1, tx = 0, ty = 0, anim = null; const P = new Map(); let start = null, moved = false, pinch = null, lastTap = 0, synth = false;
+  const apply = (smooth) => { stage.style.transition = smooth ? 'transform .35s cubic-bezier(.2,.8,.2,1)' : 'none'; stage.style.transform = `translate(${tx}px,${ty}px) scale(${s})`; };
+  const clampPan = () => { const w = box.clientWidth, h = box.clientHeight, m = 60; const sw = stage.offsetWidth * s, sh = stage.offsetHeight * s, ox = stage.offsetLeft, oy = stage.offsetTop;
+    tx = Math.min(w - m - ox, Math.max(m - ox - sw, tx)); ty = Math.min(h - m - oy, Math.max(m - oy - sh, ty)); };
+  const zoomAt = (k, cx, cy) => { const r = box.getBoundingClientRect(), ox = stage.offsetLeft, oy = stage.offsetTop, px = cx - r.left - ox, py = cy - r.top - oy; const s2 = Math.min(4, Math.max(1, s * k)); tx = px - (px - tx) * (s2 / s); ty = py - (py - ty) * (s2 / s); s = s2; if (s === 1){ tx = 0; ty = 0; } clampPan(); };
+  window.__hlResetView = (smooth = true) => { s = 1; tx = 0; ty = 0; apply(smooth); hint(false); };
+  const hintEl = document.createElement('div'); hintEl.className = 'm3hint pzh'; hintEl.textContent = 'палец — двигать · щипок — ближе · нажми на экспонат'; box.appendChild(hintEl);
+  const hint = (show) => hintEl.classList.toggle('gone', !show);
+  box.addEventListener('pointerdown', e => { if (synth) return; e.stopPropagation(); box.setPointerCapture && box.setPointerCapture(e.pointerId); P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (P.size === 1){ start = { x:e.clientX, y:e.clientY, tx, ty, t:performance.now(), target:e.target, type:e.pointerType }; moved = false; pinch = null; }
+    if (P.size === 2){ const [a, b] = [...P.values()]; pinch = { d:Math.hypot(a.x - b.x, a.y - b.y), s, cx:(a.x + b.x) / 2, cy:(a.y + b.y) / 2 }; moved = true; } }, true);
+  box.addEventListener('pointermove', e => { if (!P.has(e.pointerId)) return; e.stopPropagation(); P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (pinch && P.size >= 2){ const [a, b] = [...P.values()], d = Math.hypot(a.x - b.x, a.y - b.y); zoomAt((pinch.s * d / pinch.d) / s, (a.x + b.x) / 2, (a.y + b.y) / 2); apply(false); hint(false); return; }
+    if (start && P.size === 1){ const dx = e.clientX - start.x, dy = e.clientY - start.y; if (!moved && Math.hypot(dx, dy) > 7) moved = true; if (moved){ tx = start.tx + dx; ty = start.ty + dy; clampPan(); apply(false); hint(false); } } }, true);
+  const up = e => { if (!P.has(e.pointerId)) return; e.stopPropagation(); P.delete(e.pointerId); if (P.size) return; pinch = null;
+    if (start && !moved){ const now = performance.now();
+      if (now - lastTap < 300 && s > 1){ window.__hlResetView(true); lastTap = 0; start = null; return; } lastTap = now;
+      /* короткое касание без сдвига — передаём схеме как обычный выбор экспоната */
+      synth = true; try { start.target.dispatchEvent(new PointerEvent('pointerdown', { bubbles:true, clientX:e.clientX, clientY:e.clientY, pointerType:start.type, pointerId:e.pointerId, isPrimary:true })); } finally { synth = false; } }
+    start = null; };
+  box.addEventListener('pointerup', up, true); box.addEventListener('pointercancel', up, true);
+  box.addEventListener('wheel', e => { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * .0025), e.clientX, e.clientY); apply(false); hint(false); }, { passive:false });
+  /* сброс вида при смене зала и наезде на экспонат — схема сама ведёт камеру */
+  for (const f of ['__hlHall', '__hlFocusId']){ const o = window[f]; if (typeof o === 'function') window[f] = function(){ if (s !== 1) window.__hlResetView(true); return o.apply(this, arguments); }; }
+  const mo = window.mountHallPlan; if (mo) window.mountHallPlan = function(){ const r = mo.apply(this, arguments); for (const f of ['__hlHall', '__hlFocusId']){ const o = window[f]; if (typeof o === 'function' && !o.__pz){ const w = function(){ if (s !== 1) window.__hlResetView(true); return o.apply(this, arguments); }; w.__pz = 1; window[f] = w; } } return r; };
 })();
 
 </script>
