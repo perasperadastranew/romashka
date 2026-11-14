@@ -9968,5 +9968,79 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 })();
 </script>
 
+<style>
+/* ===== карточка экспоната на карте: сразу описание, большая «Подробнее» (v90) */
+.exc{position:absolute;left:10px;right:10px;bottom:10px;z-index:7;border-radius:20px;background:rgba(18,20,26,.97);border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45);padding:12px;transform:translateY(12px);opacity:0;transition:transform .28s cubic-bezier(.3,.7,.2,1),opacity .2s;pointer-events:none}
+.exc.on{transform:none;opacity:1;pointer-events:auto}
+.exc .exh{display:flex;gap:12px;cursor:pointer}
+.exc .exi{width:76px;height:76px;flex:none;border-radius:14px;background:#0B0D12 center/cover;border:1px solid var(--line);position:relative;overflow:hidden}
+.exc .exi.nb{display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--hc,#FF8A4C) 35%,#14161c),#0B0D12)}
+.exc .exi.nb b{font:600 22px var(--m);color:var(--hc,#FF8A4C)}
+.exc .exk{font:500 10.5px var(--m);letter-spacing:.06em;text-transform:uppercase;color:var(--hc,var(--ac))}
+.exc .ext{font:500 18px/1.15 var(--f);letter-spacing:-.01em;color:#fff;margin-top:4px}
+.exc .exs{font-size:13px;line-height:1.38;color:rgba(255,255,255,.72);margin-top:6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.exc .exn{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.exc .exn span{padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.06);font:500 12px var(--m);color:rgba(255,255,255,.8)}
+.exc .exn span b{font:600 14px var(--f);color:#fff;margin-right:4px}
+.exc .exgo{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;margin-top:12px;border-radius:16px;border:0;background:var(--ac,#FF8A4C);color:#111;font:600 16px var(--f);cursor:pointer}
+.exc .exgo[disabled]{background:rgba(255,255,255,.08);color:rgba(255,255,255,.45)}
+.exc .exr{display:flex;gap:6px;margin-top:8px}
+.exc .exr button{flex:1;height:38px;border-radius:12px;border:1px solid var(--line);background:none;color:#fff;font:500 12.5px var(--f);cursor:pointer;white-space:nowrap}
+.exc .exr button.hot{border-color:rgba(255,138,74,.5);color:var(--ac,#FF8A4C)}
+.exc .exx{position:absolute;right:8px;top:8px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#fff;font-size:15px;line-height:1;cursor:pointer}
+/* схема: когда карточка открыта — старые кнопки и подпись прячем */
+#m3hl.exon #m3hlDos{display:none!important}
+.exc.flow{position:relative;left:auto;right:auto;bottom:auto;margin:-4px 16px 16px;display:none;transform:none;box-shadow:none}
+.exc.flow.on{display:block}
+.m3wrap:not(.scheme) + .exc.flow{display:none!important}
+.exc.flow{margin:12px 12px 6px;scroll-margin-bottom:100px}
+.exc .exs{-webkit-line-clamp:2}
+.exc .exn{flex-wrap:nowrap;overflow:hidden}.exc .exn span{white-space:nowrap}
+#m3 .exc .exi{width:60px;height:60px}#m3 .exc .ext{font-size:16px}#m3 .exc .exgo{height:46px;margin-top:10px}#m3 .exc .exr button{height:34px}
+#m3s.exon #m3hlGo{display:none!important}
+/* 3D: прежняя карточка уступает место новой */
+#m3card.exhide{display:none!important}
+</style>
+<script>
+/* Карточка экспоната на схеме и на 3D-карте (v90): фото, зал, описание и цифры сразу; большая «Подробнее» */
+(() => { const $ = s => document.querySelector(s);
+  const EXA = (typeof EX !== 'undefined') ? EX : [], MEX = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
+  const info = id => (typeof INFO !== 'undefined' && INFO[id]) || null;
+  const LAND = [22, 36, 23, 15], M3D = [10, 12, 36];
+  const data = id => { const e = EXA.find(x => x.id === id) || {}, m = MEX.get(id) || [], t = window.tourEx ? tourEx(id) : {}, I = info(id), h = HL[m[3]] || {};
+    const sum = (I && I.sum) || e.desc || m[4] || '';
+    return { id, title:t.title || e.title || m[2] || ('Экспонат ' + id), hall:h.name || t.hall || '', floor:h.floor === 'lower' ? 'нижний этаж' : h.floor ? 'верхний этаж' : '', color:h.color || t.color || '#FF8A4C',
+      img:(e.photos && e.photos[0]) || t.big || t.th || '', sum:sum.split(/(?<=[.!?])\s/).slice(0, 2).join(' '), nums:(I && I.nums || []).slice(0, 3), inv:e.inv || m[1] || '' }; };
+  const canOpen = id => !!info(id) || LAND.includes(id) || M3D.includes(id);
+  const open = id => { if (LAND.includes(id) && window.LANDING && window[window.LANDING[id]]) return window[window.LANDING[id]](); if (info(id) && typeof openEx === 'function') return openEx(id); if (M3D.includes(id) && window.open3d) return open3d({ id, title:data(id).title }); };
+  const inRoute = id => { const R = window.TOUR_ROUTES || {}; return ['short', 'kids', 'full'].find(k => R[k] && R[k].ids.includes(id)); };
+  const html = (d, mode) => `<button class="exx" aria-label="Закрыть">×</button><div class="exh">${d.img ? `<div class="exi" style="background-image:url(${d.img})"></div>` : `<div class="exi nb"><b>${String(d.id).padStart(2, '0')}</b></div>`}
+    <div style="min-width:0;padding-right:22px"><div class="exk">${[d.hall, d.floor].filter(Boolean).join(' · ')}</div><div class="ext">${d.title}</div>${d.sum ? `<div class="exs">${d.sum}</div>` : ''}</div></div>
+    ${d.nums.length ? `<div class="exn">${d.nums.map(n => `<span><b>${n[0]}${n[1] ? ' ' + n[1] : ''}</b>${n[2]}</span>`).join('')}</div>` : ''}
+    <button class="exgo" ${canOpen(d.id) ? '' : 'disabled'}>${canOpen(d.id) ? (LAND.includes(d.id) ? 'Подробнее и облёт в 3D' : 'Подробнее') + ' <span>→</span>' : 'Досье готовим'}</button>
+    <div class="exr">${info(d.id) ? '<button data-a="audio">▶ Слушать</button>' : ''}${inRoute(d.id) ? '<button class="hot" data-a="from">Экскурсия отсюда</button>' : ''}</div>`;
+  function mk(host, mode){ const c = document.createElement('div'); c.className = 'exc'; host.appendChild(c); let cur = null;
+    const show = id => { cur = id; if (id == null){ c.classList.remove('on'); return; } const d = data(id); c.style.setProperty('--hc', d.color); c.innerHTML = html(d, mode); c.classList.add('on'); if (mode === 'scheme') setTimeout(() => { try { c.scrollIntoView({ block:'nearest', behavior:'smooth' }); } catch(_){} }, 60);
+      c.querySelector('.exh').onclick = () => canOpen(id) && open(id); c.querySelector('.exgo').onclick = () => open(id);
+      c.querySelector('.exx').onclick = () => { show(null); mode === 'scheme' ? ($('#m3hlBack') && $('#m3hlBack').click()) : (window.m3clear ? m3clear() : ($('#m3card').hidden = true)); onHide && onHide(); };
+      c.querySelectorAll('.exr button').forEach(b => b.onclick = () => { const a = b.dataset.a;
+        if (a === 'audio') window.PL && PL.play(id, 'route');
+        if (a === 'hall'){ $('#m3hlBack') && $('#m3hlBack').click(); }
+        if (a === 'from'){ if (mode === 'scheme'){ const g = $('#m3hlGo'); g && g.onclick && g.onclick(); } else { const g = $('#m3from'); g && g.click(); } } }); onShow && onShow(); };
+    let onShow = null, onHide = null; return { show, el:c, get cur(){ return cur; }, set onShow(f){ onShow = f; }, set onHide(f){ onHide = f; } }; }
+  /* --- схема */
+  const hl = $('#m3hl');
+  if (hl){ const S = mk(hl, 'scheme'); S.el.classList.add('flow'); const wr = $('#m3wrap'); wr && wr.parentElement ? wr.after(S.el) : hl.parentElement.appendChild(S.el); const sync = () => { hl.classList.toggle('exon', S.el.classList.contains('on')); const s = $('#m3s'); s && s.classList.toggle('exon', S.el.classList.contains('on')); };
+    S.onShow = sync; S.onHide = sync;
+    const prev = window.__sel; window.__sel = id => { prev && prev(id); const ok = id != null && (EXA.some(x => x.id === id) || MEX.has(id)); S.show(ok ? id : null); sync(); };
+    const bk = $('#m3hlBack'); bk && new MutationObserver(() => { if (bk.hidden){ S.show(null); sync(); } }).observe(bk, { attributes:true, attributeFilter:['hidden'] }); }
+  /* --- 3D */
+  const m3 = $('#m3'), oc = $('#m3card');
+  if (m3 && oc){ const D = mk(m3, '3d');
+    const upd = () => { if (oc.hidden){ D.show(null); return; } const id = window.__m3sel; if (id == null) return; oc.classList.add('exhide'); D.show(id); };
+    new MutationObserver(upd).observe(oc, { attributes:true, attributeFilter:['hidden'], subtree:true, childList:true, characterData:true }); }
+})();
+</script>
+
 </body>
 </html>
