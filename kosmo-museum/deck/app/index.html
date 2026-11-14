@@ -8714,7 +8714,7 @@ window.mountDog3D = (box, opt = {}) => {
   const rimO = new THREE.DirectionalLight(CLEAN ? 0xffd2b0 : 0xFF8A4A, CLEAN ? 1.1 : 2.6); rimO.position.set(50, 20, -40); sc.add(rimO); const rimB = new THREE.DirectionalLight(0x8FB0FF, CLEAN ? 1.2 : 1.6); rimB.position.set(-50, 30, -30); sc.add(rimB);
   sc.add(new THREE.HemisphereLight(0xdfe6f4, 0x3a2a30, CLEAN ? .7 : .12));
   const life = { g:1, gx:0, gy:0, x:0, y:0, e:2, ev:0, c:3, ct:0, tilt:0 };
-  let trick = null, act = null, snapCb = null, clipUntil = 0, refreeze = false; const spr = {}; const ADD = ['Head_M', 'Neck1_M', 'Chest_M', 'Spine1_M', 'L_JNT_ear2', 'L_JNT_ear3', 'R_JNT_ear2', 'R_JNT_ear3', 'Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M']; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
+  let trick = null, act = null, snapCb = null, clipUntil = 0, refreeze = false; const spr = {}; const EYE = { x:window.__eyeX ?? -.045, y:window.__eyeY ?? .03 }; const ADD = ['Head_M', 'Neck1_M', 'Chest_M', 'Spine1_M', 'L_JNT_ear2', 'L_JNT_ear3', 'R_JNT_ear2', 'R_JNT_ear3', 'Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M']; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
   const mixBase = {}; const cur = {}, tgt = {}, sparks = [], lids = [], curtains = [], eyes = [], B = {}, rest = {}, wq = {};
   const NK = new THREE.Vector4();
   const grad = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; const g = c.getContext('2d'); (CLEAN ? ['#7d7484', '#b9b0b8', '#ece6e4', '#fbf7f4'] : ['#5a5070', '#9a8fa8', '#e8e0e2', '#fbf6f2']).forEach((col, i) => { g.fillStyle = col; g.fillRect(i, 0, 1, 1); }); const t = new THREE.CanvasTexture(c); t.minFilter = t.magFilter = CLEAN ? THREE.LinearFilter : THREE.NearestFilter; return t; })();
@@ -8748,7 +8748,7 @@ window.mountDog3D = (box, opt = {}) => {
     const skinned = [];
     inner.traverse(o => { if (!o.isMesh) return; if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals(); const old = o.material; if (o.morphTargetDictionary) morphs.push(o);
       if (/^(Spec|Collar|Tag)/.test(o.name)){ o.visible = false; return; }
-      if (/^Eye/.test(o.name)){ o.material = new THREE.MeshBasicMaterial({ map:old.map, color:0xc8a07a }); eyes.push(o); return; }
+      if (/^Eye/.test(o.name)){ const mp = old.map ? old.map.clone() : null; if (mp){ mp.needsUpdate = true; mp.wrapS = mp.wrapT = THREE.ClampToEdgeWrapping; } o.material = new THREE.MeshBasicMaterial({ map:mp, color:0xc8a07a }); o.userData.mp = mp; eyes.push(o); return; }
       if (/^(T_|B_)/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xf4efe6, gradientMap:grad }); return; }
       if (/^Tongue/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE96F7E, gradientMap:grad }); return; }
       const tm = o.name === 'Belka' ? paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), true) : paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), false); o.material = tm;
@@ -8915,6 +8915,11 @@ window.mountDog3D = (box, opt = {}) => {
     jaw += aJ * .38; rot('jaw_JNT', ['x', jaw]); rot('tongue_JNT2', ['x', -jaw * .35]); rot('tongue_JNT4', ['x', -jaw * .5]);
     const CALMK = window.DOG_CALM !== false ? P.k : 1; const yaw = cur.yaw + eLook + life.x * .36 * CALMK, pitch = cur.pitch + life.y * .18 * CALMK + Math.sin(t * .8) * .03 * CALMK, roll = cur.roll + life.tilt * P.tl * CALMK + Math.sin(t * .7) * .03 * CALMK;
     rotP('Head_M', ['y', yaw * .65 + tY * .6], ['x', pitch * .6 + tP * .6], ['z', roll * .7 + tR]); rotP('Neck1_M', ['y', yaw * .35 + tY * .4], ['x', pitch * .4 + tP * .4], ['z', roll * .3]);
+    /* взгляд (v93): зрачки ведут — быстро уходят к цели, голова догоняет; мелкие саккады */
+    { life.sc = (life.sc ?? 1) - fdt; if (life.sc < 0){ life.sc = .5 + Math.random() * 1.1; life.sx = (Math.random() - .5) * .16; life.sy = (Math.random() - .5) * .1; }
+      const gx = Math.max(-1, Math.min(1, (life.gx - life.x) * 1.5 + tY * 1.1 + (life.sx || 0))), gy = Math.max(-1, Math.min(1, (life.gy - life.y) * 1.5 - tP * .8 + (life.sy || 0)));
+      const ke = 1 - Math.exp(-fdt * 22); life.ex = (life.ex || 0) + (gx - (life.ex || 0)) * ke; life.ey = (life.ey || 0) + (gy - (life.ey || 0)) * ke;
+      for (const e of eyes){ const mp = e.userData.mp; if (mp) mp.offset.set(life.ex * EYE.x, life.ey * EYE.y); } }
     /* корпус: дыхание и наклон в поворот/рывок */
     rotP('Chest_M', ['x', Math.sin(t * 1.7) * .018 + cP], ['z', cR]); rotP('Spine1_M', ['x', cP * .5], ['z', cR * .5]);
     const eb = cur.earsBack - ePerk * .35, eo = cur.earsOut + ePerk * .25 + life.ev * P.ev + Math.sin(t * P.ef) * P.es;
