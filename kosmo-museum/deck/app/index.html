@@ -211,14 +211,14 @@
 .nfbtns button.pr{background:#fff;color:#0A0B0D;border:0}
 .nfskip{position:absolute;right:16px;top:58px;height:32px;padding:0 14px;border-radius:16px;border:0;background:rgba(255,255,255,.1);color:#C9CED8;font:500 12.5px var(--f);cursor:pointer;z-index:2}
 /* онбординг: Белка и Стрелка в двух иллюминаторах (v74) */
-.obduo{display:flex;gap:14px;align-items:flex-end;justify-content:center;padding-top:30px}
+.obduo{display:flex;gap:14px;align-items:flex-end;justify-content:center;padding-top:76px}
 .obduo .obdog{width:158px;height:204px;border:0;padding:0;cursor:pointer;transition:transform .45s cubic-bezier(.2,1.3,.4,1),box-shadow .3s,filter .3s;filter:saturate(.75) brightness(.8);transform:scale(.94)}
 .obduo .obdog.on{transform:scale(1.04) translateY(-8px);filter:none;box-shadow:0 0 0 7px #1d1714,0 0 0 8px rgba(255,138,74,.85),0 0 70px rgba(255,110,30,.6)}
 .obduo .obdog b{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:3;height:24px;padding:0 10px;border-radius:12px;background:rgba(10,11,13,.7);font:500 11px/24px var(--m);letter-spacing:.06em;text-transform:uppercase;color:#fff;white-space:nowrap}
 .obduo .obdog.on b{background:#FF8A4A;color:#1A0E06}
-.obsay{position:absolute;left:50%;bottom:42px;z-index:4;transform:translate(-50%,10px) scale(.7);opacity:0;padding:8px 12px;border-radius:14px;background:#F1EEE8;color:#151826;font:500 12px/1.25 var(--f);white-space:normal;width:130px;text-align:center;transition:all .35s cubic-bezier(.2,1.4,.4,1);pointer-events:none}
-.obsay::after{content:"";position:absolute;left:50%;top:-5px;width:10px;height:10px;margin-left:-5px;background:#F1EEE8;transform:rotate(45deg)}
-.obduo .obdog.say .obsay{opacity:1;transform:translate(-50%,0) scale(1)}
+.obsay{position:absolute;left:50%;top:-12px;z-index:4;transform:translate(-50%,-90%) scale(.7);opacity:0;padding:8px 12px;border-radius:14px;background:#F1EEE8;color:#151826;font:500 12px/1.25 var(--f);white-space:normal;width:130px;text-align:center;transition:all .35s cubic-bezier(.2,1.4,.4,1);pointer-events:none}
+.obsay::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;margin-left:-5px;background:#F1EEE8;transform:rotate(45deg)}
+.obduo .obdog.say .obsay{opacity:1;transform:translate(-50%,-100%) scale(1)}
 .obduo .obdog{overflow:visible}.obduo .obdog .dog{border-radius:46% / 37%;overflow:hidden;inset:0;height:auto;bottom:0;background:radial-gradient(120% 80% at 50% 30%,#22305a,#121a35 45%,#0a0d1a 80%)}
 /* карта: два режима «3D · Схема» (v75) */
 #vHall .hd{position:relative}
@@ -237,6 +237,34 @@
 /* телефон: как настоящее приложение — отступы под чёлку и полоску «домой» (v75) */
 @media (max-width:500px){.view{padding-top:max(58px,calc(env(safe-area-inset-top,0px) + 14px))}.tabs{height:calc(62px + max(24px,env(safe-area-inset-bottom,0px)))}.nfov{padding-top:max(104px,calc(env(safe-area-inset-top,0px) + 60px))}}
 @media (display-mode:standalone){.fontsw,.notes{display:none!important}}
+/* досье: Белка или Стрелка рассказывают факт (v77) */
+.dfc{position:relative;margin:16px 12px 0;padding:14px 14px 14px 136px;min-height:168px;border-radius:24px;background:radial-gradient(120% 120% at 0% 0%,#2A1A12 0%,#15171C 55%);border:1px solid rgba(255,138,74,.28);overflow:hidden}
+.dfc .po{position:absolute;left:12px;top:12px;width:112px;height:144px;border-radius:46% / 37%;overflow:hidden;background:radial-gradient(120% 80% at 50% 30%,#22305a,#121a35 45%,#0a0d1a 80%);box-shadow:0 0 0 5px #1d1714,0 0 0 6px rgba(255,255,255,.18),0 0 34px rgba(255,110,30,.35)}
+.dfc .po i{position:absolute;left:0;right:0;bottom:-2px;height:96%}
+.dfc .kick{color:var(--ac)}
+.dfc p{font-size:14.5px;line-height:1.45;color:#ECEEF1;margin:8px 0 0;min-height:84px}
+.dfc p .cur{display:inline-block;width:2px;height:1em;background:var(--ac);vertical-align:-2px;margin-left:2px;animation:dfblink .8s steps(1) infinite}
+@keyframes dfblink{50%{opacity:0}}
+.dfc .dfrow{display:flex;gap:6px;margin-top:10px}
+.dfc .dfrow button{height:32px;padding:0 12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#DDE2EA;font:500 12.5px var(--f);cursor:pointer}
+.dfc .dfrow button.pr{background:#fff;color:#0A0B0D;border:0}
+/* UI-аудит (v78): паспорт связан с экскурсией, возврат в «Ещё», печать из досье */
+.pst{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.pst .sc{position:relative;width:86px;height:86px;border-radius:50%;border:1.5px dashed rgba(255,255,255,.16);display:grid;place-items:center;background:var(--card)}
+.pst .sc b{font:600 18px var(--m);color:var(--mu)}
+.pst.got .sc{border:0;background:radial-gradient(circle,#2A1A12 0%,#141720 70%)}
+.pst.got .sc img{width:62px;height:62px;border-radius:50%;object-fit:cover;filter:grayscale(1) sepia(1) saturate(4) hue-rotate(-18deg) brightness(.9) contrast(1.1);opacity:.85}
+.pst.got .sc svg{position:absolute;inset:0;width:100%;height:100%;color:#E5520F;transform:rotate(var(--r,-8deg))}
+.pst span{font:500 12px/1.25 var(--f);color:var(--mu);max-width:100px}.pst.got span{color:var(--tx)}
+.pst.cur .sc{border-color:var(--ac);box-shadow:0 0 0 4px rgba(255,138,74,.15)}
+.pst.collab .sc{background:radial-gradient(circle,#2A2240,#141720 70%)}.pst.collab .sc svg{color:#A98BFF}
+.stamps.v2{grid-template-columns:repeat(3,1fr);gap:16px 8px;padding:16px 12px 0}
+.backm{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 8px;margin:0 0 10px;border-radius:15px;border:1px solid var(--line);background:var(--card);color:#DDE2EA;font:500 12.5px var(--f);cursor:pointer}
+.backm svg{width:14px;height:14px}
+.stampbtn{display:flex;align-items:center;gap:12px;width:calc(100% - 24px);margin:10px 12px 0;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,138,74,.5);background:rgba(255,138,74,.1);color:#fff;font:500 14px var(--f);text-align:left;cursor:pointer}
+.stampbtn i{width:34px;height:34px;border-radius:50%;background:var(--ac2);display:grid;place-items:center;flex:none}.stampbtn i svg{width:18px;height:18px}
+.stampbtn em{display:block;font:500 11px var(--m);font-style:normal;color:#F0B898;margin-top:2px}
+.stampbtn.ok{border-color:var(--line);background:var(--card);cursor:default}.stampbtn.ok i{background:#2A2E35}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -7649,7 +7677,7 @@ function openEx(id){ const e = EX.find(x => x.id === id); const inf = INFO[id] |
     ${id === 10 ? `<div class="lr"><div class="lrs"><div class="kick lrk">Как он устроен · листай вбок</div><div class="port"><div class="stage" id="lrStage"></div>${Array.from({length:12},(_,k)=>`<b style="transform:rotate(${k*30}deg) translateY(-111px)"></b>`).join('')}</div><div class="lrbar">${LONGREAD.map((_,k)=>`<i data-k="${k}"></i>`).join('')}</div></div><div class="lrch">${LONGREAD.map(([h,p],k)=>`<section class="ch" data-k="${k}"><span>${String(k + 1).padStart(2,'0')} / ${String(LONGREAD.length).padStart(2,'0')}</span><h3>${h}</h3><p>${p}</p></section>`).join('')}</div><div class="lrnav"><button id="lrPrev" aria-label="Назад"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><span>свайп или стрелки</span><button id="lrNext" aria-label="Дальше"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div></div>` : ''}
     <div class="blk"><div class="kick">Кратко</div><p>${inf.sum || e.desc}</p></div>
     ${inf.facts ? `<div class="blk"><div class="kick">Факты</div><ol class="facts">${inf.facts.map(f => `<li class="gl">${f}</li>`).join('')}</ol></div>` : ''}
-    ${e.dog ? `<div class="dog" style="margin:14px 12px 0"><img class="av" src="thumbs/${e.dog.who}.webp" alt=""><div><b>${e.dog.who === 'belka' ? 'Белка' : 'Стрелка'}:</b> ${e.dog.text}</div></div>` : ''}
+    ${window.dogFactHtml ? dogFactHtml(id, e) : ''}
     ${pics.length ? `<div class="blk"><div class="kick">В зале</div><div class="strip">${pics.map(p => `<img src="${p}" alt="${e.title} в зале музея">`).join('')}</div></div>` : ''}
     <button class="nextex" id="nextEx"><span><small>Дальше по маршруту зала</small><b></b></span><i><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i></button>
     <div class="two" style="margin-bottom:28px"><button class="cta ghost" id="see3d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M12 12l8.5-4.7M12 12v9.5M12 12L3.5 7.3"/></svg>3D-модель</button><button class="cta ghost" id="seeMap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/></svg>На карте</button></div>`;
@@ -7657,6 +7685,7 @@ function openEx(id){ const e = EX.find(x => x.id === id); const inf = INFO[id] |
   $('#seeMap').addEventListener('click', () => { closeEx(); showTab('map'); setTimeout(() => window.m3select && m3select(id, true), 900); });
   { const k = EX.findIndex(x => x.id === id), nx = EX[(k + 1) % EX.length]; const nb = $('#nextEx'); if (nb){ nb.querySelector('b').textContent = nx.short || nx.title; nb.addEventListener('click', () => { closeEx(); setTimeout(() => openEx(nx.id), 380); }); } }
   $('#listen').addEventListener('click', () => window.PL ? PL.toggle(id) : null); window.PL && PL.bindDossier(id);
+  window.mountDogFact && mountDogFact();
   if (inf.space){ $('#toSpace').addEventListener('click', () => window.openSpace && window.openSpace(e)); window.mountMiniOrbit && mountMiniOrbit($('#toSpace')); }
   exFig && exFig.destroy(); exFig = null;
   if (inf.fig && XF[inf.fig]){ const n = inf.fig, ro = $('#exRo'); exFig = window.mountFig($('#exStage'), n, XF[n].label, (t) => { const idle = !t || t === 'rest'; ro.classList.toggle('idle', idle); ro.textContent = idle ? 'коснись детали' : sayOf(n, t); }); }
@@ -7668,7 +7697,7 @@ function openEx(id){ const e = EX.find(x => x.id === id); const inf = INFO[id] |
     rail.onscroll = upd; upd(); const go = (d) => rail.scrollTo({ left:(Math.round(rail.scrollLeft / rail.clientWidth) + d) * rail.clientWidth, behavior:'smooth' });
     $('#lrPrev').onclick = () => go(-1); $('#lrNext').onclick = () => go(1); bars.forEach((b, i) => b.onclick = () => rail.scrollTo({ left:i * rail.clientWidth, behavior:'smooth' })); }
   $('#vEx').scrollTop = 0; $('#vEx').classList.remove('off'); document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.add('back')); }
-function closeEx(){ lrFig && lrFig.destroy(); lrFig = null; if (speaking){ clearInterval(auT); speaking = false; } exFig && exFig.destroy(); exFig = null; $('#vEx').classList.add('off'); document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.remove('back')); }
+function closeEx(){ window.stopDogFact && stopDogFact(); lrFig && lrFig.destroy(); lrFig = null; if (speaking){ clearInterval(auT); speaking = false; } exFig && exFig.destroy(); exFig = null; $('#vEx').classList.add('off'); document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.remove('back')); }
 
 // ---------- passport
 const ICON = {
@@ -8653,7 +8682,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const RTSVG = { short:'<path d="M6 30 C30 8 46 34 64 18 S100 10 114 22"/>', kids:'<path d="M6 24 C24 34 40 6 60 20 S98 34 114 14"/>', full:'<path d="M6 20 C16 4 26 36 38 20 S56 4 66 22 S86 36 96 18 S110 8 114 26"/>' };
   const rsvg = k => `<svg class="rt" viewBox="0 0 120 40"><g fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round">${RTSVG[k]}</g></svg>`;
   window.tourEx = ex;
-  let sel = 'short';
+  let sel = (st().key in R) ? st().key : 'short';
   const V = () => window.HOME_V || 'a';
   function heroA(){ const r = st();
     if (!live()) return `<div class="hma"><div class="hmk">Экскурсия с Белкой</div><h2>Начать<br>экскурсию</h2><p>Проведём по залам по шагам, расскажем у каждого экспоната, печати — в паспорт.</p>
@@ -8819,6 +8848,84 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   let v0 = 'scheme'; try { v0 = localStorage.getItem('kosmoMapView') || 'scheme'; } catch(_){}
   setView(v0 === '3d' ? '3d' : 'scheme', true);
   new IntersectionObserver(es => { if (view === 'scheme' && es.some(x => x.isIntersecting)){ chip(curHall); setTimeout(routeOnScheme, 140); } }).observe(hl);
+})();
+
+</script>
+<script>
+/* досье: Белка или Стрелка рассказывают факт — иллюминатор, рот двигается, пока печатается текст (v77) */
+(() => { const $ = s => document.querySelector(s);
+  const F = {
+    13:['belka', 'В этом скафандре Гагарин летел на «Востоке». Яркий оранжевый чехол — чтобы космонавта легко было найти после приземления.'],
+    16:['strelka', '«Венера-1» в 1961 году первой полетела к другой планете. Связь по дороге пропала, но аппарат всё равно пролетел мимо Венеры.'],
+    24:['belka', '3 февраля 1966 года «Луна-9» первой мягко села на Луну и передала панорамы поверхности. Так узнали, что грунт выдержит корабль.'],
+    44:['strelka', 'В январе 1969 года «Союз-4» и «Союз-5» впервые состыковались на орбите, и два космонавта перешли из корабля в корабль через открытый космос.'],
+    49:['belka', 'В скафандрах «Ястреб» Елисеев и Хрунов перебрались из «Союза-5» в «Союз-4» прямо по открытому космосу.'],
+    36:['strelka', 'Валерий Поляков прожил на «Мире» 437 суток подряд. Это до сих пор рекорд самого долгого полёта!'],
+    45:['belka', 'Через шлюзовой отсек выходят в открытый космос: сначала из него откачивают воздух, и только потом открывают люк наружу.'],
+    19:['strelka', '«Орлан» не надевают, а входят в него — через дверцу на спине, как в маленький космический корабль.'],
+    47:['belka', '«Кречет» сделали для высадки советского космонавта на Луну. Полететь туда ему не пришлось, а входили в него тоже через спину.'],
+    21:['strelka', 'В 1970 году «Луна-16» сама набрала лунный грунт и привезла его на Землю — без единого космонавта.'],
+    23:['belka', 'В 1967 году «Венера-4» первой передала данные изнутри атмосферы другой планеты.'],
+    15:['strelka', '2 декабря 1971 года «Марс-3» первым мягко сел на Марс и успел выйти на связь — всего на несколько секунд.'] };
+  window.dogFactOf = (id, e) => F[id] ? { who:F[id][0], text:F[id][1] } : (e && e.dog) || null;
+  window.dogFactHtml = (id, e) => { const f = dogFactOf(id, e); if (!f) return ''; const n = f.who === 'belka' ? 'Белка' : 'Стрелка';
+    return `<div class="dfc" id="dfc" data-who="${f.who}"><div class="po"><i id="dfDog"></i></div><div class="kick">${n} рассказывает</div><p id="dfT" data-t="${f.text.replace(/"/g, '&quot;')}"></p><div class="dfrow"><button class="pr" id="dfAsk">Спросить ${f.who === 'belka' ? 'Белку' : 'Стрелку'}</button><button id="dfAgain">Ещё раз</button></div></div>`; };
+  let DOGF = null, T = null, io = null;
+  function stop(){ clearInterval(T); T = null; io && io.disconnect(); io = null; if (DOGF){ DOGF.destroy && DOGF.destroy(); DOGF = null; } }
+  function say(){ const p = $('#dfT'); if (!p) return; const txt = p.dataset.t; let k = 0; clearInterval(T); p.innerHTML = '<span class="cur"></span>'; DOGF && DOGF.setMood('hello', 1200);
+    T = setInterval(() => { k += 2; p.innerHTML = txt.slice(0, k) + (k < txt.length ? '<span class="cur"></span>' : ''); const ch = txt[k - 1] || ' ';
+      DOGF && DOGF.mouth && DOGF.mouth(/[ ,.—!?]/.test(ch) ? .05 : .25 + Math.random() * .45);
+      if (k >= txt.length){ clearInterval(T); T = null; DOGF && DOGF.mouth && DOGF.mouth(0); DOGF && DOGF.setMood('joy', 2400); } }, 45); }
+  window.mountDogFact = () => { stop(); const c = $('#dfc'); if (!c) return; const who = c.dataset.who;
+    io = new IntersectionObserver(es => { if (!es.some(x => x.isIntersecting)) return; io.disconnect(); io = null;
+      const mk = window.mountDog3D || window.mountDog2D; if (mk){ DOGF = mk($('#dfDog'), { pose:'sit' }); who === 'strelka' && DOGF.setWho && DOGF.setWho('strelka'); }
+      setTimeout(say, 1500); }, { threshold:.5 });
+    io.observe(c);
+    $('#dfAgain').onclick = () => { DOGF && DOGF.enter && DOGF.enter(); setTimeout(say, 1200); };
+    $('#dfAsk').onclick = () => { const b = document.querySelector(`#vgWho [data-d="${who}"]`); window.openGuide && openGuide(); setTimeout(() => b && b.click(), 60); }; };
+  window.stopDogFact = stop;
+})();
+
+</script>
+<script>
+/* UI-аудит (v78): паспорт ↔ экскурсия, «Я на месте» = NFC везде, печать из досье, возврат в «Ещё» */
+(() => { const $ = s => document.querySelector(s); const R = window.TOUR_ROUTES, st = window.tourState;
+  const NFC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8.5a6 6 0 0 1 0 7M9.2 6a10 10 0 0 1 0 12"/><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/></svg>';
+  const STAMP = '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor"><circle cx="50" cy="50" r="46" stroke-width="3.5"/><circle cx="50" cy="50" r="40" stroke-width="1.2" stroke-dasharray="2 3"/></svg>';
+  const ORB = '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="10"/><ellipse cx="50" cy="50" rx="30" ry="11" transform="rotate(-25 50 50)"/></svg>';
+  const STAR = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M24 4l5.5 11.5L42 17.3l-9 8.8 2.1 12.5L24 32.8l-11.1 5.8 2.1-12.5-9-8.8 12.5-1.8z"/></svg>';
+  /* --- паспорт --- */
+  window.renderPass = () => { const v = $('#vPass'); if (!v || !R) return; const r = st(), ids = R[r.key].ids, done = r.started ? r.done.slice() : [], n = done.length, TOT = 37;
+    const lv = [[5, 'Курсант', '5 печатей'], [15, 'Пилот', '15 печатей'], [ids.length, 'Космонавт музея', `весь маршрут «${R[r.key].name}»`, true], [TOT, 'Главный конструктор', 'все 37 печатей → металлический значок на кассе музея']];
+    const prog = (k, route) => Math.min(100, Math.round((route ? done.filter(x => ids.includes(x)).length : n) / k * 100));
+    v.innerHTML = `<div class="hd"><div class="kick">Космический паспорт</div><h1>Твоя<br><em>коллекция</em></h1></div>
+      <div class="pp"><div class="row1"><div><div class="kick">Собрано печатей</div><b>${n} из ${TOT}</b></div><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FF8A4A" stroke-width="1.4"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/></svg></div><div class="bar"><i style="width:${Math.max(2, n / TOT * 100)}%"></i></div>
+        <p>Приложи телефон к NFC-метке на табличке экспоната — печать появится здесь.${r.started ? ` Экскурсия «${R[r.key].name}»: ${done.filter(x => ids.includes(x)).length} из ${ids.length}.` : ''}</p></div>
+      <div class="sec"><h2>Значки</h2><span>${lv.filter(([k, , , rt]) => prog(k, rt) >= 100).length} из ${lv.length}</span></div>
+      <div class="rwd">${lv.map(([k, name, sub, rt], j) => { const p = prog(k, rt); return `<div class="${p >= 100 ? 'on' : ''} ${j === 3 ? 'big' : ''}"><i>${STAR}</i><b>${name}</b><span>${p >= 100 ? 'получен · ' : ''}${sub}</span><em style="--p:${p}%"></em></div>`; }).join('')}</div>
+      <div class="sec"><h2>Печати маршрута</h2><span>${R[r.key].name}</span></div>
+      <div class="stamps v2">${ids.map((id, k) => { const x = window.tourEx(id), g = done.includes(id), c = r.started && k === r.i && !g; return `<div class="pst ${g ? 'got' : ''} ${c ? 'cur' : ''}" style="--r:${(k * 37 % 30) - 15}deg"><div class="sc">${g ? (x.th ? `<img src="${x.th}" alt="">` : '') + STAMP : `<b>${k + 1}</b>`}</div><span>${x.title}</span></div>`; }).join('')}</div>
+      <div class="sec"><h2>Коллаборации</h2><span>2</span></div>
+      <div class="stamps v2"><div class="pst got collab"><div class="sc">${ORB}</div><span>Arknights · 1/6</span></div><div class="pst got collab"><div class="sc">${ORB}</div><span>Honkai · 2025</span></div></div>
+      <div class="qa" style="margin-top:16px"><div id="replayOb2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg><div><b>Как пользоваться</b><i>5 шагов</i></div></div><div id="questGo2">${STAR.replace('stroke-width="1.6"', 'stroke-width="2.4"')}<div><b>Квест коллаборации</b><i>5 печатей</i></div></div></div>`;
+    $('#replayOb2').onclick = () => window.openOnboarding && openOnboarding(); $('#questGo2').onclick = () => window.openQuest && openQuest(); };
+  /* --- «Я на месте» на карте = тот же ритуал NFC, что и на вкладке «Экскурсия» --- */
+  const rh = $('#rtHere'); if (rh) rh.addEventListener('click', e => { if (!window.tourHere) return; e.stopImmediatePropagation(); const r = st(); r.started = true; window.tourSave(r); tourHere(); }, true);
+  /* --- печать прямо из досье --- */
+  const _open = window.openEx; if (_open) window.openEx = function(id){ _open.apply(this, arguments); try { stampBtn(id); } catch(_){} };
+  function stampBtn(id){ const r = st(), ids = R[r.key].ids, k = ids.indexOf(id), host = $('#vEx .acts2'); if (!host || k < 0) return; const got = r.started && r.done.includes(id);
+    host.insertAdjacentHTML('afterend', `<button class="stampbtn ${got ? 'ok' : ''}" id="stampBtn"><i>${NFC}</i><span>${got ? 'Печать уже в паспорте' : 'Я у экспоната — получить печать'}<em>${got ? R[r.key].name + ' · шаг ' + (k + 1) : 'как будто приложил телефон к метке · шаг ' + (k + 1) + ' из ' + ids.length}</em></span></button>`);
+    if (!got) $('#stampBtn').onclick = () => { const q = st(); q.started = true; q.i = k; window.tourSave(q); closeEx(); setTimeout(() => window.tourHere && tourHere(), 200); }; }
+  /* --- возврат в «Ещё» из магазина и звуков --- */
+  const back = '<button class="backm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>Ещё</button>';
+  for (const q of ['#vShop .hd', '#vSounds .snd']){ const h = $(q); if (h){ h.insertAdjacentHTML('afterbegin', back); h.querySelector('.backm').onclick = () => showTab('more'); } }
+  /* --- главная: без плиток-дублей таб-бара --- */
+  document.querySelectorAll('#vToday .qa>div[data-go="map"], #vToday .qa>div[data-go="shop"]').forEach(d => d.remove());
+  /* --- «Получить печать» в заметках слайдов: через экскурсию --- */
+  if (typeof NOTE_ACT !== 'undefined') NOTE_ACT.pass = () => { const r = st(); if (!r.started){ r.started = true; window.tourSave(r); } showTab('tour'); setTimeout(() => window.tourHere && tourHere(), 300); };
+  /* паспорт перерисовывается при открытии вкладки и после печати */
+  const _show = window.showTab; window.showTab = function(t){ _show.apply(this, arguments); if (t === 'pass') renderPass(); };
+  const _here = window.tourHere; if (_here) window.tourHere = function(){ const out = _here.apply(this, arguments); setTimeout(() => { if (!$('#vPass').classList.contains('hide')) renderPass(); }, 50); return out; };
 })();
 
 </script>

@@ -211,6 +211,19 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
       <div class="try"><span>Попробуйте</span><button class="btn" data-run="strelka">Позвать Стрелку</button><button class="btn" data-run="guide">Вернуть Белку</button></div>
     </section>
 
+    <section class="ch" data-act="dogsob" data-cap="Белка и Стрелка">
+      <div class="kick">Персонажи</div>
+      <h2>Белка и Стрелка — <em>цифровые</em> персонажи музея</h2>
+      <ul class="pts">
+        <li><b>Настоящие героини музея.</b> В 1960 году они первыми вернулись с орбиты живыми, а их контейнер стоит в зале «Утро космической эры». Гид здесь не выдуманный маскот, а часть экспозиции.</li>
+        <li><b>Одна 3D-модель с ригом:</b> голова, уши, брови, челюсть. Есть эмоции — радость, удивление, «думает». Когда собака «говорит», рот двигается в такт тексту.</li>
+        <li><b>Рисованный стиль:</b> живописный шейдинг и полутон, поэтому они выглядят как иллюстрация, а не как игрушка со стока. Живут в иллюминаторах и вписываются в тёмный интерфейс.</li>
+        <li><b>Где встречаются:</b> выбор гида в онбординге, «Спроси Белку», карточки «рассказывает факт» в досье, подсказки по маршруту.</li>
+        <li><b>С ними легко работать:</b> реплики хранятся текстом, новые эмоции не требуют перерисовки. Стрелка — та же модель в своём окрасе по архивному фото.</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="dogsob">Выбор гида</button><button class="btn" data-run="dogfact">Факт в досье</button><button class="btn" data-run="guide">Спроси Белку</button></div>
+    </section>
+
     <section class="ch" data-act="mir" data-cap="Облети экспонат">
       <div class="kick">Вау-момент</div>
       <h2>«Облети экспонат»: <em>в космос</em> из зала</h2>
@@ -314,6 +327,8 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
     strelka(w){ reset(w); w.openGuide && w.openGuide(); setTimeout(() => { const b = w.document.querySelector('#vgWho [data-d="strelka"]'); b && b.click(); }, 400); },
     mir(w){ reset(w); w.openMir && w.openMir(); }, venera(w){ reset(w); w.openVenera && w.openVenera(); }, mars(w){ reset(w); w.openMars && w.openMars(); },
     timeline(w){ reset(w); w.openTimeline && w.openTimeline(); },
+    dogsob(w){ reset(w); w.openOnboarding && w.openOnboarding(); const d = w.document; setTimeout(() => { for (let k = 0; k < 5; k++) d.getElementById('obNext').click(); }, 300); setTimeout(() => { const b = d.querySelector('#obDuo [data-d="strelka"]'); b && b.click(); }, 4200); },
+    dogfact(w){ reset(w); w.openEx && w.openEx(36); const d = w.document; setTimeout(() => { const v = d.getElementById('vEx'), c = d.getElementById('dfc'); if (v && c) v.scrollTo({ top:c.offsetTop - 220, behavior:'smooth' }); }, 500); },
     pass(w){ reset(w); w.showTab && w.showTab('pass'); },
     quest(w){ reset(w); w.openQuest && w.openQuest(); },
     tickets(w){ reset(w); w.openTickets && w.openTickets(); } };
