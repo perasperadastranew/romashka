@@ -68,6 +68,81 @@
 .m3hlk{position:absolute;left:12px;top:14px;font:500 10px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--ac,#FF8A4A)}
 .m3hlx,.m3hlbk,.m3hldos{position:absolute;bottom:12px;z-index:2;font:500 12px var(--f);color:#fff;background:rgba(20,22,27,.9);border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
 .m3hlx{right:12px}.m3hlbk{left:12px;color:#F0B898;border-color:rgba(240,184,152,.5)}.m3hldos{left:50%;transform:translateX(-50%);background:#fff;color:#111}
+/* ===== главная: экскурсия первым экраном (v70) ===== */
+.tab{position:relative}.tbd{position:absolute;top:-2px;left:50%;margin-left:6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--ac2);color:#fff;font:600 10px/16px var(--f)}
+.hello h1{font-size:28px}
+.fact.sm{margin-top:0;padding:16px}.fact.sm b{font-size:17px}.fact.sm p{font-size:13px}.fact.sm .kick{display:none}
+#hmHero{margin:14px 12px 0}
+.hmk{font:500 11px/1 var(--m);letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.hmcta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border:0;border-radius:27px;background:#fff;color:#0A0B0D;font:600 16px var(--f);cursor:pointer;margin-top:14px}
+.hmcta svg{width:18px;height:18px}
+.hmsec{display:flex;gap:8px;margin-top:8px}.hmsec button{flex:1;height:44px;border-radius:22px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:500 13.5px var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}.hmsec button svg{width:16px;height:16px}
+/* A — пульт */
+.hma{position:relative;overflow:hidden;border-radius:28px;padding:20px 16px 16px;background:radial-gradient(130% 90% at 100% 0%,#FF7A2E 0%,#B83E0B 30%,#3A1406 62%,#14100E 100%);border:1px solid rgba(255,138,74,.35)}
+.hma::after{content:"";position:absolute;right:-70px;top:-70px;width:220px;height:220px;border-radius:50%;border:1px solid rgba(255,255,255,.18);pointer-events:none}
+.hma h2{font:500 30px/1.05 var(--f);letter-spacing:-.025em;margin-top:10px;color:#fff}
+.hma>p{font-size:14px;line-height:1.45;color:rgba(255,255,255,.78);margin-top:8px;max-width:270px}
+.hmopts{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+.hmopts button{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:rgba(10,11,13,.38);color:#fff;text-align:left;cursor:pointer;font:inherit}
+.hmopts button i{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.45);flex:none;position:relative}
+.hmopts button.on{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}.hmopts button.on i{border-color:#fff}.hmopts button.on i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#fff}
+.hmopts b{font:600 15px var(--f);display:block}.hmopts span{font:500 11.5px var(--m);color:rgba(255,255,255,.62);letter-spacing:.02em}
+.hmopts em{margin-left:auto;white-space:nowrap;font:500 13px var(--f);font-style:normal;color:#fff}
+/* A — во время визита */
+.hmnext{display:flex;gap:12px;align-items:center;margin-top:14px;padding:10px;border-radius:20px;background:rgba(10,11,13,.42);border:1px solid rgba(255,255,255,.12)}
+.hmth{width:64px;height:64px;border-radius:14px;flex:none;background:#1B1E23 center/cover no-repeat;display:grid;place-items:center;font:600 13px var(--m);color:var(--hc,#fff);border:1px solid rgba(255,255,255,.1)}
+.hmnext small{display:flex;align-items:center;gap:6px;font:500 11px var(--m);color:rgba(255,255,255,.62);letter-spacing:.04em;text-transform:uppercase}.hmnext small i{width:7px;height:7px;border-radius:50%;background:var(--hc)}
+.hmnext b{display:block;font:600 17px/1.2 var(--f);margin-top:4px;color:#fff}.hmnext span{font-size:12.5px;color:rgba(255,255,255,.7)}
+.hmst{margin-top:16px}.hmst .row{display:flex;justify-content:space-between;align-items:baseline}.hmst .row b{font:600 14px var(--f);color:#fff}.hmst .row span{font:500 11.5px var(--m);color:rgba(255,255,255,.65)}
+.hmdots{display:flex;gap:5px;margin-top:9px}.hmdots i{flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.16)}.hmdots i.d{background:#fff}.hmdots i.c{background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1.5px #fff}
+/* B — три дороги */
+.hmb .hbh{font:500 26px/1.1 var(--f);letter-spacing:-.02em;padding:2px 4px 0}.hmb .hbh em{font-style:normal;color:var(--ac)}
+.hbr{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.hbr button{position:relative;overflow:hidden;display:block;text-align:left;padding:16px 16px 14px;border-radius:24px;border:1px solid var(--line);background:var(--card);color:#fff;cursor:pointer;font:inherit}
+.hbr button.main{background:radial-gradient(120% 140% at 100% 0%,#FF7A2E 0%,#A9390A 34%,#2A1208 72%,#14100E 100%);border-color:rgba(255,138,74,.4);padding-bottom:16px}
+.hbr button svg.rt{position:absolute;right:14px;top:16px;width:120px;height:40px;color:var(--ac)}.hbr button.main svg.rt{color:#fff}
+.hbr button b{font:600 19px var(--f);display:block}.hbr button span{font:500 12px var(--m);color:rgba(255,255,255,.62);display:block;margin-top:5px}
+.hbr button .go{position:absolute;right:14px;bottom:14px;width:36px;height:36px;border-radius:18px;background:rgba(255,255,255,.1);display:grid;place-items:center}.hbr button.main .go{width:auto;padding:0 16px;background:#fff;color:#0A0B0D;font:600 14px/36px var(--f);display:block}
+.hbr button .go svg{width:16px;height:16px}
+.hbr button.main p{font-size:13.5px;line-height:1.4;color:rgba(255,255,255,.78);margin-top:10px;max-width:210px}
+.hbv{position:relative;overflow:hidden;border-radius:28px;min-height:330px;background:#14161A center/cover no-repeat;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;padding:16px}
+.hbv::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,11,13,.1) 0%,rgba(10,11,13,.35) 40%,rgba(10,11,13,.94) 82%)}
+.hbv>*{position:relative}
+.hbv .ring{position:absolute;right:14px;top:14px;width:76px;height:76px}
+.hbv .ring b{position:absolute;inset:0;display:grid;place-items:center;font:600 17px var(--f);color:#fff;text-align:center;line-height:1}.hbv .ring b small{display:block;font:500 9px var(--m);color:rgba(255,255,255,.7);letter-spacing:.06em;margin-top:3px}
+.hbv .tag{position:absolute;left:14px;top:14px;height:28px;padding:0 12px;border-radius:14px;background:rgba(10,11,13,.6);backdrop-filter:blur(8px);font:500 11px/28px var(--m);letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.hbv h2{font:500 26px/1.1 var(--f);letter-spacing:-.02em;color:#fff;margin-top:6px}.hbv .hmk{color:var(--ac)}
+.hbv p{font-size:13.5px;color:rgba(255,255,255,.75);margin-top:6px}
+/* Ещё */
+.mlist{margin:14px 12px 0;border-radius:22px;background:var(--card);border:1px solid var(--line);overflow:hidden}
+.mlist button{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--tx);text-align:left;cursor:pointer;font:inherit}.mlist button:last-child{border-bottom:0}
+.mlist button>svg{width:22px;height:22px;color:var(--ac);flex:none}.mlist b{display:block;font:500 15.5px var(--f)}.mlist span{font:500 11.5px var(--m);color:var(--mu)}.mlist em{margin-left:auto;color:var(--mu);font-style:normal}
+.mlist .tg{margin-left:auto;width:44px;height:26px;border-radius:13px;background:#2A2E35;position:relative;flex:none;transition:background .2s}.mlist .tg::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}.mlist .tg.on{background:var(--ac2)}.mlist .tg.on::after{transform:translateX(18px)}
+/* ===== вкладка «Экскурсия» (v70) */
+#tourBody{padding:0 12px}
+#tourBody .hma{margin-top:14px}
+.tcur{margin-top:14px;border-radius:28px;overflow:hidden;background:var(--card);border:1px solid var(--line)}
+.tcur .img{height:210px;background:#1B1E23 center/cover no-repeat;position:relative}
+.tcur .img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,22,26,0) 45%,var(--card))}
+.tcur .img span{position:absolute;left:14px;top:14px;z-index:1;height:28px;padding:0 12px;border-radius:14px;background:rgba(10,11,13,.6);backdrop-filter:blur(8px);font:500 11px/28px var(--m);letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.tcur .bd{padding:2px 16px 16px;margin-top:-34px;position:relative;z-index:1}
+.tcur small{display:flex;align-items:center;gap:6px;font:500 11px var(--m);letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}.tcur small i{width:7px;height:7px;border-radius:50%;background:var(--hc)}
+.tcur h2{font:500 26px/1.12 var(--f);letter-spacing:-.02em;margin-top:6px}
+.tcur p{font-size:13.5px;line-height:1.45;color:#B8BECB;margin-top:6px}
+.tcur .hmcta{background:var(--ac2);color:#fff}
+.tcur .hmsec button{border-color:var(--line);background:var(--card2)}
+.tsteps{margin-top:6px;border-radius:22px;background:var(--card);border:1px solid var(--line);padding:6px 0}
+.tsteps button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;border:0;background:none;color:var(--tx);text-align:left;cursor:pointer;font:inherit;position:relative}
+.tsteps button .n{width:28px;height:28px;border-radius:50%;flex:none;display:grid;place-items:center;font:600 12px var(--m);border:1.5px solid rgba(255,255,255,.18);color:var(--mu);background:var(--scr);position:relative;z-index:1}
+.tsteps button:not(:last-child)::before{content:"";position:absolute;left:27px;top:38px;bottom:-10px;width:1.5px;background:rgba(255,255,255,.1)}
+.tsteps button.d .n{background:#fff;border-color:#fff;color:#0A0B0D}.tsteps button.c .n{border-color:var(--ac);color:var(--ac);box-shadow:0 0 0 4px rgba(255,138,74,.18)}
+.tsteps b{display:block;font:500 15px var(--f)}.tsteps span{font:500 11px var(--m);color:var(--mu)}.tsteps button.d b{color:var(--mu)}
+.tsteps em{margin-left:auto;font:500 11px var(--m);font-style:normal;color:var(--ac)}
+.tfoot{display:flex;gap:8px;margin:14px 0 6px}.tfoot button{flex:1;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--mu);font:500 13px var(--f);cursor:pointer}
+.tdone{margin-top:14px;padding:24px 18px;border-radius:28px;text-align:center;background:radial-gradient(120% 90% at 50% 0%,#FF7A2E 0%,#8A2E08 40%,#14100E 100%);border:1px solid rgba(255,138,74,.4)}
+.tdone svg{width:84px;height:84px;color:#fff}.tdone h2{font:500 28px/1.1 var(--f);margin-top:10px}.tdone p{font-size:14px;color:rgba(255,255,255,.8);margin-top:8px}
+.m3card{flex-wrap:wrap}.m3card .m3from{order:3;width:100%;background:rgba(255,138,74,.14)!important;color:var(--ac)!important;border:1px solid rgba(255,138,74,.45)!important}
+.m3card .m3from[hidden]{display:none}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -967,16 +1042,8 @@ window.M_EX = [
 
     <!-- СЕГОДНЯ -->
     <section class="view" id="vToday" data-tab="today">
-      <div class="hello"><div class="kick" id="todayDate"></div><h1>Добрый день!<br><em>Космос сегодня</em></h1></div>
-      <div class="fact" id="fact"><div class="orb"></div><div class="kick">Факт дня</div><b id="factT"></b><p id="factP"></p><div class="acts"><span id="factGo">Где в музее →</span><span>Поделиться</span></div></div>
-      <div class="qa">
-        <div data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg><div><b>Карта и маршрут</b><i>9 залов · 3 маршрута</i></div></div>
-        <div data-go="audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg><div><b>Аудиогид</b><i>рассказ у каждого экспоната</i></div></div>
-        <div data-go="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg><div><b>Таймлайн</b><i>1903–2016</i></div></div>
-        <div data-go="sounds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></svg><div><b>Звуки космоса</b><i>для работы и сна</i></div></div>
-        <div data-go="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><i>от 500 ₽ · QR в Wallet</i></div></div>
-        <div data-go="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.5 12h-11z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><div><b>Магазин и кафе</b><i>книги, мерч, «Взлёт»</i></div></div>
-      </div>
+      <div class="hello"><div class="kick" id="todayDate"></div><h1 id="helloH">Добрый день!</h1></div>
+      <div id="hmHero"></div>
       <div class="sec"><h2>Экспонаты</h2><span>6</span></div>
       <div class="xbig"><div class="xbc" data-open="openLuno"><img src="g/luno_big.webp" alt="«Луноход-1»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Луноход-1»</b><p>Первая машина, которая ездила по другому небесному телу</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openMir" style="--g1:#3E8BFF;--g2:#0A2A6B"><canvas class="stars"></canvas><img class="cut" src="g/mir_cut.webp" alt="Станция «Мир»" loading="lazy"><div class="xbt"><div class="kick">Дом на орбите · верхний этаж</div><b>Станция «Мир»</b><p>Пятнадцать лет на орбите и 437 суток Полякова</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openVenera" style="--g1:#FF8A2A;--g2:#6B2A05"><canvas class="stars"></canvas><img class="cut" src="g/venera_cut.webp" alt="«Венера-7»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Венера-7»</b><p>Первая мягкая посадка на другую планету</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openMars" style="--g1:#FF4A2E;--g2:#6B1205"><canvas class="stars"></canvas><img class="cut" src="g/mars_cut.webp" alt="«Марс-3»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Марс-3»</b><p>Первым сел на Марс — и успел выйти на связь</p><span class="go">3D-облёт →</span></div></div><div class="xbc ph" data-open="ex:12"><img src="g/12_1.webp" alt="«Восток»" loading="lazy"><div class="xbt"><div class="kick">Утро космической эры · зал 1</div><b>«Восток»</b><p>Шар, в котором Гагарин облетел Землю</p><span class="go">Досье →</span></div></div><div class="xbc ph" data-open="ex:11"><img src="g/11_1.webp" alt="Контейнер Белки и Стрелки" loading="lazy"><div class="xbt"><div class="kick">Утро космической эры · зал 1</div><b>Контейнер Белки и Стрелки</b><p>Первые, кто слетал на орбиту и вернулся</p><span class="go">Досье →</span></div></div></div>
       <div class="collab2" id="collabCard"><div class="cart"><i></i></div><div class="ctx"><div class="kick">Коллаборация · сейчас</div><b>Arknights × Музей</b><span class="go">Маршрут</span></div></div>
@@ -989,6 +1056,17 @@ window.M_EX = [
         <div class="ro idle" id="xRo"></div>
       </div>
       <p class="xnote" id="xNote"></p>
+      <div class="sec"><h2>Ещё в приложении</h2></div>
+      <div class="qa">
+        <div data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg><div><b>Карта и маршрут</b><i>9 залов · 3 маршрута</i></div></div>
+        <div data-go="audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg><div><b>Аудиогид</b><i>рассказ у каждого экспоната</i></div></div>
+        <div data-go="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg><div><b>Таймлайн</b><i>1903–2016</i></div></div>
+        <div data-go="sounds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></svg><div><b>Звуки космоса</b><i>для работы и сна</i></div></div>
+        <div data-go="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><i>от 500 ₽ · QR в Wallet</i></div></div>
+        <div data-go="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.5 12h-11z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><div><b>Магазин и кафе</b><i>книги, мерч, «Взлёт»</i></div></div>
+      </div>
+      <div class="sec"><h2>Факт дня</h2><span id="factDate"></span></div>
+      <div class="fact sm" id="fact"><div class="orb"></div><div class="kick">Факт дня</div><b id="factT"></b><p id="factP"></p><div class="acts"><span id="factGo">Где в музее →</span><span>Поделиться</span></div></div>
       <div class="past"><div class="kick">Были в музее</div><div>Honkai: Star Rail × Музей космонавтики<span>апр 2025</span></div><div>Ночь музеев · «Космос рядом»<span>май 2026</span></div></div>
     </section>
 
@@ -1066,6 +1144,27 @@ window.M_EX = [
       <div class="qa" style="margin-top:16px"><div id="replayOb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg><div><b>Как пользоваться</b><i>4 шага</i></div></div><div id="questGo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg><div><b>Квест коллаборации</b><i>5 печатей</i></div></div></div>
     </section>
 
+
+    <!-- ЕЩЁ -->
+    <section class="view hide" id="vMore" data-tab="more">
+      <div class="hd"><div class="kick">Музей космонавтики</div><h1>Ещё</h1></div>
+      <div class="mlist">
+        <button data-m="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><span>от 500 ₽ · QR в Wallet</span></div><em>›</em></button>
+        <button data-m="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/></svg><div><b>Магазин и кафе</b><span>книги, мерч, «Взлёт»</span></div><em>›</em></button>
+        <button data-m="quest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg><div><b>Квест коллаборации</b><span>Arknights × Музей</span></div><em>›</em></button>
+        <button data-m="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg><div><b>Таймлайн</b><span>1903–2016</span></div><em>›</em></button>
+      </div>
+      <div class="mlist">
+        <button data-m="sounds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></svg><div><b>Звуки космоса</b><span>для работы и сна · таймер</span></div><em>›</em></button>
+        <button data-m="bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg><div><b>Фон станции в аудиогиде</b><span>тихий гул под рассказ</span></div><i class="tg" id="bgTg"></i></button>
+      </div>
+      <div class="mlist">
+        <button data-m="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 5h16v11H9l-5 4z"/></svg><div><b>Спроси Белку</b><span>гид отвечает голосом</span></div><em>›</em></button>
+        <button data-m="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg><div><b>Как пользоваться</b><span>5 шагов</span></div><em>›</em></button>
+      </div>
+    </section>
+    <!-- ЭКСКУРСИЯ -->
+    <section class="view hide" id="vTour" data-tab="tour"><div class="hd"><div class="kick">Экскурсия</div><h1>Маршрут<br><em>по музею</em></h1></div><div id="tourBody"></div></section>
     <section class="view off" id="vEx"></section>
 
     <div class="cartbar off" id="cartBar"><div><small id="cartN">0 товаров</small><b id="cartSum">0 ₽</b></div><button id="cartGo">Оформить</button></div>
@@ -1175,10 +1274,10 @@ window.M_EX = [
     </div>
     <nav class="tabs" id="tabs">
       <button class="tab on" data-t="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/></svg>Сегодня</button>
+      <button class="tab" data-t="tour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="18.5" r="2"/><path d="M7.5 18.5h6a3.5 3.5 0 0 0 0-7h-4a3.5 3.5 0 0 1 0-7h7"/><path d="M15 2l3 2.5L15 7"/></svg>Экскурсия</button>
       <button class="tab" data-t="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg>Карта</button>
-      <button class="tab" data-t="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/></svg>Магазин</button>
-      <button class="tab" data-t="sounds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></svg>Звуки</button>
-      <button class="tab" data-t="pass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><circle cx="12" cy="10" r="3"/><path d="M9 16h6"/></svg>Паспорт</button>
+      <button class="tab" data-t="pass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><circle cx="12" cy="10" r="3"/><path d="M9 16h6"/></svg><span class="tbd" id="passBadge" hidden></span>Паспорт</button>
+      <button class="tab" data-t="more"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>Ещё</button>
     </nav>
     <div class="home"></div>
   </div>
@@ -4863,25 +4962,27 @@ $('#pushText').textContent = 'Факт дня: ' + fact.t.charAt(0).toLowerCase(
 document.addEventListener('pointermove', (ev) => { const c = ev.target.closest && ev.target.closest('.gl'); if (!c) return; const r = c.getBoundingClientRect(), k = c.offsetWidth / r.width; c.style.setProperty('--mx', (ev.clientX - r.left) * k + 'px'); c.style.setProperty('--my', (ev.clientY - r.top) * k + 'px'); });
 // ---------- tabs
 const NOTES = {
+  tour: {k:'Экран 2 · Экскурсия', h:'Ведёт по шагам от входа до выхода', p:'Главный сценарий визита. Выбрал маршрут — и приложение показывает один следующий шаг: экспонат, зал, этаж. У таблички прикладываешь телефон к метке — открывается досье, печать падает в паспорт, маршрут сдвигается дальше.', li:['Три маршрута: «Главное» 45 мин, «С детьми» 1 час, «Весь музей» 2 часа','Один крупный следующий шаг вместо списка из 29 экспонатов','Аудиогид играет весь маршрут подряд','Можно начать с любого экспоната прямо с карты'], btn:'Я у экспоната (NFC)'},
+  more: {k:'Экран 5 · Ещё', h:'Всё, что не нужно в зале', p:'Билеты, магазин и кафе, квест, таймлайн и звуки космоса ушли из таб-бара: в залах они отвлекают от экскурсии. Фон станции — переключатель для аудиогида.', li:['Таб-бар отвечает на вопрос «что делать в музее»','Магазин и кафе — в один тап из «Ещё»','Звуки космоса живут и вне визита'], btn:'Открыть билеты'},
   siteNow: {k:'Сайт · как сейчас', h:'Мобильный сайт глазами посетителя', p:'Шесть экранов m.kosmo-museum.ru с телефона. Оранжевые номера — проблемы, разбор под каждым скриншотом.', li:['Первый экран продаёт мессенджер MAX, а не визит','Билета нет ни в шапке, ни в меню — только виджет поверх cookie-баннера','Покупка уводит на общий bilet.mos.ru с попапом подписки','Полезное (цены, кафе, гиды) спрятано в длинном тексте','Экспонаты — лента без залов и карты, в тексте ошибка про площадь'], btn:'Смотреть новый сайт'},
   siteNew: {k:'Сайт · как может быть', h:'Сначала визит, потом всё остальное', p:'Тот же музей, но первый экран отвечает на вопросы посетителя: что здесь, сколько стоит, как добраться, купить билет.', li:['Кнопка «Билеты» всегда в шапке','Покупка в 4 шага на сайте музея: дата и сеанс → кто идёт → оплата → QR и Wallet','Шесть быстрых входов вместо меню из девяти пунктов','Залы с этажами, главные экспонаты, «Сегодня в музее»','Пресса, эфиры и новости — в подвал; cookie — одна строка'], btn:'Купить билет (демо)'},
   shop: {k:'Экран 5 · Магазин и кафе', h:'Сувениры с доставкой и меню кафе', p:'Магазин музея в кармане: собери корзину, забери на кассе или закажи доставку в другой город. Во вкладке «Кафе» — меню с ценами.', li:['Карточки товаров с категориями и быстрым добавлением','Корзина: самовывоз или доставка по России','Меню кафе: переносим из PDF ресторана'], btn:'Открыть кафе'},
-  today: {k:'Экран 1 · Сегодня', h:'Причина открыть приложение не только в музее', p:'Главный экран живёт вне визита: факт дня, текущая коллаборация и быстрые входы. Это то, ради чего приложение остаётся на телефоне после похода в музей.',
-    li:['Факт дня привязан к дате и ведёт к экспонату, если он есть в музее','Плашка коллаборации — главный канал скачиваний: фанаты игры ставят приложение ради маршрута и печатей','Архив прошлых коллабораций и событий — память места','Утренний пуш «Факт дня» напоминает о приложении'], btn:'Показать пуш «Факт дня»'},
-  map: {k:'Экран 2 · Карта', h:'Тёмная 3D-карта и маршрут по шагам', p:'Оба этажа одним пространством. Выбираешь маршрут — «Главное», «С детьми» или «Весь музей» — и идёшь по шагам: дорожка на полу до следующего экспоната и метка «вы здесь».', li:['Залы подписаны и обведены своим цветом','Карточка шага: зал, экспонат, расстояние и время пешком','Между этажами маршрут ведёт через лестницу','В музее шаг отмечается по NFC-метке у экспоната','Модели «Мира», «Востока» и Спутника открываются в 3D'], btn:'Открыть «Восток»'},
+  today: {k:'Экран 1 · Сегодня', h:'Экскурсия — с первого экрана', p:'Главный вопрос посетителя в музее — «куда идти». Поэтому первым экраном — «Начать экскурсию» с выбором времени, а во время визита — «Продолжить: следующий экспонат» и прогресс печатей. Факт дня, коллаборация и звуки — ниже: они держат приложение на телефоне после визита.',
+    li:['До визита: выбор маршрута — 45 мин, с детьми, весь музей','Во время визита: следующий экспонат, «Я на месте», «На карте», полоска печатей','Экспонаты-карточки, билеты и квест — под экскурсией','Факт дня внизу и в утреннем пуше'], btn:'Показать пуш «Факт дня»'},
+  map: {k:'Экран 3 · Карта', h:'Тёмная 3D-карта и маршрут по шагам', p:'Оба этажа одним пространством. Выбираешь маршрут — «Главное», «С детьми» или «Весь музей» — и идёшь по шагам: дорожка на полу до следующего экспоната и метка «вы здесь».', li:['Залы подписаны и обведены своим цветом','Карточка шага: зал, экспонат, расстояние и время пешком','Между этажами маршрут ведёт через лестницу','В музее шаг отмечается по NFC-метке у экспоната','Модели «Мира», «Востока» и Спутника открываются в 3D'], btn:'Открыть «Восток»'},
   sounds: {k:'Экран 3 · Звуки космоса', h:'Повод заходить каждый день', p:'Фоновые звуки для работы, учёбы и сна плюс таймер фокус-сессии. Звуки здесь синтезируются прямо в браузере; в приложении их стоит заменить на записи из архива музея и NASA.',
     li:['Пресеты: орбита, сигнал первого спутника, солнечный ветер, станция «Мир»','Таймер 25 минут, как помодоро','Работает в фоне и на заблокированном экране','Каждая сессия — отметка в паспорте: «30 часов на орбите»'], btn:'Включить «Орбиту»'},
   pass: {k:'Экран 4 · Паспорт', h:'Коллекция печатей', p:'Геймификация визита: печать за каждый увиденный экспонат, отдельные печати коллабораций, значки за полный зал и экскурсию.',
     li:['Печать — по QR у экспоната или по геопозиции в зале','Коллаборационные печати фиолетовые, их собирают по маршруту партнёра','За полный маршрут — подарок на кассе: связка приложения и офлайна','У Музея железных дорог похожая механика — достижения за маршруты и викторины'], btn:'Получить печать'},
 };
 function notes(t){ const n = NOTES[t]; $('#notes').innerHTML = `<div class="k">Музей в кармане · прототип</div><h2>${n.h}</h2><div class="k" style="margin-top:4px">${n.k}</div><p>${n.p}</p><ul>${n.li.map(x => `<li>${x}</li>`).join('')}</ul><button class="nb" id="noteBtn">${n.btn}</button>
-  <div class="map"><b>Структура приложения</b>${[['today','Сегодня'],['map','Карта'],['shop','Магазин'],['sounds','Звуки'],['pass','Паспорт']].map(([k,v]) => `<span data-t="${k}" class="${k===t?'on':''}">${v}</span>`).join('')}<span>Билеты</span><span>Квест</span><span>Спроси Белку</span><span>Луноход 3D</span></div>`;
+  <div class="map"><b>Структура приложения</b>${[['today','Сегодня'],['tour','Экскурсия'],['map','Карта'],['pass','Паспорт'],['more','Ещё']].map(([k,v]) => `<span data-t="${k}" class="${k===t?'on':''}">${v}</span>`).join('')}<span>Билеты</span><span>Магазин и кафе</span><span>Звуки</span><span>Квест</span><span>Спроси Белку</span></div>`;
   $('#noteBtn').addEventListener('click', () => NOTE_ACT[t]()); $('#notes').querySelectorAll('.map span[data-t]').forEach(s => s.addEventListener('click', () => showTab(s.dataset.t))); }
-const NOTE_ACT = { siteNow: () => setMode('new'), siteNew: () => openSiteTicket(), shop: () => document.querySelector('#shSeg [data-s=cafe]').click(), today: () => showPush(), map: () => openEx(12), sounds: () => { pickPreset(0); startSound(); }, pass: () => grantStamp() };
+const NOTE_ACT = { tour: () => window.tourHere && tourHere(), more: () => window.openTickets && openTickets(), siteNow: () => setMode('new'), siteNew: () => openSiteTicket(), shop: () => document.querySelector('#shSeg [data-s=cafe]').click(), today: () => showPush(), map: () => openEx(12), sounds: () => { pickPreset(0); startSound(); }, pass: () => grantStamp() };
 let curTab = 'today';
-function showTab(t){ if (t === 'tour'){ toast('Экскурсия — следующий шаг прототипа'); return; } if (t === 'ticket'){ window.openTickets && openTickets(); return; }
-  curTab = t; closeEx(); document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.toggle('hide', v.dataset.tab !== t));
-  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === t)); notes(t); if (t === 'map'){ window.m3start && m3start(); setTimeout(() => window.playHallTour && playHallTour(), 400); } }
+function showTab(t){ if (t === 'ticket'){ window.openTickets && openTickets(); return; }
+  curTab = t; closeEx(); document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.toggle('hide', v.dataset.tab !== t)); const tb = (t === 'shop' || t === 'sounds') ? 'more' : t;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === tb)); NOTES[t] && notes(t); if (t === 'today') window.renderHome && renderHome(); if (t === 'tour') window.renderTour && renderTour(); if (t === 'map'){ window.m3start && m3start(); setTimeout(() => window.playHallTour && playHallTour(), 400); } }
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) showTab(b.dataset.t); });
 document.querySelectorAll('#vToday .qa>div').forEach(d => d.addEventListener('click', () => { const g = d.dataset.go;
   if (g === 'timeline') return window.openTimeline && openTimeline(); if (g === 'audio' && window.PL){ PL.openFull(); return; } if (g === 'audio'){ showTab('map'); toast('Аудиогид идёт по маршруту: в карточке шага нажми «Досье» → «Послушать рассказ»'); return; } showTab(g); }));
@@ -5521,7 +5622,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const pinEl = (id, n) => { const el = document.createElement('button'); el.className = 'm3pin'; el.innerHTML = `<b>${n}</b>`; el.addEventListener('click', ev => { ev.stopPropagation(); select(id, true); }); $('#m3pins').appendChild(el); return el; };
     let selected = null;
     const glow = (o, a) => o && o.traverse(m => { if (m.isMesh){ if (!m.userData.own){ m.material = m.material.clone(); m.userData.own = 1; m.userData.mat0 = m.material; } m.material.emissive.setRGB(a * .9, a * .42, a * .2); } });
-    function select(id, fly){ if (selected != null) glow(nodes[selected], 0); selected = id; const n = nodes[id]; if (!n) return; glow(n, .45);
+    function select(id, fly){ if (selected != null) glow(nodes[selected], 0); selected = id; window.__m3sel = id; const n = nodes[id]; if (!n) return; glow(n, .45);
       if (fly && curFloor !== 'all' && floorOfId(id) !== curFloor) m3floor(floorOfId(id), true);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {}; if (H.color) box.style.setProperty('--hc', H.color);
       $('#m3h').textContent = (H.name || '') + (H.floor ? ' · ' + (H.floor === 'upper' ? 'верхний этаж' : 'нижний этаж') : ''); $('#m3t').textContent = d.title || ('Экспонат ' + id);
@@ -5928,6 +6029,113 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   $('#hlChips').addEventListener('click', (e) => { const c = e.target.closest('.chip[data-h]'); if (!c) return; mount(); document.querySelectorAll('#hlChips .chip').forEach(x => x.classList.toggle('on', x === c)); window.__hlHall && window.__hlHall(c.dataset.h); });
   window.__hlOpen = (id) => { mount(); $('#m3hl').scrollIntoView({ block:'center' }); window.__hlFocusId && window.__hlFocusId(id); };
 })();
+</script>
+<script>
+// ===== главная + «Ещё» (v70): экскурсия первым экраном
+(() => { const $ = s => document.querySelector(s);
+  const R = window.TOUR_ROUTES = window.TOUR_ROUTES || {
+    short:{ name:'Главное', time:'45 мин', note:'самое известное', ids:[10, 12, 11, 14, 24, 36, 22, 15, 26, 35] },
+    kids: { name:'С детьми', time:'1 час', note:'Белка, луноход, ракеты', ids:[11, 10, 12, 13, 24, 22, 15, 35] },
+    full: { name:'Весь музей', time:'2 часа', note:'оба этажа', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 36, 45, 19, 22, 21, 47, 23, 15, 56, 26, 27, 25, 29, 31, 20, 33, 35, 37] } };
+  const EXM = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
+  const SHORT = { 10:'Первый спутник ПС-1', 11:'Контейнер Белки и Стрелки', 12:'«Восток» Гагарина', 13:'Скафандр «СК-1»', 14:'Скафандр «Беркут»', 24:'«Луна-9»', 36:'Станция «Мир»', 22:'«Луноход-1»', 15:'«Марс-3»', 26:'«Союз — Аполлон»', 35:'«Энергия-Буран»' };
+  const TH = { 10:'thumbs/10.webp', 11:'thumbs/11.webp', 12:'thumbs/12.webp', 13:'thumbs/13.webp', 14:'thumbs/14.webp', 16:'thumbs/16.webp', 24:'thumbs/24.webp', 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' };
+  const BIG = { 10:'g/10_2.webp', 11:'g/11_1.webp', 12:'g/12_1.webp', 22:'g/luno_big.webp', 36:'g/mir_big.webp', 15:'g/mars_big.webp' };
+  const ex = id => { const e = EXM.get(id) || [id, '', 'Экспонат', '']; const h = HL[e[3]] || {}; return { id, title:SHORT[id] || e[2], hall:h.name || '', color:h.color || '#F0B898', floor:h.floor === 'lower' ? 'нижний этаж' : 'верхний этаж', inv:e[1], th:TH[id], big:BIG[id] || TH[id] }; };
+  const st = window.tourState = () => { if (window.RT) return window.RT; let r = null; try { r = JSON.parse(localStorage.getItem('kosmoRoute')); } catch(_){}
+    return Object.assign({ key:'short', i:0, done:[], on:true, started:false }, r || {}); };
+  const save = window.tourSave = (r) => { if (window.RT && window.RT !== r) Object.assign(window.RT, r); try { localStorage.setItem('kosmoRoute', JSON.stringify(window.RT || r)); } catch(_){} };
+  const live = window.tourLive = () => { const r = st(); return !!r.started && r.done.length < R[r.key].ids.length; };
+  window.tourStart = (key) => { const r = st(); r.key = key; r.i = 0; r.done = []; r.started = true; r.on = true; save(r); window.routeSet && window.routeSet(key); typeof toast === 'function' && toast(`Экскурсия «${R[key].name}» · ${R[key].ids.length} экспонатов`); showTab('tour'); };
+  window.tourNext = () => { const r = st(); return ex(R[r.key].ids[Math.min(r.i, R[r.key].ids.length - 1)]); };
+  const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  const nfc = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 1 0 7M5.5 5.5a9 9 0 0 1 0 13M12 12h.01"/><rect x="13" y="3" width="8" height="18" rx="2"/></svg>';
+  const mapI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/></svg>';
+  const RTSVG = { short:'<path d="M6 30 C30 8 46 34 64 18 S100 10 114 22"/>', kids:'<path d="M6 24 C24 34 40 6 60 20 S98 34 114 14"/>', full:'<path d="M6 20 C16 4 26 36 38 20 S56 4 66 22 S86 36 96 18 S110 8 114 26"/>' };
+  const rsvg = k => `<svg class="rt" viewBox="0 0 120 40"><g fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round">${RTSVG[k]}</g></svg>`;
+  window.tourEx = ex;
+  let sel = 'short';
+  const V = () => window.HOME_V || 'a';
+  function heroA(){ const r = st();
+    if (!live()) return `<div class="hma"><div class="hmk">Экскурсия с Белкой</div><h2>Начать<br>экскурсию</h2><p>Проведём по залам по шагам, расскажем у каждого экспоната, печати — в паспорт.</p>
+      <div class="hmopts" id="hmOpts">${Object.entries(R).map(([k, v]) => `<button data-r="${k}" class="${k === sel ? 'on' : ''}"><i></i><div><b>${v.name}</b><span>${v.ids.length} экспонатов · ${v.note}</span></div><em>${v.time}</em></button>`).join('')}</div>
+      <button class="hmcta" id="hmGo">Начать · ${R[sel].time} ${arrow}</button></div>`;
+    const ids = R[r.key].ids, n = ex(ids[r.i]), dn = r.done.length;
+    return `<div class="hma"><div class="hmk">Экскурсия · ${R[r.key].name} · ${r.i + 1} из ${ids.length}</div><h2>Продолжить</h2>
+      <div class="hmnext" style="--hc:${n.color}"><div class="hmth" style="${n.th ? `background-image:url(${n.th})` : ''}">${n.th ? '' : '★'}</div><div><small><i></i>${n.hall}</small><b>${n.title}</b><span>Следующий экспонат · ${n.floor}</span></div></div>
+      <button class="hmcta" id="hmCont">Идти к экспонату ${arrow}</button>
+      <div class="hmsec"><button id="hmHere">${nfc}Я на месте</button><button id="hmMap">${mapI}На карте</button></div>
+      <div class="hmst"><div class="row"><b>Печати маршрута</b><span>${dn} из ${ids.length}</span></div><div class="hmdots">${ids.map((id, k) => `<i class="${r.done.includes(id) ? 'd' : k === r.i ? 'c' : ''}"></i>`).join('')}</div></div></div>`; }
+  function heroB(){ const r = st();
+    if (!live()) return `<div class="hmb"><div class="hbh">Сколько у тебя <em>времени?</em></div><div class="hbr" id="hbR">${Object.entries(R).map(([k, v], j) => j === 0
+        ? `<button class="main" data-r="${k}">${rsvg(k)}<div class="hmk">Начать экскурсию</div><b style="margin-top:10px">${v.name} · ${v.time}</b><span>${v.ids.length} экспонатов · ${v.note}</span><p>Белка проведёт по шагам и расскажет у каждого экспоната</p><span class="go">Начать</span></button>`
+        : `<button data-r="${k}">${rsvg(k)}<b>${v.name}</b><span>${v.time} · ${v.ids.length} экспонатов</span><span class="go">${arrow}</span></button>`).join('')}</div></div>`;
+    const ids = R[r.key].ids, n = ex(ids[r.i]), dn = r.done.length, f = dn / ids.length, C = 2 * Math.PI * 32;
+    return `<div class="hbv" style="${n.big ? `background-image:url(${n.big})` : ''}"><span class="tag">${R[r.key].name} · ${r.i + 1} из ${ids.length}</span>
+      <div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="rgba(10,11,13,.55)" stroke="rgba(255,255,255,.18)" stroke-width="5"/><circle cx="38" cy="38" r="32" fill="none" stroke="#FF8A4A" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C * f} ${C}" transform="rotate(-90 38 38)"/></svg><b>${dn}/${ids.length}<small>ПЕЧАТИ</small></b></div>
+      <div class="hmk">Следующий · ${n.hall}</div><h2>${n.title}</h2><p>${n.floor} · приложи телефон к метке у таблички — получишь печать</p>
+      <button class="hmcta" id="hmCont">Продолжить экскурсию ${arrow}</button><div class="hmsec"><button id="hmHere">${nfc}Я на месте</button><button id="hmMap">${mapI}На карте</button></div></div>`; }
+  window.heroAHtml = () => heroA();
+  window.bindHero = (box) => { box.querySelectorAll('#hmOpts button').forEach(b => b.onclick = () => { sel = b.dataset.r; window.renderTour && renderTour(); renderHome(); }); const g = box.querySelector('#hmGo'); g && (g.onclick = () => tourStart(sel)); };
+  window.renderHome = () => { const box = $('#hmHero'); if (!box) return; box.innerHTML = V() === 'b' ? heroB() : heroA();
+    $('#helloH').textContent = live() ? 'С возвращением!' : 'Добрый день!';
+    box.querySelectorAll('#hmOpts button').forEach(b => b.onclick = () => { sel = b.dataset.r; renderHome(); });
+    box.querySelectorAll('#hbR button').forEach(b => b.onclick = () => tourStart(b.dataset.r));
+    const g = $('#hmGo'); g && (g.onclick = () => tourStart(sel));
+    const c = $('#hmCont'); c && (c.onclick = () => showTab('tour'));
+    const h = $('#hmHere'); h && (h.onclick = () => window.tourHere ? tourHere() : showTab('tour'));
+    const m = $('#hmMap'); m && (m.onclick = () => { showTab('map'); const r = st(); setTimeout(() => window.routeGo && routeGo(r.i, true), 600); }); };
+  // «Ещё»
+  document.querySelectorAll('#vMore .mlist button[data-m]').forEach(b => b.addEventListener('click', () => { const m = b.dataset.m;
+    if (m === 'ticket') return window.openTickets && openTickets(); if (m === 'timeline') return window.openTimeline && openTimeline(); if (m === 'quest') return window.openQuest && openQuest();
+    if (m === 'guide') return window.openGuide && openGuide(); if (m === 'help') return window.openOnboarding && openOnboarding(); if (m === 'bg') return; showTab(m); }));
+  { const tg = $('#bgTg'); tg && tg.parentElement.addEventListener('click', () => { const on = !tg.classList.contains('on'); tg.classList.toggle('on', on); try { if (on){ typeof pickPreset === 'function' && pickPreset(0); startSound(); toast('Фон станции включён'); } else { stopSound(); toast('Фон станции выключен'); } } catch(_){} }); }
+  { const d = new Date(); const fd = $('#factDate'); fd && (fd.textContent = d.toLocaleDateString('ru-RU', { day:'numeric', month:'long' })); }
+  renderHome();
+})();
+
+</script>
+<script>
+// ===== вкладка «Экскурсия» (v70)
+(() => { const $ = s => document.querySelector(s); const R = window.TOUR_ROUTES, st = window.tourState, save = window.tourSave;
+  const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  const nfc = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 1 0 7M5.5 5.5a9 9 0 0 1 0 13M12 12h.01"/><rect x="13" y="3" width="8" height="18" rx="2"/></svg>';
+  const EXM = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
+  const meta = id => { const n = window.tourEx(id); return n; };
+  window.openStop = (id) => { if (window.LANDING && LANDING[id]) return window[LANDING[id]](); if (typeof INFO !== 'undefined' && INFO[id]) return openEx(id); if (window.open3d && [10, 12, 36].includes(id)) return open3d({ id, title:(EXM.get(id) || [])[2] }); toast('Досье скоро появится'); };
+  function badge(){ const r = st(), b = $('#passBadge'); if (!b) return; const n = r.started ? r.done.length : 0; b.hidden = !n; b.textContent = n; }
+  window.tourHere = (opts = {}) => { const r = st(), ids = R[r.key].ids; if (!r.started){ r.started = true; }
+    const id = ids[r.i], first = !r.done.includes(id); if (first) r.done.push(id); if (r.i < ids.length - 1) r.i++; save(r); badge();
+    const n = meta(id); const after = () => { renderTour(); window.renderHome && renderHome(); window.routeGo && setTimeout(() => routeGo(st().i, false), 50); };
+    if (first && window.nfcPlay && !opts.quiet) nfcPlay(id, after); else { first && toast('Печать: ' + n.title); after(); } };
+  window.renderTour = () => { const box = $('#tourBody'); if (!box) return; const r = st(), live = window.tourLive();
+    const ids = R[r.key].ids;
+    if (!r.started){ box.innerHTML = window.heroAHtml ? heroAHtml(true) : ''; window.bindHero && bindHero(box);
+      box.insertAdjacentHTML('beforeend', `<div class="sec" style="padding-left:8px;padding-right:8px"><h2>Что увидишь</h2><span>${R.short.name}</span></div><div class="tsteps">${R.short.ids.map((id, k) => { const n = meta(id); return `<button data-k="${k}" data-id="${id}"><span class="n">${k + 1}</span><div><b>${n.title}</b><span>${n.hall}</span></div></button>`; }).join('')}</div>`);
+      box.querySelectorAll('.tsteps button').forEach(b => b.onclick = () => openStop(+b.dataset.id)); return; }
+    if (!live){ box.innerHTML = `<div class="tdone"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M24 4l5.5 11.5L42 17.3l-9 8.8 2.1 12.5L24 32.8l-11.1 5.8 2.1-12.5-9-8.8 12.5-1.8z"/></svg><div class="hmk">Экскурсия «${R[r.key].name}» пройдена</div><h2>${ids.length} печатей<br>в паспорте</h2><p>Покажи паспорт на кассе — там ждёт значок.</p><button class="hmcta" id="tdPass">Открыть паспорт ${arrow}</button></div><div class="tfoot"><button id="tfNew">Новая экскурсия</button></div>`;
+      $('#tdPass').onclick = () => showTab('pass'); $('#tfNew').onclick = () => { r.started = false; r.done = []; r.i = 0; save(r); renderTour(); renderHome(); }; return; }
+    const id = ids[r.i], n = meta(id);
+    box.innerHTML = `<div class="tcur" style="--hc:${n.color}"><div class="img" style="${n.big ? `background-image:url(${n.big})` : ''}"><span>${R[r.key].name} · шаг ${r.i + 1} из ${ids.length}</span></div><div class="bd"><small><i></i>${n.hall} · ${n.floor}</small><h2>${n.title}</h2><p>Иди по оранжевой дорожке на карте. У таблички приложи телефон к метке — откроется досье и упадёт печать.</p>
+      <button class="hmcta" id="tcHere">${nfc}Я у экспоната</button><div class="hmsec"><button id="tcMap">На карте</button><button id="tcOpen">Досье</button><button id="tcAudio">Слушать</button></div></div></div>
+      <div class="hmst" style="margin:16px 4px 0"><div class="row"><b>Печати маршрута</b><span>${r.done.length} из ${ids.length}</span></div><div class="hmdots">${ids.map((x, k) => `<i class="${r.done.includes(x) ? 'd' : k === r.i ? 'c' : ''}"></i>`).join('')}</div></div>
+      <div class="sec" style="padding-left:8px;padding-right:8px"><h2>Маршрут</h2><span>${R[r.key].time}</span></div>
+      <div class="tsteps">${ids.map((x, k) => { const m = meta(x), d = r.done.includes(x); return `<button data-k="${k}" class="${d ? 'd' : k === r.i ? 'c' : ''}"><span class="n">${d ? '✓' : k + 1}</span><div><b>${m.title}</b><span>${m.hall}</span></div>${k === r.i ? '<em>сейчас</em>' : ''}</button>`; }).join('')}</div>
+      <div class="tfoot"><button id="tfSwitch">Сменить маршрут</button><button id="tfEnd">Завершить</button></div>`;
+    $('#tcHere').onclick = () => tourHere(); $('#tcOpen').onclick = () => openStop(id);
+    $('#tcMap').onclick = () => { showTab('map'); setTimeout(() => window.routeGo && routeGo(st().i, true), 700); };
+    $('#tcAudio').onclick = () => window.PL && PL.play(id, 'route');
+    box.querySelectorAll('.tsteps button').forEach(b => b.onclick = () => { const q = st(); q.i = +b.dataset.k; save(q); renderTour(); renderHome(); });
+    $('#tfSwitch').onclick = () => { r.started = false; r.done = []; r.i = 0; save(r); renderTour(); };
+    $('#tfEnd').onclick = () => { r.done = ids.slice(); save(r); badge(); renderTour(); renderHome(); }; };
+  // карта: «Начать экскурсию отсюда»
+  { const cb = $('#m3card .m3cb'); if (cb){ const b = document.createElement('button'); b.className = 'm3from'; b.id = 'm3from'; b.innerHTML = 'Начать экскурсию отсюда →'; $('#m3card').appendChild(b);
+      b.onclick = () => { const id = window.__m3sel; const k = ['short', 'kids', 'full'].find(k => R[k].ids.includes(id)); if (!k){ toast('Этого экспоната пока нет в маршрутах'); return; }
+        const r = st(); r.key = k; r.i = R[k].ids.indexOf(id); r.done = []; r.started = true; r.on = true; save(r); window.routeSet && routeSet(k); setTimeout(() => window.routeGo && routeGo(r.i, true), 80);
+        toast(`Экскурсия «${R[k].name}» с шага ${r.i + 1}`); renderHome(); }; } }
+  badge(); renderTour();
+})();
+
 </script>
 </body>
 </html>
