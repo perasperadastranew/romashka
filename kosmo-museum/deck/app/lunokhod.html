@@ -144,6 +144,7 @@ document.addEventListener('click', e => { if (!e.target.closest('#deck,#more')) 
 // ---- scroll: each chapter is one snapped screen; the camera moves only between them and then holds
 let target = 0, smooth = 0;
 function readScroll(){ const k = scrollY / innerHeight; target = Math.max(0, Math.min(CH.length - 1, k)); showCard(Math.round(target)); }
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; scrollTo(0, 0);
 addEventListener('scroll', readScroll, { passive:true }); readScroll();
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const vA = new THREE.Vector3(), vB = new THREE.Vector3(), tA = new THREE.Vector3(), tB = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);

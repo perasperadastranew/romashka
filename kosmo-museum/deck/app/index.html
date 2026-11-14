@@ -469,6 +469,7 @@ body{display:grid;place-items:center}
 .xbc.sp{background:#000}
 .xbc.sp::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--g1) 22%,transparent),inset 0 0 70px -10px color-mix(in srgb,var(--g2) 70%,transparent);background:radial-gradient(90% 60% at 50% 42%,color-mix(in srgb,var(--g2) 28%,transparent),transparent 70%)}
 .xbc.sp .stars{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+@keyframes xfloat{0%,100%{translate:0 0;rotate:-1deg}50%{translate:0 -7px;rotate:1deg}}.xbc.sp img.cut{animation:xfloat 9s ease-in-out infinite}@media (prefers-reduced-motion:reduce){.xbc.sp img.cut{animation:none}}
 .xbc.sp img.cut{position:absolute;left:12%;top:12%;width:76%;height:auto;object-fit:contain;z-index:1;filter:drop-shadow(0 0 18px color-mix(in srgb,var(--g1) 22%,transparent));animation:xfloat 7s ease-in-out infinite}
 @keyframes xfloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
 .xbc.sp::after{background:linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.7) 82%,rgba(0,0,0,.9));z-index:1}
@@ -665,6 +666,16 @@ body{display:grid;place-items:center}
 .obnav{display:flex;align-items:center;justify-content:space-between;padding:0 20px 44px}
 .obdots{display:flex;gap:6px}.obdots i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.25);transition:all .3s}.obdots i.on{width:22px;background:var(--ac)}
 .obnext{height:52px;padding:0 28px;border-radius:26px;border:0;background:#fff;color:#0A0B0D;font:500 15px var(--f);cursor:pointer}
+.obcol{position:relative;width:270px;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.obgrid{display:grid;grid-template-columns:repeat(3,64px);gap:12px}
+.obgrid i{width:64px;height:64px;border-radius:50%;border:1px dashed #3a3f48;display:grid;place-items:center;font-style:normal}
+.obgrid b{font:500 9px var(--m);letter-spacing:.06em;text-transform:uppercase;color:var(--mu);transform:rotate(-12deg)}
+.obcol.go .obgrid i{animation:obst .45s calc(.2s + var(--k) * .12s) cubic-bezier(.3,1.6,.6,1) both}
+@keyframes obst{0%{border-color:#3a3f48;background:transparent;transform:scale(1)}50%{transform:scale(1.18)}100%{border:1.5px solid var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent);transform:scale(1)}}
+.obcol.go .obgrid i b{animation:obstb .3s calc(.3s + var(--k) * .12s) both}@keyframes obstb{to{color:var(--ac)}}
+.obmed{display:flex;align-items:center;gap:10px;color:var(--ac);font:500 13px var(--f);opacity:0;transform:translateY(10px) scale(.9)}
+.obmed svg{width:46px;height:46px}
+.obcol.go .obmed{transition:all .5s 1.5s cubic-bezier(.3,1.5,.6,1);opacity:1;transform:none}
 .nfc{position:relative;width:250px;height:300px}
 .nfcx{position:absolute;left:30px;top:40px;width:150px;height:190px;border-radius:46% / 37%;background:radial-gradient(120% 80% at 50% 30%,#2a2f38,#14161A 70%);box-shadow:0 0 0 6px #1B1E23,0 0 0 7px rgba(255,255,255,.16);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#DDE1E7}
 .nfcx svg{width:70px;height:70px}.nfcx small{font:500 10px var(--m);color:var(--mu);letter-spacing:.08em;text-transform:uppercase}
@@ -1113,10 +1124,11 @@ window.M_EX = [
           <button data-r="full"><svg viewBox="0 0 120 40"><path d="M6 20 C16 4 26 36 38 20 S56 4 66 22 S86 36 96 18 S110 8 114 26" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/><circle cx="6" cy="20" r="4" fill="#fff"/><circle cx="114" cy="26" r="4" fill="currentColor"/></svg><div><b>Весь музей</b><span>29 экспонатов · 2 часа</span></div></button>
         </div></div><div class="obt"><div class="kick">Маршрут</div><h2>Сколько у тебя <em>времени?</em></h2><p>Карта проведёт по шагам: дорожка на полу до следующего экспоната, расстояние и подсказка, когда спуститься по лестнице.</p></div></section>
         <section class="obs"><div class="obv"><div class="nfc" id="obNfc"><div class="nfcx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/></svg><small>ПС-1 · зал 1</small></div><div class="nfcp"><i></i></div><div class="nfcw"></div><div class="nfcw w2"></div><div class="nfcs">Печать<br>получена</div></div></div><div class="obt"><div class="kick">У экспоната</div><h2>Приложи телефон <em>к метке</em></h2><p>У каждого экспоната есть метка NFC и QR-код. Откроется досье, а в паспорт ляжет печать.</p><button class="obtry" id="obTry">Попробовать</button></div></section>
+        <section class="obs"><div class="obv"><div class="obcol" id="obCol"><div class="obgrid"><i style="--k:0"><b>ПС-1</b></i><i style="--k:1"><b>Восток</b></i><i style="--k:2"><b>СК-1</b></i><i style="--k:3"><b>Луна-9</b></i><i style="--k:4"><b>Мир</b></i><i style="--k:5"><b>Венера</b></i><i style="--k:6"><b>Марс-3</b></i><i style="--k:7"><b>Союз</b></i><i style="--k:8"><b>ГИРД</b></i></div><div class="obmed"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="32" cy="32" r="22" fill="currentColor" opacity=".14"/><path d="M32 14l4 11h11l-9 7 3 11-9-6-9 6 3-11-9-7h11z" fill="currentColor"/></svg><span>Космонавт музея</span></div></div></div><div class="obt"><div class="kick">Коллекция</div><h2>Собери все печати — <em>получи значок</em></h2><p>Каждая метка — печать в паспорте. 5 печатей — «Курсант», 15 — «Пилот», все залы — значок «Космонавт музея».</p></div></section>
         <section class="obs"><div class="obv"><div class="stagecard obfig"><div class="stage" id="obFig"></div><div class="hint">Интерактивная схема</div><i class="obtouch"></i><span class="obtl">проведи пальцем</span></div></div><div class="obt"><div class="kick">Разбери экспонат</div><h2>Трогай <em>детали</em></h2><p>Это не картинка, а живая схема на экране: проведи пальцем — она раскроет люк, поднимет визор или разберёт спутник на части.</p></div></section>
         <section class="obs"><div class="obv"><div class="obdog"><div class="dog" id="obDog"></div></div></div><div class="obt"><div class="kick">Гид</div><h2>Белка <em>подскажет</em></h2><p>Спроси её о чём угодно — она ответит голосом и покажет, куда идти дальше.</p></div></section>
       </div>
-      <div class="obnav"><div class="obdots" id="obDots"><i class="on"></i><i></i><i></i><i></i><i></i></div><button class="obnext" id="obNext">Далее</button></div>
+      <div class="obnav"><div class="obdots" id="obDots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div><button class="obnext" id="obNext">Далее</button></div>
     </div>
     <div class="vg off" id="vg">
       <div class="vtop"><button class="pill" id="vgClose"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>Закрыть</button><div class="seg" id="vgWho"><button class="on" data-d="belka">Белка</button><button data-d="strelka">Стрелка</button></div></div>
@@ -4876,21 +4888,20 @@ document.querySelectorAll('#vToday .qa>div').forEach(d => d.addEventListener('cl
 document.querySelectorAll('.x3c').forEach(c => c.addEventListener('click', () => window[c.dataset.open] && window[c.dataset.open]()));
 document.querySelectorAll('.xbc').forEach(c => c.addEventListener('click', () => { const o = c.dataset.open; if (o.startsWith('ex:')) openEx(+o.slice(3)); else window[o] && window[o](); }));
 
-// полёт в карточках: звёзды разлетаются от центра, мимо изредка пролетают обломки камня — ближние крупнее, быстрее и размытее
+// полёт в карточках: звёзды и обломки плывут вбок с параллаксом (ближние быстрее), станция слегка парит
 (() => { const cards = [...document.querySelectorAll('.xbc.sp')]; if (!cards.length) return; const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rock = (n = 9) => Array.from({ length:n }, (_, k) => { const a = k / n * 6.283; return [Math.cos(a) * (.7 + Math.random() * .45), Math.sin(a) * (.7 + Math.random() * .45)]; });
   cards.forEach(card => { const cv = card.querySelector('.stars'), x = cv.getContext('2d'), tint = getComputedStyle(card).getPropertyValue('--g1').trim() || '#fff'; let on = false, W = 0, H = 0, D = 1, st = [], rk = [], last = 0;
-    const newRock = (first) => { const z = .35 + Math.random() * .65, dir = Math.random() < .5 ? 1 : -1; return { z, dir, x:first ? Math.random() : (dir > 0 ? -.25 : 1.25), y:.08 + Math.random() * .8, vy:(Math.random() - .5) * .04, a:Math.random() * 6.283, va:(Math.random() - .5) * .6, s:(10 + Math.random() * 22) * z, shape:rock(7 + (Math.random() * 4 | 0)) }; };
-    const size = () => { const r = card.getBoundingClientRect(); D = Math.min(devicePixelRatio || 1, 2); W = cv.width = r.width * D; H = cv.height = r.height * D; st = Array.from({ length:80 }, () => ({ a:Math.random() * 6.283, r:Math.random(), v:.04 + Math.random() * .1 })); rk = Array.from({ length:3 }, () => newRock(true)); };
+    const newRock = (first) => { const z = .35 + Math.random() * .65, dir = -1; return { z, dir, x:first ? Math.random() : (dir > 0 ? -.25 : 1.25), y:.08 + Math.random() * .8, vy:(Math.random() - .5) * .04, a:Math.random() * 6.283, va:(Math.random() - .5) * .6, s:(10 + Math.random() * 22) * z, shape:rock(7 + (Math.random() * 4 | 0)) }; };
+    const size = () => { const r = card.getBoundingClientRect(); D = Math.min(devicePixelRatio || 1, 2); W = cv.width = r.width * D; H = cv.height = r.height * D; st = Array.from({ length:90 }, () => ({ x:Math.random(), y:Math.random(), z:.15 + Math.random() * Math.random() * .85, p:Math.random() * 6.283 })); rk = Array.from({ length:3 }, () => newRock(true)); };
     const tick = (now) => { if (!on) return; requestAnimationFrame(tick); const dt = still ? 0 : Math.min(.05, (now - last) / 1000 || 0); last = now; x.clearRect(0, 0, W, H); const cx = W / 2, cy = H * .42, R = Math.hypot(W, H) * .6;
-      for (const s of st){ s.r += s.v * dt * (.3 + s.r); if (s.r > 1){ s.r = .02 + Math.random() * .08; s.a = Math.random() * 6.283; }
-        const r0 = s.r * R, r1 = r0 * (1 + .05 * s.r), c = Math.cos(s.a), n = Math.sin(s.a);
-        x.strokeStyle = `rgba(230,236,250,${Math.min(1, s.r * 2) * .7})`; x.lineWidth = (.5 + s.r * 1.3) * D; x.beginPath(); x.moveTo(cx + c * r0, cy + n * r0); x.lineTo(cx + c * r1, cy + n * r1); x.stroke(); }
+      for (const s of st){ s.x -= dt * .012 * s.z; if (s.x < -.02) { s.x = 1.02; s.y = Math.random(); }
+        const tw = .55 + .45 * Math.sin(now / 1000 * (.6 + s.z) + s.p); x.fillStyle = `rgba(232,238,252,${(.25 + s.z * .6) * tw})`; x.beginPath(); x.arc(s.x * W, s.y * H, (.35 + s.z * 1.1) * D, 0, 6.283); x.fill(); }
       rk.sort((a, b) => a.z - b.z);
-      rk.forEach((r, k) => { r.x += r.dir * dt * (.03 + r.z * .07); r.y += r.vy * dt; r.a += r.va * dt; if (r.x < -.3 || r.x > 1.3) rk[k] = newRock(false);
-        const px = r.x * W, py = r.y * H, sz = r.s * D; x.save(); x.translate(px, py); x.rotate(r.a); x.globalAlpha = .35 + r.z * .55; if (r.z > .8) x.filter = `blur(${(r.z - .8) * 6 * D}px)`;
+      rk.forEach((r, k) => { r.x += r.dir * dt * (.012 + r.z * .03); r.y += Math.sin(now / 1000 * .4 + r.s) * dt * .006; r.a += r.va * dt * .35; if (r.x < -.3 || r.x > 1.3) rk[k] = newRock(false);
+        const px = r.x * W, py = r.y * H, sz = r.s * D; x.save(); x.translate(px, py); const la = -2.3 - r.a; x.rotate(r.a); x.globalAlpha = .35 + r.z * .55; if (r.z > .8) x.filter = `blur(${(r.z - .8) * 6 * D}px)`;
         x.beginPath(); r.shape.forEach(([u, v], i) => i ? x.lineTo(u * sz, v * sz) : x.moveTo(u * sz, v * sz)); x.closePath();
-        const g = x.createLinearGradient(-sz, -sz, sz, sz); g.addColorStop(0, '#2a2622'); g.addColorStop(1, '#0b0a09'); x.fillStyle = g; x.fill();
+        const g = x.createLinearGradient(Math.cos(la) * sz, Math.sin(la) * sz, -Math.cos(la) * sz, -Math.sin(la) * sz); g.addColorStop(0, '#5a524a'); g.addColorStop(.45, '#221f1c'); g.addColorStop(1, '#070606'); x.fillStyle = g; x.fill();
         x.globalAlpha *= .5; x.strokeStyle = tint; x.lineWidth = .8 * D; x.beginPath(); r.shape.slice(0, 4).forEach(([u, v], i) => i ? x.lineTo(u * sz, v * sz) : x.moveTo(u * sz, v * sz)); x.stroke(); x.restore(); }); };
     new IntersectionObserver(es => { const v = es.some(e => e.isIntersecting) && !document.hidden; if (v && !on){ on = true; size(); last = performance.now(); requestAnimationFrame(tick); } else if (!v) on = false; }, { threshold:.05 }).observe(card);
   }); })();
@@ -5703,13 +5714,13 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
   $('#vqClose').addEventListener('click', () => $('#vq').classList.add('off'));
   $('#collabCard').addEventListener('click', () => window.openQuest());
   // --- onboarding
-  let obI = 0, obMini = null, obFig = null, obDogR = null; const OBN = 5;
+  let obI = 0, obMini = null, obFig = null, obDogR = null; const OBN = 6;
   $('#obRt').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll('#obRt button').forEach(x => x.classList.toggle('on', x === b));
     try { const r = JSON.parse(localStorage.getItem('kosmoRoute')) || {}; r.key = b.dataset.r; r.i = 0; r.on = true; r.done = r.done || []; localStorage.setItem('kosmoRoute', JSON.stringify(r)); } catch(_){}
     window.routeSet && window.routeSet(b.dataset.r); });
   function obGo(i){ obI = i; $('#obTrack').style.transform = `translateX(${-i * 100}%)`; document.querySelectorAll('#obDots i').forEach((d, k) => d.classList.toggle('on', k === i)); $('#obNext').textContent = i === OBN - 1 ? 'Начать' : 'Далее';
-    if (i === 3 && !obFig && window.mountFig){ obFig = window.mountFig($('#obFig'), 'sputnik', 'ПС-1', () => {}); }
-    if (i === 4 && !obDogR && window.mountDog2D){ obDogR = (window.mountDog3D || window.mountDog2D)($('#obDog'), { pose:'sit' }); setTimeout(() => obDogR.setMood('hello', 3000), 300); } }
+    $('#obCol').classList.toggle('go', i === 3); if (i === 4 && !obFig && window.mountFig){ obFig = window.mountFig($('#obFig'), 'sputnik', 'ПС-1', () => {}); }
+    if (i === 5 && !obDogR && window.mountDog2D){ obDogR = (window.mountDog3D || window.mountDog2D)($('#obDog'), { pose:'sit' }); setTimeout(() => obDogR.setMood('hello', 3000), 300); } }
   function obClose(){ const dive = obI === OBN - 1; $('#ob').classList.toggle('dive', dive); $('#ob').classList.add('off'); if (dive){ window.__dive = true; showTab('map'); } store.set('kosmoOnboarded', 1); obMini && obMini.destroy(); obFig && obFig.destroy && obFig.destroy(); obDogR && obDogR.destroy(); obMini = obFig = obDogR = null; }
   window.openOnboarding = () => { $('#ob').classList.remove('off'); obGo(0); if (!obMini && window.mountMonument) obMini = mountMonument($('#obMon')); };
   $('#obNext').addEventListener('click', () => obI < OBN - 1 ? obGo(obI + 1) : obClose());
@@ -5820,7 +5831,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     $('#tl').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (!b) return; const id = +b.dataset.id; $('#vtl').classList.add('off'); showTab('map'); setTimeout(() => { const d = window.M_EX.find(x => x[0] === id), f = window.M_HALLS[d?.[3]]?.floor; window.m3floor && m3floor(f || 'all', true); window.m3select && m3select(id, true); }, 900); });
     window.openTimeline = () => { $('#vtl').classList.remove('off'); body.scrollTop = 0; setTimeout(upd, 60); };
     $('#vtlClose').addEventListener('click', () => $('#vtl').classList.add('off'));  }
-  window.openLanding = (u) => { const f = $('#vlFrame'); if (!f.src.endsWith(u)) f.src = u; $('#vl').classList.remove('off'); };
+  window.openLanding = (u) => { const f = $('#vlFrame'); if (!f.src.endsWith(u)) f.src = u; else try { f.contentWindow.__go(0); f.contentWindow.dispatchEvent(new Event('resize')); } catch(e){} $('#vl').classList.remove('off'); };
   window.openLuno = () => openLanding('lunokhod.html'); window.openMir = () => openLanding('mir.html'); window.openVenera = () => openLanding('venera.html'); window.openMars = () => openLanding('mars.html');
   const LANDING = { 22:'openLuno', 36:'openMir', 23:'openVenera', 15:'openMars' }; window.LANDING = LANDING;
   $('#vlClose').addEventListener('click', () => $('#vl').classList.add('off'));
