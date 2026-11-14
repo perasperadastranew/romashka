@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Белка и Стрелка — анимации поз</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<style>
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%,#1a1410,#08090c 70%);color:#fff;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:max(24px,env(safe-area-inset-top)) 16px 40px}
+.wrap{max-width:860px;margin:0 auto}
+.k{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#FF8A4C}
+h1{font-weight:500;font-size:34px;letter-spacing:-.02em;margin-top:10px}
+.sub{color:rgba(255,255,255,.55);margin-top:6px}
+.duo{display:flex;justify-content:center;gap:28px;margin:30px 0 8px;flex-wrap:wrap}
+.dg{display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer;border:0;background:none;color:inherit;padding:0}
+.po{position:relative;width:200px;height:258px;border-radius:30% / 24%;overflow:hidden;background:radial-gradient(120% 80% at 50% 30%,#22305a,#121a35 45%,#0a0d1a 80%);box-shadow:0 0 0 8px #1d1714,0 0 0 9px rgba(255,255,255,.2),0 0 60px rgba(255,110,30,.4);transition:transform .3s,opacity .3s,box-shadow .3s}
+.dg.off .po{opacity:.35;transform:scale(.94);box-shadow:0 0 0 8px #1d1714,0 0 0 9px rgba(255,255,255,.1)}
+.po>div{position:absolute;inset:0}
+.dg b{font-weight:500;font-size:16px}.dg span{font:500 11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.5)}
+.now{text-align:center;min-height:24px;margin:10px 0 0;font:500 13px ui-monospace,Menlo,monospace;color:#FFB27A}
+.sec{margin-top:26px}.sec h2{font-weight:500;font-size:18px}.sec p{color:rgba(255,255,255,.5);font-size:13px;margin-top:4px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btns button{height:42px;padding:0 16px;border-radius:21px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#fff;font:500 14px inherit;font-family:inherit;cursor:pointer;transition:background .2s,border-color .2s}
+.btns button:hover{border-color:rgba(255,138,76,.6)}
+.btns button.on{background:#FF8A4C;border-color:#FF8A4C;color:#111}
+.btns button small{opacity:.55;margin-left:6px;font-size:11px}
+.top{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.top button{height:44px;padding:0 20px;border-radius:22px;border:0;background:#FF8A4C;color:#111;font:600 14px inherit;font-family:inherit;cursor:pointer}
+.top button.gh{background:none;border:1px solid rgba(255,255,255,.2);color:#fff}
+.load{position:absolute;inset:0;display:grid;place-items:center;font:500 11px ui-monospace,monospace;color:rgba(255,255,255,.4)}
+</style></head><body><div class="wrap">
+<div class="k">Музей в кармане · гиды</div><h1>Белка и Стрелка — анимации поз</h1>
+<div class="sub">Тапни на иллюминатор, чтобы выбрать, кто показывает. Кнопки ниже запускают трюки, позы и эмоции.</div>
+<div class="duo"><button class="dg" data-w="belka"><div class="po"><div class="load">загружаю…</div><div id="dB"></div></div><b>Белка</b><span>спокойнее</span></button>
+<button class="dg" data-w="strelka"><div class="po"><div class="load">загружаю…</div><div id="dS"></div></div><b>Стрелка</b><span>живее</span></button></div>
+<div class="now" id="now"></div>
+<div class="top"><button id="auto">▶ Показать всё по очереди</button><button class="gh" id="stop">Стоп</button></div>
+<div class="sec"><h2>Трюки в иллюминаторе</h2><p>Собака не выходит из окна: вбегает, крутится, отходит, ныряет, служит, даёт лапу.</p><div class="btns" id="bT"></div></div>
+<div class="sec"><h2>Позы (клипы модели)</h2><p>Анимации из рига. В приложении собаки сидят — остальные позы для трюков и будущих сцен.</p><div class="btns" id="bP"></div></div>
+<div class="sec"><h2>Эмоции</h2><p>Брови, уши, голова и рот — поверх любой позы.</p><div class="btns" id="bM"></div></div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { clone as skClone } from 'three/addons/utils/SkeletonUtils.js';
+window.DOG_CLEAN = false;
+// ---- Белка в 3D: модель Jacko с настоящим ригом (кости головы, шеи, челюсти, ушей, языка), зубами и языком.
+// Рисованный стиль: две заливки, полутон в тени, мазки, затенение шеи, пушистый край силуэта. Брови нарисованы на шерсти и двигаются формами лица.
+let BELP = null;
+/* окрас Стрелки грузится один раз и заранее — чтобы она не мелькала белой, пока подтягивается текстура */
+let TEXSP = null, TEXS = null; const loadTexS = () => TEXSP || (TEXSP = new Promise(res => new THREE.TextureLoader().load('g/strelka_tex.webp', tx => { tx.colorSpace = THREE.SRGBColorSpace; tx.flipY = false; TEXS = tx; res(tx); }, undefined, () => res(null))));
+const loadBelka = () => BELP || (BELP = new Promise((res, rej) => { const go = () => { const L = new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder); L.parse(Uint8Array.from(atob(window.BELKAGLB), c => c.charCodeAt(0)).buffer, '', g => res(g), rej); };
+  if (window.BELKAGLB) return go(); const sc = document.createElement('script'); sc.src = 'belka.js'; sc.onload = go; sc.onerror = rej; document.head.appendChild(sc); }));
+// jaw — открытие рта (0…1), yaw/pitch/roll — голова, earsBack/earsOut — уши
+const MOODS = {
+  idle:{ brows_up:.4, L_mouthup:.5, R_mouthup:.5, big:.6, jaw:.08 },
+  hello:{ L_mouthup:1, R_mouthup:1, jaw:.55, brows_up:.8, earsOut:.3, roll:.16, big:.6 },
+  joy:{ L_mouthup:1, R_mouthup:1, jaw:.6, brows_up:1, earsOut:.3, big:.7, pitch:-.08 },
+  wow:{ brows_up:1, jaw:.7, big:1, earsOut:.15, pitch:-.1 },
+  think:{ brows_angry:.25, brows_up:.3, L_mouthup:.4, roll:-.2, yaw:.35, big:.4, pitch:-.12 },
+  listen:{ earsOut:.8, brows_up:.55, roll:.22, big:.6, L_mouthup:.35, R_mouthup:.35, jaw:.15 },
+  sad:{ brows_sad:1, earsBack:1, pitch:.22, big:.5, jaw:0 },
+  show:{ L_mouthup:.9, R_mouthup:.9, jaw:.45, brows_up:.6, yaw:-.45, big:.5 },
+  bark:{ jaw:.8, brows_angry:.3, earsBack:.2, big:.4 },
+  sleep:{ blink:1, earsBack:.5, brows_sad:.2, pitch:.3, roll:.12, L_mouthup:.25, R_mouthup:.25 },
+  talk:{ L_mouthup:.6, R_mouthup:.6, brows_up:.4, big:.5 } };
+// спокойный режим (по умолчанию): все эмоции — мягкая улыбка с закрытым ртом, без гримас и резких движений
+if (window.DOG_CALM !== false){ const smile = (o) => Object.assign({ L_mouthup:.8, R_mouthup:.8, brows_up:.25, big:.7, jaw:.04 }, o);
+  for (const k of Object.keys(MOODS)) if (k !== 'sleep') MOODS[k] = smile({ idle:{}, hello:{ roll:.08 }, joy:{ L_mouthup:1, R_mouthup:1, pitch:-.05, big:.75 }, wow:{ big:.75 }, think:{ roll:-.08, yaw:.15 }, listen:{ roll:.1, earsOut:.2 }, sad:{}, show:{ yaw:-.2 }, bark:{}, talk:{ L_mouthup:.85, R_mouthup:.85, jaw:.12 } }[k] || {}); }
+// ---- позы: углы костей (ось мира, радианы) + опускание корпуса; функции от времени для циклов
+// ---- позы: настоящие клипы анимации (ноги на IK, собраны в Blender) + переходы между семействами поз
+const POSE_FAM = { sit:'sit', beg:'sit', paw:'sit', lie:'lie', sleep:'lie' };
+const POSE_TR = { 'stand>sit':'sit_down', 'sit>stand':'stand_up', 'stand>lie':'lie_down', 'lie>stand':'get_up' };
+const POSE_MOOD = { sleep:'sleep' };
+window.DOG_POSES = ['stand', 'wag', 'sniff', 'walk', 'run', 'jump', 'bow', 'sit', 'beg', 'paw', 'lie', 'sleep'];
+window.mountDog3D = (box, opt = {}) => {
+  const CLEAN = window.DOG_CLEAN !== false; const UCL = { value:CLEAN ? 1 : 0 }, URC = { value:1 };
+  const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRatio(Math.min(devicePixelRatio || 1, 2.5)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .82; r.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+  box.appendChild(r.domElement); const sc = new THREE.Scene(); sc.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture; sc.environmentIntensity = .12;
+  const cam = new THREE.PerspectiveCamera(24, 1, .1, 500);
+  const key = new THREE.DirectionalLight(CLEAN ? 0xfff4ea : 0xffd9b8, CLEAN ? 2.6 : 2.4); key.position.set(-70, 40, 18); sc.add(key);
+  const rimO = new THREE.DirectionalLight(CLEAN ? 0xffd2b0 : 0xFF8A4A, CLEAN ? 1.1 : 2.6); rimO.position.set(50, 20, -40); sc.add(rimO); const rimB = new THREE.DirectionalLight(0x8FB0FF, CLEAN ? 1.2 : 1.6); rimB.position.set(-50, 30, -30); sc.add(rimB);
+  sc.add(new THREE.HemisphereLight(0xdfe6f4, 0x3a2a30, CLEAN ? .7 : .12));
+  const life = { g:1, gx:0, gy:0, x:0, y:0, e:2, ev:0, c:3, ct:0, tilt:0 };
+  let trick = null, snapCb = null; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
+  const mixBase = {}; const cur = {}, tgt = {}, sparks = [], lids = [], curtains = [], eyes = [], B = {}, rest = {}, wq = {};
+  const NK = new THREE.Vector4();
+  const grad = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; const g = c.getContext('2d'); (CLEAN ? ['#7d7484', '#b9b0b8', '#ece6e4', '#fbf7f4'] : ['#5a5070', '#9a8fa8', '#e8e0e2', '#fbf6f2']).forEach((col, i) => { g.fillStyle = col; g.fillRect(i, 0, 1, 1); }); const t = new THREE.CanvasTexture(c); t.minFilter = t.magFilter = CLEAN ? THREE.LinearFilter : THREE.NearestFilter; return t; })();
+  const paint = (m, fur) => { m.onBeforeCompile = sh => { sh.uniforms.uNk2 = { value:NK }; sh.uniforms.uClean = UCL; sh.uniforms.uRecol = URC; sh.uniforms.uObjDots = { value:window.DOG_PAINT === false ? 1 : 0 };
+    sh.vertexShader = 'varying vec3 vLp;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvLp = position;');
+    sh.fragmentShader = 'varying vec3 vLp; uniform vec4 uNk2; uniform float uClean; uniform float uRecol; uniform float uObjDots;\nfloat h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat n2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h2(i), h2(i + vec2(1,0)), f.x), mix(h2(i + vec2(0,1)), h2(i + vec2(1,1)), f.x), f.y); }\n' + sh.fragmentShader
+      .replace('#include <map_fragment>', '#include <map_fragment>\n { float red = clamp((diffuseColor.r - max(diffuseColor.g, diffuseColor.b) * 1.15) * 2.4, 0., 1.) * uRecol * uClean; diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.86, .6, .4) * (.55 + .55 * diffuseColor.r), red); }')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n float fr = pow(1. - clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.), 2.6); totalEmissiveRadiance += mix(vec3(1., .62, .38) * .45, vec3(1., .93, .86) * .16, uClean) * fr;')
+      .replace('#include <dithering_fragment>', `#include <dithering_fragment>
+        vec2 fc = uObjDots > .5 ? vec2(vLp.x + vLp.z * .7, vLp.y) * 3.2 : gl_FragCoord.xy;   // точки полутона приклеены к собаке — не «ползут» при движении
+        float lumO = dot(gl_FragColor.rgb, vec3(.299,.587,.114)), lumD = dot(diffuseColor.rgb, vec3(.299,.587,.114)) + 1e-3, sh = 1. - smoothstep(.55, .75, lumO / lumD);
+        ${fur ? 'float neck = smoothstep(uNk2.y, uNk2.x, vLp.y) * smoothstep(uNk2.z, uNk2.w, vLp.z); sh = max(sh, neck * .85);' : ''}
+        float facing = clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.);
+        gl_FragColor.rgb *= .72 + .38 * pow(facing, 1.4);
+        vec3 shade = gl_FragColor.rgb * vec3(.86, .78, .74);
+        vec2 q = mat2(.7071, -.7071, .7071, .7071) * fc / 6.; float d = length(fract(q) - .5); float dk = clamp(1. - lumO / lumD, 0., 1.); float rad = .1 + dk * .5; float dots = 1. - smoothstep(rad - .05, rad + .03, d);
+        vec3 col = mix(gl_FragColor.rgb, shade, sh * mix(.6, .25, uClean)); col = mix(col, col * vec3(.56, .43, .38), dots * smoothstep(.02, .28, dk) * (1. - uClean) * .85);
+        col *= vec3(.97, .93, .9);
+        gl_FragColor.rgb = col;`); }; return m; };
+  // мягкий «пушистый» материал: бархатный блеск по краям (sheen), мягкий перелив света, тонкие пряди, тень под головой
+  const fluffy = (old) => { const m = new THREE.MeshPhysicalMaterial({ map:old.map || null, color:0xffffff, roughness:1, metalness:0, sheen:1, sheenColor:new THREE.Color(0xfff4ee), sheenRoughness:.35 });
+    m.onBeforeCompile = sh => { sh.uniforms.uNk2 = { value:NK }; sh.uniforms.uClean = UCL; sh.uniforms.uRecol = URC;
+      sh.vertexShader = 'varying vec3 vLp;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvLp = position;');
+      sh.fragmentShader = 'varying vec3 vLp; uniform vec4 uNk2; uniform float uClean; uniform float uRecol;\nfloat h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat n2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h2(i), h2(i + vec2(1,0)), f.x), mix(h2(i + vec2(0,1)), h2(i + vec2(1,1)), f.x), f.y); }\n' + sh.fragmentShader
+        .replace('#include <map_fragment>', '#include <map_fragment>\n float st = n2(vec2(vMapUv.x * 1400., vMapUv.y * 160.)) * .55 + n2(vec2(vMapUv.x * 2600., vMapUv.y * 300.)) * .45; diffuseColor.rgb *= .9 + st * .14; { float red = clamp((diffuseColor.r - max(diffuseColor.g, diffuseColor.b) * 1.15) * 2.4, 0., 1.) * uRecol * uClean; diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.86, .6, .4) * (.55 + .55 * diffuseColor.r), red); }')
+        .replace('#include <dithering_fragment>', `#include <dithering_fragment>
+          float neck = smoothstep(uNk2.y, uNk2.x, vLp.y) * smoothstep(uNk2.z, uNk2.w, vLp.z); gl_FragColor.rgb *= 1. - neck * .25;
+          float fr = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); gl_FragColor.rgb += mix(vec3(1., .62, .38) * .25, vec3(1., .93, .86) * .1, uClean) * fr;`); }; return m; };
+  loadBelka().then(g => { if (!alive) return; const inner = skClone(g.scene); dog = new THREE.Group(); dog.add(inner); sc.add(dog); inner.updateMatrixWorld(true);
+    inner.traverse(o => { if (o.isBone) B[o.name] = o; });
+    const skinned = [];
+    inner.traverse(o => { if (!o.isMesh) return; if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals(); const old = o.material; if (o.morphTargetDictionary) morphs.push(o);
+      if (/^(Spec|Collar|Tag)/.test(o.name)){ o.visible = false; return; }
+      if (/^Eye/.test(o.name)){ o.material = new THREE.MeshBasicMaterial({ map:old.map, color:0xc8a07a }); eyes.push(o); return; }
+      if (/^(T_|B_)/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xf4efe6, gradientMap:grad }); return; }
+      if (/^Tongue/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE96F7E, gradientMap:grad }); return; }
+      const tm = o.name === 'Belka' ? paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), true) : paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), false); o.material = tm;
+      if (o.name === 'Belka' && o.isSkinnedMesh){ furMat = tm; texB = tm.map; skinned.push(o); } });
+    for (const o of []){ // пушистый край силуэта: оболочка цвета шерсти с «колючками»
+      const ol = new THREE.SkinnedMesh(o.geometry, olMat = new THREE.MeshBasicMaterial({ color:0xe9e2e4, side:THREE.BackSide }));
+      olMat.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n float sp = abs(sin(position.x * 4.7 + position.y * 3.3) * sin(position.z * 5.1 - position.y * 2.2)); transformed += normalize(objectNormal) * (.1 + pow(sp, 3.) * .6);'); };
+      ol.morphTargetInfluences = o.morphTargetInfluences; ol.morphTargetDictionary = o.morphTargetDictionary; o.parent.add(ol); ol.position.copy(o.position); ol.quaternion.copy(o.quaternion); ol.scale.copy(o.scale); ol.bind(o.skeleton, o.bindMatrix); }
+    inner.updateMatrixWorld(true);
+    for (const n of Object.keys(B)){ rest[n] = B[n].quaternion.clone(); wq[n] = B[n].getWorldQuaternion(new THREE.Quaternion()); }
+    const eL = inner.getObjectByName('EyeL'), eR = inner.getObjectByName('EyeR');
+    const bL = new THREE.Box3().setFromObject(eL), bR = new THREE.Box3().setFromObject(eR); const cL = bL.getCenter(new THREE.Vector3()), cR = bR.getCenter(new THREE.Vector3()); const c = cL.clone().add(cR).multiplyScalar(.5); const rr = (bL.max.x - bL.min.x) / 2;
+    NK.set(c.y - 9, c.y - 4.5, c.z - 16, c.z - 11);
+    const flat = (col) => new THREE.MeshBasicMaterial({ color:col, depthTest:false }); lidMat = new THREE.MeshToonMaterial({ color:who === 'strelka' ? 0x7A4A30 : 0xF2EAEA, gradientMap:grad });
+    for (const [ec, bn] of [[cL, 'Eye_L_socket'], [cR, 'Eye_R_socket']]){ const bone = B.Head_M; if (!bone) continue;
+      const bq = bone.getWorldQuaternion(new THREE.Quaternion()).invert();
+      const put = (m, p) => { m.position.copy(bone.worldToLocal(p.clone())); m.quaternion.copy(bq); bone.add(m); m.renderOrder = 12; };
+      for (const [dx, dy, s0] of [[-.18, .26, .22], [.22, -.2, .1]]){ const sp = new THREE.Mesh(new THREE.CircleGeometry(rr * s0, 20), flat(0xffffff)); put(sp, new THREE.Vector3(ec.x + dx * rr, ec.y + dy * rr, ec.z + rr * 1.1)); sparks.push(sp); }
+      const lsh = new THREE.Shape(); lsh.moveTo(-1, .05); lsh.quadraticCurveTo(0, -.85, 1, .05); lsh.lineTo(.92, .2); lsh.quadraticCurveTo(0, -.55, -.92, .2); lsh.lineTo(-1, .05); const lid = new THREE.Mesh(new THREE.ShapeGeometry(lsh, 16), flat(0x2e2226)); lid.scale.setScalar(rr * .9); put(lid, new THREE.Vector3(ec.x, ec.y + rr * .05, ec.z + rr * 1.0)); lid.visible = false; lids.push(lid); lid.renderOrder = 13;
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(rr * 1.02, 24, 16), lidMat); put(cap, new THREE.Vector3(ec.x, ec.y, ec.z + rr * .08)); cap.renderOrder = 0; cap.visible = false; lids.push(cap); 
+      /* веко-шторка цвета шерсти: при моргании опускается сверху на глаз и поднимается обратно */
+      { const g = new THREE.CircleGeometry(rr * .98, 32); g.translate(0, -rr * .98, 0); const cm = new THREE.MeshBasicMaterial({ color:0xffffff, depthTest:false, toneMapped:false }); const cur2 = new THREE.Mesh(g, cm); put(cur2, new THREE.Vector3(ec.x, ec.y + rr * .98, ec.z + rr * 1.06)); cur2.renderOrder = 14; cur2.scale.y = .001; cur2.visible = false; curtains.push(cur2); lid.renderOrder = 15; } }
+    { const nose = inner.getObjectByName('Nose'), hb = B.Head_M; if (nose && hb){ const nb = new THREE.Box3().setFromObject(nose), n0 = nb.getCenter(new THREE.Vector3()); const pts = [];
+      for (const sd of [-1, 1]) for (let k = 0; k < 2; k++){ const o = new THREE.Vector3(n0.x + sd * rr * (1.2 + k * .15), nb.min.y + rr * (1.6 - k * .3), nb.min.z + rr * .1);
+        const cv = new THREE.QuadraticBezierCurve3(o, o.clone().add(new THREE.Vector3(sd * rr * .9, rr * (.25 - k * .2), -rr * .1)), o.clone().add(new THREE.Vector3(sd * rr * (1.7 - k * .2), rr * (-.05 - k * .28), -rr * .55)));
+        const g = new THREE.TubeGeometry(cv, 16, rr * .022, 4, false); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color:0xfaf6f2, transparent:true, opacity:.55, depthTest:false })); m.position.copy(hb.worldToLocal(new THREE.Vector3())); m.quaternion.copy(hb.getWorldQuaternion(new THREE.Quaternion()).invert()); m.renderOrder = 10; m.layers.set(1); hb.add(m); } } }
+    inner.position.copy(c).multiplyScalar(-1); dog.updateMatrixWorld(true); let bb = new THREE.Box3(); inner.traverse(o => { if (o.isSkinnedMesh && o.name === 'Belka'){ o.skeleton.update(); bb = new THREE.Box3().setFromObject(o, true); } }); dog.userData.bb = bb; mixer = new THREE.AnimationMixer(inner); for (const c of g.animations){ smoothClip(c); const ac = mixer.clipAction(c); if (/_(down|up)$/.test(c.name)){ ac.setLoop(THREE.LoopOnce, 1); ac.clampWhenFinished = true; } ACT[c.name] = ac; } mixer.addEventListener('finished', e => { if (e.action === curAct && curAct._rest && curAct._rest.length) run(curAct._rest, .25); }); play(pose, 0); dog.userData.bb0 = boneBox(); dog.userData.np0 = B.Neck1_M ? B.Neck1_M.getWorldPosition(new THREE.Vector3()).sub(dog.position) : null; { const b0 = boneBox(); dog.userData.pad = [bb.min.clone().sub(b0.min), bb.max.clone().sub(b0.max)]; } size(); const go = () => { if (!alive) return; dog.visible = true; enterAt = performance.now(); mood = 'idle'; clearTimeout(moodT); moodT = setTimeout(() => { mood = 'hello'; moodT = setTimeout(() => mood = 'idle', 1800); }, 950); }; if (who === 'strelka'){ dog.visible = false; loadTexS().then(() => { setWho('strelka'); go(); }); } else go(); });
+  const FC = { c:new THREE.Vector3(), L:0, ok:false }, _v = new THREE.Vector3();
+  function boneBox(){ const bb = new THREE.Box3(); for (const b of Object.values(B)) bb.expandByPoint(b.getWorldPosition(_v)); return bb; }
+  const fam = p => POSE_FAM[p] || 'stand';
+  let curPose = null;
+  function run(seq, fade){ const nm = seq.shift(), ac = ACT[nm] || ACT.stand; if (!ac) return; ac.reset(); ac.enabled = true; ac.setEffectiveWeight(1); ac.play(); ac._rest = seq;
+    if (curAct && curAct !== ac) curAct.crossFadeTo(ac, window.DOG_SNAP ? 0 : fade, false); curAct = ac; }
+  function play(p, fade = .4){ if (!mixer) return; const a = fam(curPose || p), b = fam(p), seq = [];
+    if (curPose && a !== b){ if (a !== 'stand' && b !== 'stand') seq.push(POSE_TR[a + '>stand'], POSE_TR['stand>' + b]); else seq.push(POSE_TR[a + '>' + b]); }
+    seq.push(p); curPose = p; run(seq.filter(Boolean), curPose ? fade : 0); }
+  function fitCam(k){ if (!dog || !dog.userData.pad) return; const bb = pose === 'jump' && dog.userData.bb0 ? dog.userData.bb0.clone() : boneBox(); if (pose === 'jump'){ bb.min.y += dog.position.y; bb.max.y += dog.position.y + 24; }
+    bb.min.add(dog.userData.pad[0]); bb.max.add(dog.userData.pad[1]); const ct = bb.getCenter(new THREE.Vector3()), L = bb.getSize(new THREE.Vector3()).length();
+    if (!FC.ok || k >= 1){ FC.c.copy(ct); FC.L = L; FC.ok = true; } else { FC.c.lerp(ct, k); FC.L += (L - FC.L) * k; }
+    const D3 = { side:[1, .12, .05], front:[.06, .12, 1], '34':[.75, .25, .7] }[opt.view || '34']; const dv = new THREE.Vector3(...D3).normalize(); cam.position.copy(FC.c).addScaledVector(dv, FC.L * 2.1); cam.lookAt(FC.c.x, FC.c.y + FC.L * .03, FC.c.z); }
+  function size(){ const w = box.clientWidth, h = box.clientHeight; if (!w) return; r.setSize(w, h, false); const pr = r.getPixelRatio(); rt && rt.setSize(w * pr, h * pr); pq && pq.material.uniforms.px.value.set(1 / (w * pr), 1 / (h * pr)); cam.aspect = w / h; cam.updateProjectionMatrix(); if (dog){ if (opt.full){ fitCam(1); } else { if (window.DOG_CALM !== false && CLEAN){ cam.position.set(36, 3, 76); cam.lookAt(3, -4, -1); } else { cam.position.set(3, 0, 82); cam.lookAt(0, -2, 0); } } } }
+  const ro = new ResizeObserver(size); ro.observe(box);
+  // живописная постобработка: «масло» (фильтр Кувахары) + тушевой контур + белые штрихи по краю + зерно бумаги
+  const rt = new THREE.WebGLRenderTarget(4, 4, { samples:4, type:THREE.HalfFloatType });
+  const pq = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ transparent:true, depthTest:false, depthWrite:false,
+    uniforms:{ t:{ value:rt.texture }, px:{ value:new THREE.Vector2() }, time:{ value:0 } },
+    vertexShader:'varying vec2 u; void main(){ u = uv; gl_Position = vec4(position.xy, 0., 1.); }',
+    fragmentShader:`uniform sampler2D t; uniform vec2 px; uniform float time; varying vec2 u;
+      float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h(i), h(i + vec2(1,0)), f.x), mix(h(i + vec2(0,1)), h(i + vec2(1,1)), f.x), f.y); }
+      void main(){
+        // мазки: координаты слегка «плывут» по шуму, как кисть
+        vec2 w = vec2(n(u * 90.), n(u * 90. + 7.)) - .5; vec2 uv = u + w * px * 3.;
+        // Кувахара: 4 квадранта, берём самый однородный
+        vec3 m[4]; vec3 s2[4]; for (int k = 0; k < 4; k++){ m[k] = vec3(0.); s2[k] = vec3(0.); }
+        const int R = 3; float a = texture2D(t, uv).a;
+        for (int j = -R; j <= R; j++) for (int i = -R; i <= R; i++){ vec3 c = texture2D(t, uv + vec2(i, j) * px).rgb;
+          if (i <= 0 && j <= 0){ m[0] += c; s2[0] += c * c; } if (i >= 0 && j <= 0){ m[1] += c; s2[1] += c * c; } if (i <= 0 && j >= 0){ m[2] += c; s2[2] += c * c; } if (i >= 0 && j >= 0){ m[3] += c; s2[3] += c * c; } }
+        float N = float((R + 1) * (R + 1)); vec3 col = vec3(0.); float best = 1e9;
+        for (int k = 0; k < 4; k++){ vec3 mu = m[k] / N; vec3 v = abs(s2[k] / N - mu * mu); float sg = v.r + v.g + v.b; if (sg < best){ best = sg; col = mu; } }
+        // контур по альфе и яркости
+        float l = dot(texture2D(t, u + vec2(px.x, 0.)).rgb - texture2D(t, u - vec2(px.x, 0.)).rgb, vec3(.33)) , l2 = dot(texture2D(t, u + vec2(0., px.y)).rgb - texture2D(t, u - vec2(0., px.y)).rgb, vec3(.33));
+        float ae = abs(texture2D(t, u + vec2(px.x * 1.5, 0.)).a - texture2D(t, u - vec2(px.x * 1.5, 0.)).a) + abs(texture2D(t, u + vec2(0., px.y * 1.5)).a - texture2D(t, u - vec2(0., px.y * 1.5)).a);
+        float ink = smoothstep(.12, .3, length(vec2(l, l2))) * .45 * step(.5, n(u * 160.) + .3);
+        col = mix(col, col * vec3(.38, .3, .28), ink);
+        // белые штрихи-«волоски» вдоль края силуэта
+        float edge = smoothstep(.05, .6, ae); float hair = step(.72, n(vec2(u.x * 420. + u.y * 60., u.y * 70.)));
+        col = mix(col, vec3(1.6, 1.5, 1.45), edge * hair * .9);
+        col = mix(col, col * col * (3. - 2. * col), .35);
+        // полутон поверх мазков: точки растут в тенях
+        float L = dot(col, vec3(.299, .587, .114)); vec2 fq = mat2(.7071, -.7071, .7071, .7071) * (u / px) / 6.; float dd = length(fract(fq) - .5);
+        float dk2 = smoothstep(.48, .12, L); float rd = .04 + dk2 * .36; float hdot = 1. - smoothstep(rd - .05, rd + .03, dd);
+        col = mix(col, col * vec3(.72, .6, .54), hdot * smoothstep(.05, .35, dk2) * a);
+        float grain = h(floor(u / px)) * .06 - .03;
+        float alpha = max(a, edge * hair * .9);
+        gl_FragColor = vec4(col + grain, alpha);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+      }` })); pq.frustumCulled = false; const pScene = new THREE.Scene(); pScene.add(pq); const pCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  function setW(name, v){ for (const m of morphs){ const i = m.morphTargetDictionary[name]; if (i != null) m.morphTargetInfluences[i] = v; } }
+  // анимации модели «шумные»: соседние ключи скачут туда-обратно (и знак кватерниона мигает) — отсюда дрожь всего тела.
+  // Выравниваем знак и сглаживаем ключи окном 5 с весами Гаусса.
+  function smoothClip(c){ const W = [.06, .24, .4, .24, .06];
+    for (const tr of c.tracks){ const st = tr.getValueSize(), v = tr.values, n = tr.times.length; if (n < 5) continue; const loop = !/_(down|up)$/.test(c.name);
+      if (st === 4) for (let k = 1; k < n; k++){ let d = 0; for (let j = 0; j < 4; j++) d += v[k*4+j] * v[(k-1)*4+j]; if (d < 0) for (let j = 0; j < 4; j++) v[k*4+j] *= -1; }
+      const o = new Float32Array(v.length);
+      for (let k = 0; k < n; k++){ for (let j = 0; j < st; j++){ let a = 0, ws = 0; for (let m = -2; m <= 2; m++){ let kk = k + m; if (kk < 0 || kk >= n){ if (!loop) kk = Math.min(n - 1, Math.max(0, kk)); else kk = (kk + n - 1) % (n - 1); }
+          let val = v[kk*st+j]; if (st === 4){ let d = 0; for (let q = 0; q < 4; q++) d += v[kk*4+q] * v[k*4+q]; if (d < 0) val = -val; } a += val * W[m+2]; ws += W[m+2]; } o[k*st+j] = a / ws; }
+        if (st === 4){ const L = Math.hypot(o[k*4], o[k*4+1], o[k*4+2], o[k*4+3]) || 1; for (let j = 0; j < 4; j++) o[k*4+j] /= L; } }
+      tr.values = o; } }
+  // поворот кости вокруг мировой оси относительно позы покоя
+  const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), AX = { x:new THREE.Vector3(1, 0, 0), y:new THREE.Vector3(0, 1, 0), z:new THREE.Vector3(0, 0, 1) };
+  function rotOn(n, ...rs){ const b = B[n]; if (!b) return; const W = wq[n]; const acc = new THREE.Quaternion(); for (const [ax, a] of rs){ _q.setFromAxisAngle(AX[ax], a); acc.premultiply(_q); } _q2.copy(W).invert().multiply(acc).multiply(W); b.quaternion.multiply(_q2); }
+  function rot(n, ...rs){ const b = B[n]; if (!b) return; const W = wq[n]; const acc = new THREE.Quaternion(); for (const [ax, a] of rs){ _q.setFromAxisAngle(AX[ax], a); acc.premultiply(_q); }
+    _q2.copy(W).invert().multiply(acc).multiply(W); b.quaternion.copy(rest[n]).multiply(_q2); }
+  const NAMES = ['L_mouthup', 'R_mouthup', 'L_mouthwide', 'R_mouthwide', 'brows_up', 'brows_down', 'brows_sad', 'brows_angry', 'big', 'jaw', 'yaw', 'pitch', 'roll', 'earsBack', 'earsOut'];
+  const t0 = performance.now();
+  let inView = true; const vio = 'IntersectionObserver' in window ? new IntersectionObserver(es => { inView = es[0].isIntersecting; }) : null; vio && vio.observe(box);
+  (function loop(now){ if (!alive) return; requestAnimationFrame(loop); if (!dog){ return; } if (!inView || document.hidden || !box.offsetParent || box.closest('.off')){ return; } const t = (now - t0) / 1000;
+    const fdt = Math.min(.1, Math.max(0, t - (loop.pt || t))); loop.pt = t; const kM = 1 - Math.exp(-fdt * 3.2), kL = 1 - Math.exp(-fdt * 1.6), f60 = fdt * 60;
+    const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; cur[n] = (cur[n] || 0) + (tgt[n] - (cur[n] || 0)) * kM; }
+    blinkT -= fdt; if (blinkT < 0){ blinkV = .17; blinkT = Math.random() < .12 ? .32 : 2.6 + Math.random() * 3.4; } blinkV = Math.max(0, blinkV - fdt); /* моргание фиксированной длины — не зависит от частоты кадров */
+    /* характер: Белка спокойнее и плавнее, Стрелка живее — чаще смотрит по сторонам и дёргает ушами */
+    const P = who === 'strelka' ? { gx:1.35, gy:.55, g0:.9, g1:1.8, e0:1.4, e1:2.8, ev:.75, k:.85, tl:.75, es:.09, ef:2.3 } : { gx:1.1, gy:.45, g0:1.4, g1:2.6, e0:2.6, e1:4.2, ev:.55, k:.7, tl:.6, es:.05, ef:1.4 };
+    life.g -= fdt; if (life.g < 0){ life.gx = (Math.random() - .5) * P.gx; life.gy = (Math.random() - .5) * P.gy; life.g = P.g0 + Math.random() * P.g1; }
+    life.e -= fdt; if (life.e < 0){ life.ev = 1; life.side = Math.random() < .5 ? -1 : 1; life.e = P.e0 + Math.random() * P.e1; } life.ev *= Math.pow(.93, f60);
+    life.c -= fdt; if (life.c < 0){ life.ct = Math.random() < .6 ? (Math.random() - .5) * .55 : 0; life.c = 2 + Math.random() * 3; }
+    life.x += (life.gx - life.x) * kL; life.y += (life.gy - life.y) * kL; life.tilt += (life.ct - life.tilt) * kL * .8;
+    for (const n of ['L_mouthup', 'R_mouthup', 'L_mouthwide', 'R_mouthwide', 'brows_up', 'brows_down', 'brows_sad', 'brows_angry']) setW(n, cur[n]);
+    /* моргание: веко плавно закрывается и открывается (0 → 1 → 0 за 0,17 с), глаз не «выключается» */
+    const bp = blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0, bl = Math.max(M.blink || 0, bp), closed = bl > .92;
+    setW('blink', 0); setW('big', .62); /* размер глаз постоянный — при смене настроения не «прыгают» */
+    for (const sp of sparks) sp.visible = bl < .3; for (const l of lids) l.visible = false; if (lids[0]) for (let q = 0; q < lids.length; q += 2) lids[q].visible = closed;
+    for (const c of curtains) c.visible = false;
+    window.__bl = bl;
+    /* рот иногда плавно приоткрывается — как будто дышит или улыбается; без быстрого «шлёпанья» */
+    life.m = (life.m ?? 2) - fdt; if (life.m < 0){ life.mt = .4 + Math.random() * .25; life.mh = .8 + Math.random() * .8; life.m = (who === 'strelka' ? 2.6 : 3.4) + Math.random() * 3; }
+    if (life.mh > 0){ life.mh -= fdt; if (life.mh <= 0) life.mt = 0; }
+    life.mo = (life.mo || 0) + ((life.mt || 0) - (life.mo || 0)) * (1 - Math.pow(.9, f60));
+    const jaw = Math.min(1, cur.jaw + mouthV * 2.2 + life.mo) * .2 + Math.sin(t * 2.2) * .006;
+    // поза: целевые углы → плавное смешивание
+    const dt = Math.min(.05, Math.max(0, t - lastT)); lastT = t; // микшер three.js пишет в кость только когда значение анимации изменилось; если сбрасывать голову в «покой» каждый кадр,
+    // в кадрах без записи голова прыгала в позу покоя и обратно — отсюда дрожь. Сбрасываем к прошлому выходу микшера.
+    for (const n of ['Head_M', 'Neck1_M']) if (B[n] && rest[n]) B[n].quaternion.copy(mixBase[n] || rest[n]); if (mixer && !opt.full){ // в иллюминаторе собака сидит: позу берём один раз из клипа и замораживаем — вся «жизнь» процедурная (голова, уши, морда)
+      if (!loop.frozen && ACT.sit){ mixer.stopAllAction(); const a = ACT.sit; a.reset(); a.enabled = true; a.setEffectiveWeight(1); a.play(); a.time = 1.5; a.paused = true; mixer.update(0); loop.frozen = true; }
+      else if (!ACT.sit) mixer.update(dt); }
+    else if (mixer) mixer.update(window.DOG_SNAP ? .5 : dt);
+    /* моргание: глаз сам плавно сплющивается в линию и раскрывается — через кость глазницы, без накладок (после анимации, чтобы клип не перезаписал) */
+    { const blv = Math.max(M.blink || 0, blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0); for (const bn of ['Eye_L_socket', 'Eye_R_socket']){ const b = B[bn]; if (b){ if (!b.userData.upAx){ const q = b.getWorldQuaternion(new THREE.Quaternion()).invert(); const v = new THREE.Vector3(0, 1, 0).applyQuaternion(q); const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)]; b.userData.upAx = 'xyz'[a.indexOf(Math.max(...a))]; } const s = Math.max(.06, 1 - blv * .94); b.scale.set(1, 1, 1); b.scale[b.userData.upAx] = s; } } }
+    for (const n of ['Head_M', 'Neck1_M']) if (B[n]) (mixBase[n] = mixBase[n] || new THREE.Quaternion()).copy(B[n].quaternion);
+    const rotP = (n, ...rs) => rotOn(n, ...rs);
+    rot('jaw_JNT', ['x', jaw]); rot('tongue_JNT2', ['x', -jaw * .35]); rot('tongue_JNT4', ['x', -jaw * .5]);
+    // появление: просто плавно высовывается снизу, без пауз, поворота и перелёта
+    const ENT = 900, ea = enterAt ? Math.min(1, (now - enterAt) / ENT) : 1, HID = -36; const eLook = 0, ePerk = 0;
+    const ey = ea < 1 ? HID * Math.pow(1 - ea, 3) : 0;
+    const CALMK = window.DOG_CALM !== false ? P.k : 1; const yaw = cur.yaw + eLook + life.x * .36 * CALMK, pitch = cur.pitch + life.y * .18 * CALMK + Math.sin(t * .8) * .03 * CALMK, roll = cur.roll + life.tilt * P.tl * CALMK + Math.sin(t * .7) * .03 * CALMK;
+    rotP('Head_M', ['y', yaw * .65], ['x', pitch * .6], ['z', roll * .7]); rotP('Neck1_M', ['y', yaw * .35], ['x', pitch * .4], ['z', roll * .3]);
+    const eb = cur.earsBack - ePerk * .35, eo = cur.earsOut + ePerk * .25 + life.ev * P.ev + Math.sin(t * P.ef) * P.es;
+    const fold = who === 'strelka' ? 1 : 0; const eL = eo + (life.side < 0 ? life.ev * .45 : 0), eR = eo + (life.side > 0 ? life.ev * .45 : 0) + Math.sin(t * P.ef + 1.3) * P.es; rot('L_JNT_ear1', ['x', -eb * .55 - fold * .35], ['z', -eL * .35 - fold * .75]); rot('L_JNT_ear2', ['z', -fold * .55]); rot('R_JNT_ear1', ['x', -eb * .55], ['z', eR * .35]);
+    /* трюки в иллюминаторе: прибегает сбоку, кружится, отходит назад, ныряет, служит, даёт лапу */
+    let kx = 0, ky = 0, kz = 0, kr = 0, ks = 1, kOn = 0;
+    if (trick){ const u = Math.min(1, (now - trick.t0) / trick.dur), ease = x => 1 - Math.pow(1 - x, 3), hop = (n, a) => Math.abs(Math.sin(u * Math.PI * n)) * a * (1 - u); kOn = u < 1 ? 1 : 0;
+      if (trick.n === 'runIn'){ const sd = trick.sd || 1; kx = sd * 46 * (1 - ease(u)); ky = hop(4, 3.2); kr = sd * -1.1 * (1 - ease(Math.min(1, u * 1.25))); }
+      else if (trick.n === 'runOut'){ const sd = trick.sd || 1; kx = sd * 46 * Math.pow(u, 2); ky = hop(4, 3.2) * 4 * u; kr = sd * 1.1 * Math.min(1, u * 3); }
+      else if (trick.n === 'spin'){ kr = Math.PI * 2 * (u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2); ky = Math.sin(u * Math.PI) * 2.6; }
+      else if (trick.n === 'back'){ const w = Math.sin(Math.min(1, u * 1.15) * Math.PI); kz = -26 * w; ks = 1 - .18 * w; ky = hop(3, 1.2); }
+      else if (trick.n === 'dive'){ ky = -30 * Math.sin(Math.min(1, u) * Math.PI) * (u < .5 ? 1 : 1); }
+      if (u >= 1){ const done = trick.cb; trick = null; done && done(); } }
+    /* поворот — вокруг оси тела, а не вокруг точки между глаз */
+    if (kr && dog.userData.bb && dog.userData.pz == null){ dog.userData.pz = dog.userData.bb.getCenter(new THREE.Vector3()).z; }
+    const pz = dog.userData.pz || 0, ox = kr ? -pz * Math.sin(kr) : 0, oz = kr ? pz * (1 - Math.cos(kr)) : 0;
+    dog.position.set(kx + ox, Math.sin(t * 1.6) * .18 + ey + ky, kz + oz); dog.rotation.z = 0; dog.rotation.y = kr; dog.scale.setScalar(ks);
+    if (!opt.full && dog.userData.np0 && !kOn){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); dog.position.sub(d); }
+    if (opt.full && ea >= 1){ dog.updateMatrixWorld(true); fitCam(window.DOG_SNAP ? 1 : .05); }
+    if (window.DOG_PAINT !== false && !CLEAN){ r.setRenderTarget(rt); r.setClearColor(0, 0); r.clear(); r.render(sc, cam); r.setRenderTarget(null); r.clear(); r.render(pScene, pCam); cam.layers.set(1); r.autoClear = false; r.render(sc, cam); r.autoClear = true; cam.layers.set(0); } else { r.setRenderTarget(null); cam.layers.enableAll(); r.render(sc, cam); cam.layers.set(0); } if (snapCb){ const f = snapCb; snapCb = null; try { f(r.domElement.toDataURL('image/png')); } catch(_){ f(null); } } })(t0);
+  function setWho(w){ who = w; if (!furMat) return; if (w === 'strelka'){ if (!texS){ if (TEXS) texS = TEXS; else { loadTexS().then(() => who === 'strelka' && setWho('strelka')); return; } } furMat.map = texS; shellMats.forEach(m => m.map = texS); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0x7A4A30); }
+    else { furMat.map = texB; shellMats.forEach(m => m.map = texB); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0xE9DFDF); } furMat.needsUpdate = true; }
+  /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
+  function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (trick && !opt2.force) return false;
+    if (n === 'beg' || n === 'paw'){ const back = pose; play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
+    const dur = { runIn:1100, runOut:800, spin:1300, back:1700, dive:1200 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
+    if (n === 'runIn') { enterAt = 0; dog.visible = true; } if (n === 'spin' || n === 'runIn'){ mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', dur + 900); } return true; }
+  return { snap(){ return new Promise(res => { snapCb = res; setTimeout(() => { if (snapCb === res){ snapCb = null; res(null); } }, 1500); }); }, trick:doTrick, setPose(p){ if (p === pose) return; pose = p; play(p); const pm = POSE_MOOD[p]; if (pm){ mood = pm; clearTimeout(moodT); } else if (mood === 'sleep') mood = 'idle'; }, enter(){ const nw = performance.now(); if (!dog || (enterAt && nw - enterAt < 1200)) return; /* модель ещё грузится или уже появляется — второй раз не запускаем */ enterAt = nw; mood = 'idle'; clearTimeout(moodT); /* пока высовывается — спокойно, без наклона головы; привет — после */ moodT = setTimeout(() => { mood = 'hello'; moodT = setTimeout(() => mood = 'idle', 1800); }, 950); }, setMood(m, ms){ mood = m; clearTimeout(moodT); if (ms) moodT = setTimeout(() => mood = 'idle', ms); }, setWho, mouth(v){ mouthV = v; }, look(){}, destroy(){ vio && vio.disconnect(); alive = false; ro.disconnect(); r.dispose(); r.domElement.remove(); } };
+};
+
+loadBelka().catch(() => {}); loadTexS();
+const $ = s => document.querySelector(s);
+const T = [['runIn','вбежать'],['spin','закружиться'],['back','отойти назад'],['dive','нырнуть'],['beg','служить'],['paw','дать лапу'],['runOut','убежать']];
+const P = [['sit','сидит'],['stand','стоит'],['sit_down','садится'],['stand_up','встаёт'],['lie_down','ложится'],['lie','лежит'],['get_up','поднимается'],['sleep','спит'],['bow','поклон'],['wag','виляет'],['sniff','нюхает'],['beg','служит'],['paw','лапа'],['jump','прыжок'],['walk','шаг'],['run','бег']];
+const M = [['idle','спокойно'],['hello','привет'],['joy','радость'],['wow','удивление'],['think','думает'],['listen','слушает'],['sad','грустит'],['show','показывает'],['bark','гавкает'],['talk','говорит'],['sleep','сонная']];
+const D = { belka:mountDog3D($('#dB'), { pose:'sit' }), strelka:mountDog3D($('#dS'), { pose:'sit' }) };
+D.strelka.setWho && D.strelka.setWho('strelka');
+setTimeout(() => document.querySelectorAll('.load').forEach(l => l.remove()), 2500);
+const on = { belka:true, strelka:true };
+document.querySelectorAll('.dg').forEach(b => b.onclick = () => { const w = b.dataset.w; on[w] = !on[w]; if (!on.belka && !on.strelka) on[w === 'belka' ? 'strelka' : 'belka'] = true; document.querySelectorAll('.dg').forEach(x => x.classList.toggle('off', !on[x.dataset.w])); });
+const each = f => Object.keys(D).forEach((w, k) => on[w] && setTimeout(() => f(D[w]), k * 180));
+const say = t => { $('#now').textContent = t; };
+const mark = (box, b) => { document.querySelectorAll('.btns button').forEach(x => x.classList.remove('on')); b && b.classList.add('on'); };
+const run = { t:(n, l) => { say('Трюк: ' + l); each(d => { d.setPose('sit'); d.trick(n, { force:true }); }); if (n === 'runOut') setTimeout(() => each(d => d.trick('runIn', { force:true })), 1600); },
+  p:(n, l) => { say('Поза: ' + l + ' · ' + n); each(d => d.setPose(n)); },
+  m:(n, l) => { say('Эмоция: ' + l); each(d => { d.setPose('sit'); d.setMood(n, 3000); }); } };
+const mk = (id, list, kind) => { const box = $(id); list.forEach(([n, l]) => { const b = document.createElement('button'); b.innerHTML = `${l}<small>${n}</small>`; b.onclick = () => { stopAuto(); mark(box, b); run[kind](n, l); }; box.appendChild(b); }); };
+mk('#bT', T, 't'); mk('#bP', P, 'p'); mk('#bM', M, 'm');
+let AT = null; const stopAuto = () => { clearTimeout(AT); AT = null; };
+$('#stop').onclick = () => { stopAuto(); mark(); say(''); each(d => { d.setPose('sit'); d.setMood('idle'); }); };
+$('#auto').onclick = () => { stopAuto(); const q = [...T.map(x => ['t', ...x, x[0] === 'runOut' ? 3200 : 2600]), ...P.map(x => ['p', ...x, 3000]), ...M.map(x => ['m', ...x, 2600])]; let i = 0;
+  const step = () => { if (i >= q.length){ each(d => d.setPose('sit')); say('Готово'); mark(); return; } const [k, n, l, ms] = q[i++]; const box = { t:'#bT', p:'#bP', m:'#bM' }[k]; mark($(box), [...$(box).children].find(b => b.querySelector('small').textContent === n)); run[k](n, l); AT = setTimeout(step, ms); }; step(); };
+</script></body></html>
