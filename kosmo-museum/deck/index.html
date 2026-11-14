@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<meta charset="utf-8">
+<title>Музей в кармане</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Слева — рассказ главами, справа — живой прототип в телефоне; глава на экране переключает состояние прототипа */
+:root{
+  --bg:#0B0D12; --panel:#13161D; --line:rgba(255,255,255,.09); --fg:#ECEAE6; --mu:#8B8F9C; --ac:#FF8A4A; --ac2:#F0B898;
+  --f:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif; --m:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.55 var(--f);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1280px;height:100%;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:56px}
+.story{min-width:0;position:relative;height:100%}
+.ch{position:absolute;inset:0 0 64px 28px;display:flex;flex-direction:column;justify-content:center;gap:16px;padding-block:32px;max-width:640px;overflow:auto;opacity:0;visibility:hidden;transform:translateX(24px);transition:opacity .45s,transform .55s cubic-bezier(.2,.7,0,1),visibility 0s .55s}
+.ch.on{opacity:1;visibility:visible;transform:none;transition:opacity .45s,transform .55s cubic-bezier(.2,.7,0,1)}
+.ch.prev{transform:translateX(-24px)}
+.bar{position:absolute;left:28px;right:0;bottom:16px;display:flex;align-items:center;gap:12px}
+.bar .nb{width:44px;height:44px;border-radius:22px;display:grid;place-items:center;padding:0}
+.bar .nb:disabled{opacity:.35;cursor:default}
+.cnt{font:500 12px var(--m);color:var(--mu);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.prog{flex:1;height:2px;background:var(--line);border-radius:2px;overflow:hidden;max-width:360px}.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .45s}
+.kick{font:500 11.5px var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--ac)}
+h1{margin:0;font:500 clamp(40px,6vw,76px)/1.02 var(--f);letter-spacing:-.02em;text-wrap:balance}
+h2{margin:0;font:500 clamp(28px,3.4vw,42px)/1.1 var(--f);letter-spacing:-.01em;text-wrap:balance}
+h1 em,h2 em{font-style:normal;color:var(--ac)}
+.lead{font-size:19px;color:var(--fg);max-width:58ch;margin:0}
+p{margin:0;max-width:62ch;color:#C9C7C2}
+ul.pts{margin:0;padding:0;list-style:none;display:grid;gap:10px;max-width:62ch}
+ul.pts li{position:relative;padding-left:22px;color:#C9C7C2}
+ul.pts li::before{content:"";position:absolute;left:2px;top:.62em;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ac)}
+ul.pts b{color:var(--fg);font-weight:500}
+.try{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.try span{font:500 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.btn{font:500 14px var(--f);color:var(--fg);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:9px 14px;cursor:pointer}
+.btn:hover{border-color:var(--ac)}.btn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#1a0d05}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:620px}
+.stat{padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.stat b{display:block;font:500 30px/1.1 var(--f);font-variant-numeric:tabular-nums}.stat span{display:block;font-size:13px;color:var(--mu);margin-top:4px}
+.tbl{overflow-x:auto;max-width:620px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
+.note{font-size:13px;color:var(--mu)}
+.note a{color:var(--ac2)}
+/* телефон */
+.stage{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.phone{position:relative;width:calc(390px * var(--s,1) + 20px);height:calc(844px * var(--s,1) + 20px);border-radius:calc(56px * var(--s,1));background:#05060a;border:1px solid rgba(255,255,255,.14);box-shadow:0 40px 80px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04);padding:10px}
+.phone .clip{width:calc(390px * var(--s,1));height:calc(844px * var(--s,1));border-radius:calc(46px * var(--s,1));overflow:hidden;position:relative;background:#0B0D12}
+.phone iframe{width:390px;height:844px;border:0;transform:scale(var(--s,1));transform-origin:0 0;display:block}
+.cap{display:flex;align-items:center;gap:10px;font:500 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.cap i{width:7px;height:7px;border-radius:50%;background:var(--ac);box-shadow:0 0 10px var(--ac)}
+.dots{position:absolute;left:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:5}
+.dots button{width:8px;height:8px;border-radius:4px;border:0;padding:0;background:rgba(255,255,255,.18);cursor:pointer;transition:height .3s,background .3s}
+.dots button.on{height:22px;background:var(--ac)}
+.keys{font:500 11px var(--m);color:var(--mu);letter-spacing:.06em}
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:0}
+  .stage{order:-1;height:auto;padding-block:8px}
+  .cap{display:none}
+  .ch{inset:0 0 64px 0;justify-content:flex-start;padding-block:18px}
+  .bar{left:0}
+  .dots,.keys{display:none}
+  h1{font-size:40px}h2{font-size:26px}.lead{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <main class="story" id="story">
+    <nav class="dots" id="dots" aria-label="Слайды"></nav>
+
+    <section class="ch" data-act="today" data-cap="Главный экран">
+      <div class="kick">Музей космонавтики · концепт приложения</div>
+      <h1>Музей <em>в кармане</em></h1>
+      <p class="lead">Приложение, которое встречает у монумента, ведёт по залам, рассказывает голосом, показывает экспонаты вживую и зовёт вернуться.</p>
+      <p>Справа — рабочий прототип. Его можно трогать: листать, нажимать, крутить модели. Каждая глава переключает его в нужный экран.</p>
+      <div class="try"><button class="btn pri" data-go="1">Начать →</button></div>
+    </section>
+
+    <section class="ch" data-act="today" data-cap="Главный экран">
+      <div class="kick">Зачем</div>
+      <h2>Поток есть. Не хватает <em>проводника</em></h2>
+      <div class="stats">
+        <div class="stat"><b>740+ тыс.</b><span>посетителей за 2023 год</span></div>
+        <div class="stat"><b>×3</b><span>рост потока с 2013 года</span></div>
+        <div class="stat"><b>2 этажа</b><span>и 8 залов, легко потеряться</span></div>
+      </div>
+      <ul class="pts">
+        <li><b>Навигация.</b> Человек не понимает, куда идти и что главное, если у него час.</li>
+        <li><b>Контекст.</b> Подписи короткие, а история за экспонатом огромная.</li>
+        <li><b>Возвращение.</b> После визита ничего не держит связь с музеем.</li>
+      </ul>
+      <p class="note">Источник цифр посещаемости: <a href="https://www.mos.ru/news/item/138734073/" target="_blank" rel="noopener">mos.ru, май 2024</a>.</p>
+    </section>
+
+    <section class="ch" data-act="onboarding" data-cap="Онбординг">
+      <div class="kick">Первые 30 секунд</div>
+      <h2>Онбординг от <em>монумента</em></h2>
+      <ul class="pts">
+        <li><b>Монумент «Покорителям космоса»</b> в 3D, металл и звёзды — узнаваемая точка входа.</li>
+        <li><b>Выбор маршрута:</b> «Главное» за 45 минут, «С детьми» или «Весь музей».</li>
+        <li><b>NFC-метки</b> у экспонатов: приложи телефон — откроется досье и печать в паспорт.</li>
+        <li><b>Гид Белка</b> представляется в иллюминаторе, а финальный экран ныряет из космоса прямо в карту.</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="onboarding">Пролистать онбординг заново</button></div>
+    </section>
+
+    <section class="ch" data-act="map" data-cap="Карта">
+      <div class="kick">Навигация</div>
+      <h2>Тёмная 3D-карта со <em>светящимся</em> маршрутом</h2>
+      <ul class="pts">
+        <li><b>Стены стали линиями света на полу</b>, у каждого зала свой цвет.</li>
+        <li><b>Маршрут идёт по сетке залов</b> пунктиром, текущий шаг подсвечен.</li>
+        <li><b>Этажи переключаются без отлёта камеры</b>, лишний этаж приглушается.</li>
+        <li><b>Поиск</b> по всем экспонатам: «Луноход» — и карта сама долетит до него.</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="find">Найти «Луноход»</button></div>
+    </section>
+
+    <section class="ch" data-act="dossier" data-cap="Досье экспоната">
+      <div class="kick">У экспоната</div>
+      <h2>Досье: схема, которая <em>отвечает</em> на касание</h2>
+      <ul class="pts">
+        <li><b>Живая схема экспоната:</b> веди пальцем — спутник раскрывается, детали подписываются.</li>
+        <li><b>Цифры как телеметрия:</b> 83,6 кг, 58 см, 92 дня на орбите.</li>
+        <li><b>«Как он устроен»</b> — короткий лонгрид главами, «Кто создавал» — люди за проектом.</li>
+        <li><b>«Дальше по маршруту»</b> внизу ведёт к следующему экспонату без возврата на карту.</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="ex12">Открыть «Восток»</button><button class="btn" data-run="ex10">Открыть ПС-1</button></div>
+    </section>
+
+    <section class="ch" data-act="player" data-cap="Аудиогид">
+      <div class="kick">Аудиогид</div>
+      <h2>Рассказ как <em>плейлист</em> маршрута</h2>
+      <ul class="pts">
+        <li><b>Мини-плеер над таб-баром</b> живёт на всех экранах: можно ходить по карте и слушать.</li>
+        <li><b>Режим «Весь маршрут подряд»:</b> рассказы идут один за другим, как треки.</li>
+        <li><b>Полный экран:</b> текст подсвечивается по ходу, ±15 секунд, скорость 1–2×, очередь экспонатов.</li>
+        <li><b>«К экспонату»</b> возвращает в досье того, о ком сейчас рассказ.</li>
+      </ul>
+      <p class="note">В прототипе нет записи голоса: время идёт, текст подсвечивается. В продукте — запись диктора музея.</p>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="mini">Свернуть в мини-плеер</button><button class="btn" data-run="player">Развернуть</button></div>
+    </section>
+
+    <section class="ch" data-act="guide" data-cap="Гид Белка">
+      <div class="kick">Персонаж</div>
+      <h2>Белка и Стрелка — <em>живые</em> гиды</h2>
+      <ul class="pts">
+        <li><b>3D-персонаж в рисованном стиле:</b> мазки, полутон, усы, комбинезон под живот.</li>
+        <li><b>Настоящий риг:</b> рот, зубы, язык, брови-складки, моргание, эмоции.</li>
+        <li><b>Позы на инверсной кинематике:</b> сидит, служит, даёт лапу, бежит, прыгает, спит. Лапы стоят на полу.</li>
+        <li><b>Стрелка</b> — та же модель в своём окрасе и с опущенным ухом.</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="strelka">Позвать Стрелку</button><button class="btn" data-run="guide">Вернуть Белку</button></div>
+    </section>
+
+    <section class="ch" data-act="mir" data-cap="Облети экспонат">
+      <div class="kick">Вау-момент</div>
+      <h2>«Облети экспонат»: <em>в космос</em> из зала</h2>
+      <ul class="pts">
+        <li><b>Станция «Мир» над живой Землёй:</b> облака, атмосфера, размытие, как в кино.</li>
+        <li><b>«Венера-7»</b> с оранжевой планетой, <b>«Марс-3»</b> на орбите, <b>Луноход</b> на реголите.</li>
+        <li><b>Каждая сцена — короткий кадр для соцсетей</b> с кнопкой «Увидеть вживую».</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="mir">Мир</button><button class="btn" data-run="venera">Венера</button><button class="btn" data-run="mars">Марс-3</button></div>
+    </section>
+
+    <section class="ch" data-act="timeline" data-cap="Таймлайн">
+      <div class="kick">Контекст</div>
+      <h2>Таймлайн от <em>Циолковского</em> до наших дней</h2>
+      <p>19 событий с 1903 по 2016 год. У каждого кнопка «Найти в музее»: история ведёт к реальному экспонату на карте.</p>
+    </section>
+
+    <section class="ch" data-act="pass" data-cap="Паспорт">
+      <div class="kick">Возвращение</div>
+      <h2>Паспорт космонавта с <em>печатями</em></h2>
+      <ul class="pts">
+        <li><b>Печать за каждый экспонат</b> через NFC-метку или досье.</li>
+        <li><b>Коллекция и значки:</b> за полный маршрут — «Главный конструктор».</li>
+        <li><b>Сезонные маршруты</b> к 12 апреля и новым выставкам — повод прийти снова.</li>
+      </ul>
+    </section>
+
+    <section class="ch" data-act="quest" data-cap="Квест-коллаборация">
+      <div class="kick">Новые аудитории</div>
+      <h2>Коллаборации и <em>квесты</em></h2>
+      <p>Тематический маршрут с вопросами у экспонатов и подарком на кассе. Механика одна, оформление меняется под партнёра: сейчас Arknights, раньше Honkai: Star Rail.</p>
+    </section>
+
+    <section class="ch" data-act="tickets" data-cap="Билеты">
+      <div class="kick">Деньги музея</div>
+      <h2>Билет и магазин в <em>двух касаниях</em></h2>
+      <p>Слот, количество, оплата — без очереди в кассу. В магазине книги, коллекция «Первый» и космическая еда.</p>
+      <p class="note">Цены в прототипе — примеры.</p>
+    </section>
+
+    <section class="ch" data-act="today" data-cap="Главный экран">
+      <div class="kick">Эффект</div>
+      <h2>Что это даст <em>музею</em> за год</h2>
+      <div class="tbl"><table>
+        <thead><tr><th></th><th>Осторожно</th><th>База</th><th>Амбициозно</th></tr></thead>
+        <tbody>
+          <tr><td>Ставят приложение</td><td>8%</td><td class="base">15%</td><td>25%</td></tr>
+          <tr><td>Пользователей</td><td>≈59 тыс.</td><td class="base">≈111 тыс.</td><td>≈185 тыс.</td></tr>
+          <tr><td>Постов «Мой полёт»</td><td>≈3 тыс.</td><td class="base">≈11 тыс.</td><td>≈28 тыс.</td></tr>
+          <tr><td>Повторных визитов</td><td>≈1,8 тыс.</td><td class="base">≈6,7 тыс.</td><td>≈18,5 тыс.</td></tr>
+          <tr><td>Новых посетителей</td><td>≈7 тыс.</td><td class="base">≈18,5 тыс.</td><td>≈37 тыс.</td></tr>
+        </tbody></table></div>
+      <p class="note">Расчёт от 740 тыс. посетителей в год; доли — гипотезы для проверки на пилоте. Выручку посчитаем с ценой билета и средним чеком магазина.</p>
+    </section>
+
+    <section class="ch" data-act="today" data-cap="Главный экран">
+      <div class="kick">Дальше</div>
+      <h2>Пилот на <em>одном зале</em></h2>
+      <ul class="pts">
+        <li><b>Зал «Утро космической эры»:</b> 7 досье, NFC-метки, аудиогид, Белка.</li>
+        <li><b>Метки у монумента</b> с тизером «Облети экспонат».</li>
+        <li><b>Меряем:</b> долю установок, прохождение маршрута, печати, шеринг, повторные визиты, покупки в приложении.</li>
+      </ul>
+      <div class="try"><button class="btn" data-go="0">В начало</button></div>
+    </section>
+
+    <div class="bar"><button class="btn nb" id="prev" aria-label="Предыдущий слайд">←</button><button class="btn nb" id="next" aria-label="Следующий слайд">→</button><span class="cnt" id="cnt">1 / 1</span><div class="prog"><i id="prog"></i></div><span class="keys">← → или пробел</span></div>
+  </main>
+  <aside class="stage" aria-label="Прототип приложения">
+    <div class="phone" id="phone"><div class="clip"><iframe id="app" src="app/index.html" title="Прототип «Музей в кармане»"></iframe></div></div>
+    <div class="cap"><i></i><span id="cap">Главный экран</span> · можно нажимать</div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const F = document.getElementById('app'), chs = [...document.querySelectorAll('.ch')], dots = document.getElementById('dots'), cap = document.getElementById('cap'), phone = document.getElementById('phone');
+  // масштаб телефона под высоту окна
+  function fit(){ const narrow = innerWidth <= 980, h = narrow ? innerHeight * .46 : innerHeight - 90, w = narrow ? innerWidth - 40 : 460;
+    const s = Math.max(.32, Math.min(1, (h - 20) / 844, (w - 20) / 390)); phone.style.setProperty('--s', s.toFixed(3)); }
+  fit(); addEventListener('resize', fit);
+  // управление прототипом
+  const W = () => { try { return F.contentWindow; } catch(_){ return null; } };
+  const OV = ['ob', 'vtl', 'vq', 'vt', 'vl', 'v3', 'vg', 'vEx', 'vc', 'vs'];
+  function reset(w){ const d = w.document; OV.forEach(id => { const el = d.getElementById(id); el && el.classList.add('off'); }); const fp = d.getElementById('fp'); fp && fp.classList.remove('on'); }
+  const ACT = {
+    today(w){ reset(w); w.showTab && w.showTab('today'); },
+    onboarding(w){ reset(w); w.openOnboarding && w.openOnboarding(); },
+    map(w){ reset(w); w.showTab && w.showTab('map'); },
+    find(w){ reset(w); w.showTab && w.showTab('map'); setTimeout(() => { w.m3floor && w.m3floor('all', true); w.m3select && w.m3select(22, true); }, 900); },
+    dossier(w){ reset(w); w.openEx && w.openEx(10); },
+    ex10(w){ ACT.dossier(w); }, ex12(w){ reset(w); w.openEx && w.openEx(12); },
+    player(w){ reset(w); if (w.PL){ w.PL.play(10, 'route'); w.PL.openFull(); } },
+    mini(w){ reset(w); if (w.PL){ w.PL.play(10, 'route'); } w.showTab && w.showTab('map'); },
+    guide(w){ reset(w); w.openGuide && w.openGuide(); setTimeout(() => { const b = w.document.querySelector('#vgWho [data-d="belka"]'); b && b.click(); }, 300); },
+    strelka(w){ reset(w); w.openGuide && w.openGuide(); setTimeout(() => { const b = w.document.querySelector('#vgWho [data-d="strelka"]'); b && b.click(); }, 400); },
+    mir(w){ reset(w); w.openMir && w.openMir(); }, venera(w){ reset(w); w.openVenera && w.openVenera(); }, mars(w){ reset(w); w.openMars && w.openMars(); },
+    timeline(w){ reset(w); w.openTimeline && w.openTimeline(); },
+    pass(w){ reset(w); w.showTab && w.showTab('pass'); },
+    quest(w){ reset(w); w.openQuest && w.openQuest(); },
+    tickets(w){ reset(w); w.openTickets && w.openTickets(); } };
+  let ready = false, pending = 'today', curAct = null;
+  function run(name){ pending = name; if (!ready) return; const w = W(); if (!w || !ACT[name]) return; try { ACT[name](w); } catch(e){ console.warn(e); } }
+  F.addEventListener('load', () => { ready = true; setTimeout(() => run(pending), 600); });
+  // слайды
+  chs.forEach((c, i) => { const b = document.createElement('button'); b.setAttribute('aria-label', 'Слайд ' + (i + 1)); b.onclick = () => go(i); dots.appendChild(b); });
+  let cur = -1;
+  function go(i){ i = Math.max(0, Math.min(chs.length - 1, i)); if (i === cur) return; cur = i;
+    chs.forEach((c, k) => { c.classList.toggle('on', k === i); c.classList.toggle('prev', k < i); c.scrollTop = 0; });
+    [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i)); const c = chs[i]; cap.textContent = c.dataset.cap || '';
+    document.getElementById('cnt').textContent = (i + 1) + ' / ' + chs.length; document.getElementById('prog').style.width = ((i + 1) / chs.length * 100) + '%';
+    document.getElementById('prev').disabled = i === 0; document.getElementById('next').disabled = i === chs.length - 1;
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch(_){}
+    if (c.dataset.act !== curAct){ curAct = c.dataset.act; run(curAct); } }
+  document.getElementById('prev').onclick = () => go(cur - 1); document.getElementById('next').onclick = () => go(cur + 1);
+  const h0 = /^#s(\d+)$/.exec(location.hash); go(h0 ? +h0[1] - 1 : 0);
+  addEventListener('hashchange', () => { const h = /^#s(\d+)$/.exec(location.hash); if (h) go(+h[1] - 1); });
+  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) go(+g.dataset.go); const r = e.target.closest('[data-run]'); if (r){ curAct = null; run(r.dataset.run); } });
+  addEventListener('keydown', e => { if (e.target.closest && e.target.closest('input,textarea')) return;
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)){ e.preventDefault(); go(cur + 1); }
+    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)){ e.preventDefault(); go(cur - 1); } });
+  // свайп по тексту на телефоне
+  let sx = null; document.getElementById('story').addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive:true });
+  document.getElementById('story').addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(cur + (dx < 0 ? 1 : -1)); sx = null; });
+})();
+</script>
