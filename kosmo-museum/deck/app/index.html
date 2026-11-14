@@ -7960,9 +7960,9 @@ window.mountDog3D = (box, opt = {}) => {
         ${fur ? 'float neck = smoothstep(uNk2.y, uNk2.x, vLp.y) * smoothstep(uNk2.z, uNk2.w, vLp.z); sh = max(sh, neck * .85);' : ''}
         float facing = clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.);
         gl_FragColor.rgb *= .72 + .38 * pow(facing, 1.4);
-        vec3 shade = gl_FragColor.rgb * vec3(.8, .76, .95);
+        vec3 shade = gl_FragColor.rgb * vec3(.86, .78, .74);
         vec2 q = mat2(.7071, -.7071, .7071, .7071) * fc / 6.; float d = length(fract(q) - .5); float dk = clamp(1. - lumO / lumD, 0., 1.); float rad = .1 + dk * .5; float dots = 1. - smoothstep(rad - .05, rad + .03, d);
-        vec3 col = mix(gl_FragColor.rgb, shade, sh * mix(.6, .25, uClean)); col = mix(col, col * vec3(.5, .42, .68), dots * smoothstep(.02, .28, dk) * (1. - uClean) * .85);
+        vec3 col = mix(gl_FragColor.rgb, shade, sh * mix(.6, .25, uClean)); col = mix(col, col * vec3(.56, .43, .38), dots * smoothstep(.02, .28, dk) * (1. - uClean) * .85);
         col *= vec3(.97, .93, .9);
         gl_FragColor.rgb = col;`); }; return m; };
   // мягкий «пушистый» материал: бархатный блеск по краям (sheen), мягкий перелив света, тонкие пряди, тень под головой
@@ -8001,9 +8001,9 @@ window.mountDog3D = (box, opt = {}) => {
       const lsh = new THREE.Shape(); lsh.moveTo(-1, .05); lsh.quadraticCurveTo(0, -.85, 1, .05); lsh.lineTo(.92, .2); lsh.quadraticCurveTo(0, -.55, -.92, .2); lsh.lineTo(-1, .05); const lid = new THREE.Mesh(new THREE.ShapeGeometry(lsh, 16), flat(0x2e2226)); lid.scale.setScalar(rr * .9); put(lid, new THREE.Vector3(ec.x, ec.y + rr * .05, ec.z + rr * 1.0)); lid.visible = false; lids.push(lid); lid.renderOrder = 13;
       const cap = new THREE.Mesh(new THREE.SphereGeometry(rr * 1.02, 24, 16), lidMat); put(cap, new THREE.Vector3(ec.x, ec.y, ec.z + rr * .08)); cap.renderOrder = 0; cap.visible = false; lids.push(cap); }
     { const nose = inner.getObjectByName('Nose'), hb = B.Head_M; if (nose && hb){ const nb = new THREE.Box3().setFromObject(nose), n0 = nb.getCenter(new THREE.Vector3()); const pts = [];
-      for (const sd of [-1, 1]) for (let k = 0; k < 3; k++){ const o = new THREE.Vector3(n0.x + sd * rr * (1.2 + k * .15), nb.min.y + rr * (1.6 - k * .3), nb.min.z + rr * .1);
-        const cv = new THREE.QuadraticBezierCurve3(o, o.clone().add(new THREE.Vector3(sd * rr * 1.8, rr * (.5 - k * .35), -rr * .2)), o.clone().add(new THREE.Vector3(sd * rr * (3.4 - k * .25), rr * (-.1 - k * .45), -rr * 1.1)));
-        const g = new THREE.TubeGeometry(cv, 16, rr * .022, 4, false); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color:0xfaf6f2, transparent:true, opacity:.8, depthTest:false })); m.position.copy(hb.worldToLocal(new THREE.Vector3())); m.quaternion.copy(hb.getWorldQuaternion(new THREE.Quaternion()).invert()); m.renderOrder = 10; m.layers.set(1); hb.add(m); } } }
+      for (const sd of [-1, 1]) for (let k = 0; k < 2; k++){ const o = new THREE.Vector3(n0.x + sd * rr * (1.2 + k * .15), nb.min.y + rr * (1.6 - k * .3), nb.min.z + rr * .1);
+        const cv = new THREE.QuadraticBezierCurve3(o, o.clone().add(new THREE.Vector3(sd * rr * .9, rr * (.25 - k * .2), -rr * .1)), o.clone().add(new THREE.Vector3(sd * rr * (1.7 - k * .2), rr * (-.05 - k * .28), -rr * .55)));
+        const g = new THREE.TubeGeometry(cv, 16, rr * .022, 4, false); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color:0xfaf6f2, transparent:true, opacity:.55, depthTest:false })); m.position.copy(hb.worldToLocal(new THREE.Vector3())); m.quaternion.copy(hb.getWorldQuaternion(new THREE.Quaternion()).invert()); m.renderOrder = 10; m.layers.set(1); hb.add(m); } } }
     inner.position.copy(c).multiplyScalar(-1); dog.updateMatrixWorld(true); let bb = new THREE.Box3(); inner.traverse(o => { if (o.isSkinnedMesh && o.name === 'Belka'){ o.skeleton.update(); bb = new THREE.Box3().setFromObject(o, true); } }); dog.userData.bb = bb; mixer = new THREE.AnimationMixer(inner); for (const c of g.animations){ smoothClip(c); const ac = mixer.clipAction(c); if (/_(down|up)$/.test(c.name)){ ac.setLoop(THREE.LoopOnce, 1); ac.clampWhenFinished = true; } ACT[c.name] = ac; } mixer.addEventListener('finished', e => { if (e.action === curAct && curAct._rest && curAct._rest.length) run(curAct._rest, .25); }); play(pose, 0); dog.userData.bb0 = boneBox(); dog.userData.np0 = B.Neck1_M ? B.Neck1_M.getWorldPosition(new THREE.Vector3()).sub(dog.position) : null; { const b0 = boneBox(); dog.userData.pad = [bb.min.clone().sub(b0.min), bb.max.clone().sub(b0.max)]; } size(); const go = () => { if (!alive) return; dog.visible = true; enterAt = performance.now(); mood = 'idle'; clearTimeout(moodT); moodT = setTimeout(() => { mood = 'hello'; moodT = setTimeout(() => mood = 'idle', 1800); }, 950); }; if (who === 'strelka'){ dog.visible = false; loadTexS().then(() => { setWho('strelka'); go(); }); } else go(); });
   const FC = { c:new THREE.Vector3(), L:0, ok:false }, _v = new THREE.Vector3();
   function boneBox(){ const bb = new THREE.Box3(); for (const b of Object.values(B)) bb.expandByPoint(b.getWorldPosition(_v)); return bb; }
@@ -8042,7 +8042,7 @@ window.mountDog3D = (box, opt = {}) => {
         float l = dot(texture2D(t, u + vec2(px.x, 0.)).rgb - texture2D(t, u - vec2(px.x, 0.)).rgb, vec3(.33)) , l2 = dot(texture2D(t, u + vec2(0., px.y)).rgb - texture2D(t, u - vec2(0., px.y)).rgb, vec3(.33));
         float ae = abs(texture2D(t, u + vec2(px.x * 1.5, 0.)).a - texture2D(t, u - vec2(px.x * 1.5, 0.)).a) + abs(texture2D(t, u + vec2(0., px.y * 1.5)).a - texture2D(t, u - vec2(0., px.y * 1.5)).a);
         float ink = smoothstep(.12, .3, length(vec2(l, l2))) * .45 * step(.5, n(u * 160.) + .3);
-        col = mix(col, col * vec3(.38, .3, .42), ink);
+        col = mix(col, col * vec3(.38, .3, .28), ink);
         // белые штрихи-«волоски» вдоль края силуэта
         float edge = smoothstep(.05, .6, ae); float hair = step(.72, n(vec2(u.x * 420. + u.y * 60., u.y * 70.)));
         col = mix(col, vec3(1.6, 1.5, 1.45), edge * hair * .9);
@@ -8050,7 +8050,7 @@ window.mountDog3D = (box, opt = {}) => {
         // полутон поверх мазков: точки растут в тенях
         float L = dot(col, vec3(.299, .587, .114)); vec2 fq = mat2(.7071, -.7071, .7071, .7071) * (u / px) / 6.; float dd = length(fract(fq) - .5);
         float dk2 = smoothstep(.48, .12, L); float rd = .04 + dk2 * .36; float hdot = 1. - smoothstep(rd - .05, rd + .03, dd);
-        col = mix(col, col * vec3(.68, .6, .8), hdot * smoothstep(.05, .35, dk2) * a);
+        col = mix(col, col * vec3(.72, .6, .54), hdot * smoothstep(.05, .35, dk2) * a);
         float grain = h(floor(u / px)) * .06 - .03;
         float alpha = max(a, edge * hair * .9);
         gl_FragColor = vec4(col + grain, alpha);
@@ -8079,7 +8079,7 @@ window.mountDog3D = (box, opt = {}) => {
   (function loop(now){ if (!alive) return; requestAnimationFrame(loop); if (!dog){ return; } if (!inView || document.hidden || !box.offsetParent || box.closest('.off')){ return; } const t = (now - t0) / 1000;
     const fdt = Math.min(.1, Math.max(0, t - (loop.pt || t))); loop.pt = t; const kM = 1 - Math.exp(-fdt * 3.2), kL = 1 - Math.exp(-fdt * 1.6), f60 = fdt * 60;
     const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; cur[n] = (cur[n] || 0) + (tgt[n] - (cur[n] || 0)) * kM; }
-    blinkT -= fdt; if (blinkT < 0){ blinkV = 1; blinkT = Math.random() < .25 ? .22 : 2.2 + Math.random() * 3; } blinkV *= Math.pow(.78, f60);
+    blinkT -= fdt; if (blinkT < 0){ blinkV = .13; blinkT = Math.random() < .12 ? .3 : 2.6 + Math.random() * 3.4; } blinkV = Math.max(0, blinkV - fdt); /* моргание фиксированной длины — не зависит от частоты кадров */
     /* характер: Белка спокойнее и плавнее, Стрелка живее — чаще смотрит по сторонам и дёргает ушами */
     const P = who === 'strelka' ? { gx:1.35, gy:.55, g0:.9, g1:1.8, e0:1.4, e1:2.8, ev:.75, k:.85, tl:.75, es:.09, ef:2.3 } : { gx:1.1, gy:.45, g0:1.4, g1:2.6, e0:2.6, e1:4.2, ev:.55, k:.7, tl:.6, es:.05, ef:1.4 };
     life.g -= fdt; if (life.g < 0){ life.gx = (Math.random() - .5) * P.gx; life.gy = (Math.random() - .5) * P.gy; life.g = P.g0 + Math.random() * P.g1; }
@@ -8087,8 +8087,8 @@ window.mountDog3D = (box, opt = {}) => {
     life.c -= fdt; if (life.c < 0){ life.ct = Math.random() < .6 ? (Math.random() - .5) * .55 : 0; life.c = 2 + Math.random() * 3; }
     life.x += (life.gx - life.x) * kL; life.y += (life.gy - life.y) * kL; life.tilt += (life.ct - life.tilt) * kL * .8;
     for (const n of ['L_mouthup', 'R_mouthup', 'L_mouthwide', 'R_mouthwide', 'brows_up', 'brows_down', 'brows_sad', 'brows_angry']) setW(n, cur[n]);
-    const bl = Math.max(M.blink || 0, blinkV > .05 ? Math.min(1, blinkV * 1.4) : 0), closed = bl > .55;
-    setW('blink', 0); for (const e of eyes) e.visible = !closed; setW('big', cur.big); for (const sp of sparks) sp.visible = !closed; for (const l of lids) l.visible = closed;
+    const bl = Math.max(M.blink || 0, blinkV > 0 ? 1 : 0), closed = bl > .55;
+    setW('blink', 0); for (const e of eyes) e.visible = !closed; setW('big', .62); /* размер глаз постоянный — при смене настроения не «прыгают» */ for (const sp of sparks) sp.visible = !closed; for (const l of lids) l.visible = closed;
     /* рот иногда плавно приоткрывается — как будто дышит или улыбается; без быстрого «шлёпанья» */
     life.m = (life.m ?? 2) - fdt; if (life.m < 0){ life.mt = .4 + Math.random() * .25; life.mh = .8 + Math.random() * .8; life.m = (who === 'strelka' ? 2.6 : 3.4) + Math.random() * 3; }
     if (life.mh > 0){ life.mh -= fdt; if (life.mh <= 0) life.mt = 0; }
