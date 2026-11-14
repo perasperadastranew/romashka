@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Карта приложения</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#141516;--fg:#ECECEA;--mu:#8C8F94;--line:#3A3C40;--wire:#4A4D52;--pill:#141516;--fill:#55585D;--ac:#FF8A4A;--acfg:#1A0E06;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.5 Onest,Inter,-apple-system,system-ui,sans-serif}
+.wrap{padding-block:56px 80px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1720px;margin:0 auto}
+.k{font:500 12px "JetBrains Mono",ui-monospace,monospace;color:var(--mu);letter-spacing:.02em}
+h1{font-weight:400;font-size:clamp(44px,7vw,92px);line-height:1;letter-spacing:-.035em;margin:56px 0 28px}
+h1 em{font-style:normal;color:var(--ac)}
+.lead{font-weight:400;font-size:clamp(18px,2vw,24px);line-height:1.35;max-width:30ch;margin:0;text-wrap:balance}
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:28px 0 0;font-size:13px;color:var(--mu)}
+.legend span{display:inline-flex;align-items:center;gap:9px}
+.legend i{display:inline-block;width:30px;height:16px;border-radius:9px;border:1px solid var(--line)}
+.legend i.f{background:var(--fill);border-color:var(--fill)}.legend i.a{background:var(--ac);border-color:var(--ac)}
+.scroll{overflow-x:auto;margin:36px calc(-1 * max(24px,env(safe-area-inset-left,0px))) 0;padding:0 max(24px,env(safe-area-inset-left,0px)) 8px;scrollbar-width:thin}
+.board{position:relative}
+.board svg{position:absolute;inset:0;overflow:visible;pointer-events:none}
+.board svg path{fill:none;stroke:var(--wire);stroke-width:1}
+.board svg path.hot{stroke:var(--ac);stroke-opacity:.7}
+.board svg circle{fill:#C9F27A}
+.board svg circle.hot{fill:var(--ac)}
+.n{position:absolute;height:56px;padding:0 26px;border-radius:28px;border:1px solid var(--line);background:var(--pill);display:flex;align-items:center;white-space:nowrap;font-size:15px;color:var(--fg);transform:translateY(-50%);transition:border-color .2s,background .2s}
+.n.f{background:var(--fill);border-color:var(--fill)}
+.n.a{background:var(--ac);border-color:var(--ac);color:var(--acfg);font-weight:500}
+.n small{font:500 10.5px "JetBrains Mono",monospace;color:var(--mu);margin-left:10px}
+.n.a small{color:rgba(26,14,6,.6)}
+.n.f small{color:#C7C9CC}
+.n:hover{border-color:var(--ac)}
+.colh{position:absolute;top:0;font:500 11px "JetBrains Mono",monospace;color:var(--mu);text-transform:uppercase;letter-spacing:.08em}
+h2{font-weight:400;font-size:clamp(30px,4vw,48px);letter-spacing:-.03em;margin:96px 0 10px}
+.sub{color:var(--mu);max-width:62ch;margin:0}
+.strip{display:flex;gap:16px;overflow-x:auto;margin:28px calc(-1 * max(24px,env(safe-area-inset-left,0px))) 0;padding:6px max(24px,env(safe-area-inset-left,0px)) 12px;scroll-snap-type:x proximity}
+.shot{flex:none;width:200px;scroll-snap-align:start}
+.shot .ph{position:relative;width:200px;aspect-ratio:390/844;border-radius:28px;overflow:hidden;border:1px solid var(--line);background:#0b0c0e}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .st{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}
+.shot .st b{font:500 11px "JetBrains Mono",monospace;color:var(--acfg);background:var(--ac);border-radius:10px;padding:2px 7px}
+.shot.o .st b{background:none;color:var(--mu);border:1px solid var(--line)}
+.shot p{margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--mu)}
+.arrow{flex:none;align-self:center;margin-top:-40px;color:var(--ac);font-size:20px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:28px}
+.note{border:1px solid var(--line);border-radius:22px;padding:20px 22px}
+.note b{display:block;font-weight:500;margin-bottom:6px}
+.note span{color:var(--mu);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="k">(01) «Музей в кармане» · Музей космонавтики</div>
+  <h1>Карта <em>приложения</em></h1>
+  <p class="lead">Все экраны и переходы — и главный путь посетителя от монумента до последней печати в паспорте.</p>
+  <div class="legend"><span><i class="a"></i>главный путь посетителя</span><span><i></i>раздел приложения</span><span><i class="f"></i>экран или действие внутри раздела</span></div>
+
+  <div class="scroll"><div class="board" id="board"><svg id="wires"></svg></div></div>
+
+  <h2>Главный путь</h2>
+  <p class="sub">Семь шагов, которые проходит почти каждый: от первого запуска у монумента до итога визита. Остальное — ответвления, в которые можно зайти из любого шага.</p>
+  <div class="strip" id="main"></div>
+
+  <h2>Остальные экраны</h2>
+  <p class="sub">Разделы, которые дают поводы открыть приложение до и после визита.</p>
+  <div class="strip" id="rest"></div>
+
+  <h2>Почему так</h2>
+  <div class="notes">
+    <div class="note"><b>Одна точка входа</b><span>Всё начинается с «Сегодня»: факт дня, маршрут, экспонаты. Посетителю не нужно выбирать раздел — главное действие на первом экране.</span></div>
+    <div class="note"><b>Маршрут ведёт сам</b><span>После выбора маршрута включается аудиогид в мини-плеере: «следующий экспонат» всегда под пальцем, карта подсказывает, куда идти.</span></div>
+    <div class="note"><b>NFC — главный ритуал</b><span>Приложил телефон к табличке — открылось досье и упала печать. Один жест вместо поиска по меню, и повод пройти зал до конца.</span></div>
+    <div class="note"><b>Белка рядом, но не мешает</b><span>Гид открывается из любого экрана, а в остальное время живёт в иллюминаторе — в карточке и в плеере.</span></div>
+    <div class="note"><b>Повод вернуться</b><span>Паспорт с наградами, квесты коллабораций, звуки космоса и факт дня в пуше работают и после визита.</span></div>
+  </div>
+</div>
+<script>
+// дерево: [название, тип ('a' — главный путь, 'f' — экран внутри раздела, '' — раздел), подпись, дети]
+const T = ['Онбординг', 'a', '', [
+  ['Монумент «Покорителям космоса»', '', '', []],
+  ['Знакомство с Белкой', '', '', []],
+  ['Разрешения: NFC и уведомления', '', '', []]
+]];
+const HUB = ['Главная «Сегодня»', 'a', '', [
+  ['Факт дня', '', '', [['Где в музее', 'f', '→ карта', []]]],
+  ['Карта', 'a', '', [
+    ['3D-карта · 2 этажа', 'f', '', []],
+    ['Поиск экспоната', 'f', '', []],
+    ['Маршрут', 'a', '45 мин · с детьми · весь', [
+      ['Аудиогид', 'a', 'мини-плеер', [
+        ['NFC-метка у таблички', 'a', '', [
+          ['Досье экспоната', 'a', '', [
+            ['Разбор: контурная схема', 'f', '', []],
+            ['Кто создавал', 'f', 'портреты', []],
+            ['Печать в паспорт', 'a', '', [['Итог визита', 'a', '', []]]]
+          ]]
+        ]],
+        ['Полный плеер', 'f', '', []]
+      ]]
+    ]],
+    ['Схема зала', 'f', 'контур', [['Досье экспоната', 'f', '', []]]]
+  ]],
+  ['Экспонаты', '', '', [['3D-облёт', 'f', 'Мир · Венера · Марс', [['Факты и конструкторы', 'f', '', []]]]]],
+  ['Спроси Белку', '', 'из любого экрана', [['Голос и подсказки', 'f', '', []]]],
+  ['Паспорт', '', '', [['Печати', 'f', '', []], ['Награды музея', 'f', '', []]]],
+  ['Билеты', '', '', [['QR в Wallet', 'f', '', []]]],
+  ['Квест-коллаборация', '', '', [['Вопросы у экспонатов', 'f', '', []]]],
+  ['Таймлайн', '', '1903–2016', []],
+  ['Магазин и кафе', '', '', [['Сувениры', 'f', '', []], ['Кафе «Взлёт»', 'f', '', []]]],
+  ['Звуки космоса', '', 'фокус-сессии', []]
+]];
+const board = document.getElementById('board'), svg = document.getElementById('wires');
+const ROW = 74, GAP = 64, TOP = 60;
+const cols = [];   // ширины колонок
+const nodes = [];
+const meas = document.createElement('div'); meas.className = 'n'; meas.style.visibility = 'hidden'; board.appendChild(meas);
+const width = (t, s) => { meas.innerHTML = t + (s ? `<small>${s}</small>` : ''); return meas.getBoundingClientRect().width; };
+// раскладка: листья по строкам, родитель — по центру своих детей
+let row = 0;
+function lay(n, col){ const [t, k, s, kids] = n; const o = { t, k, s, col, kids:[] }; cols[col] = Math.max(cols[col] || 0, width(t, s));
+  if (!kids.length){ o.y = row++; } else { o.kids = kids.map(c => lay(c, col + 1)); o.y = (o.kids[0].y + o.kids[o.kids.length - 1].y) / 2; }
+  nodes.push(o); return o; }
+// онбординг слева: три экрана сходятся в «Сегодня»
+const hub = lay(HUB, 3);
+const onb = { t:T[0], k:T[1], s:'', col:0, kids:[] }; cols[0] = width(T[0]); nodes.push(onb);
+const ob = T[3].map((c, i) => { const o = { t:c[0], k:'', s:'', col:1, kids:[] }; cols[1] = Math.max(cols[1] || 0, width(c[0])); nodes.push(o); return o; });
+ob.forEach((o, i) => o.y = hub.y + (i - 1) * 1.15); onb.y = hub.y; onb.kids = ob;
+cols[2] = 0;
+meas.remove();
+const X = []; let x = 0; for (let c = 0; c < cols.length; c++){ X[c] = x; x += (cols[c] || 0) + (cols[c] ? GAP : 0); }
+const W = x, H = TOP + row * ROW + 20;
+board.style.width = W + 'px'; board.style.height = H + 'px'; svg.setAttribute('width', W); svg.setAttribute('height', H);
+const Y = (y) => TOP + y * ROW + ROW / 2;
+const heads = [[0, 'Вход'], [1, 'Первый запуск'], [3, 'Главная'], [4, 'Разделы'], [5, 'Экраны'], [6, 'В зале'], [7, 'Экспонат'], [8, 'Действия'], [9, 'Итог']];
+for (const [c, t] of heads) if (X[c] != null && cols[c]){ const h = document.createElement('div'); h.className = 'colh'; h.style.left = X[c] + 'px'; h.textContent = t; board.appendChild(h); }
+for (const o of nodes){ const d = document.createElement('div'); d.className = 'n ' + o.k; d.innerHTML = o.t + (o.s ? `<small>${o.s}</small>` : ''); d.style.left = X[o.col] + 'px'; d.style.top = Y(o.y) + 'px'; board.appendChild(d); o.w = d.getBoundingClientRect().width; }
+// провода: из правого края родителя — вправо, поворот со скруглением, к левому краю ребёнка
+const P = [], R = 10;
+function wire(a, b, hot){ const x0 = X[a.col] + a.w, y0 = Y(a.y), x1 = X[b.col], y1 = Y(b.y), xm = x0 + Math.max(18, (x1 - x0) * .4);
+  let d; if (Math.abs(y1 - y0) < 1) d = `M${x0},${y0}H${x1}`; else { const s = Math.sign(y1 - y0), r = Math.min(R, Math.abs(y1 - y0) / 2);
+    d = `M${x0},${y0}H${xm - r}Q${xm},${y0} ${xm},${y0 + s * r}V${y1 - s * r}Q${xm},${y1} ${xm + r},${y1}H${x1}`; }
+  P.push(`<path class="${hot ? 'hot' : ''}" d="${d}"/>`); }
+function walk(o){ for (const c of o.kids){ wire(o, c, o.k === 'a' && c.k === 'a'); walk(c); } if (o.kids.length) P.push(`<circle class="${o.k === 'a' ? 'hot' : ''}" cx="${X[o.col] + o.w}" cy="${Y(o.y)}" r="3"/>`); }
+walk(onb); for (const c of ob) wire(c, hub, false); walk(hub);
+for (const c of ob) P.push(`<circle cx="${X[c.col] + c.w}" cy="${Y(c.y)}" r="3"/>`);
+svg.innerHTML = P.join('');
+// плёнки экранов
+const MAIN = [['onboarding', 'Онбординг', 'Монумент, Белка, разрешения на NFC и уведомления'], ['today', 'Сегодня', 'Факт дня, маршрут и экспонаты на первом экране'], ['route', 'Маршрут', 'Главное за 45 минут, с детьми или весь музей'], ['player', 'Аудиогид', 'Рассказ у экспоната, «следующий» — в мини-плеере'], ['scheme', 'Схема зала', 'Где идти и что где стоит'], ['dossier', 'Досье', 'Открывается касанием NFC-метки у таблички'], ['pass', 'Паспорт', 'Печать за экспонат и награды музея']];
+const REST = [['map', '3D-карта', 'Оба этажа, поиск экспоната'], ['mir', '3D-облёт', '«Мир», «Венера-7», «Марс-3»'], ['guide', 'Спроси Белку', 'Гид голосом из любого экрана'], ['tickets', 'Билеты', 'Покупка и QR в Wallet'], ['quest', 'Квест', 'Коллаборации: вопросы у экспонатов'], ['timeline', 'Таймлайн', 'История космонавтики с «найти в музее»'], ['shop', 'Магазин и кафе', 'Сувениры, доставка, кафе «Взлёт»'], ['sounds', 'Звуки космоса', 'Фокус-сессии под звуки станции']];
+const strip = (id, arr, main) => { document.getElementById(id).innerHTML = arr.map(([f, t, p], i) => `<div class="shot ${main ? '' : 'o'}"><div class="ph"><img src="img/${f}.webp" alt="${t}" loading="lazy"></div><div class="st"><b>${String(i + 1).padStart(2, '0')}</b>${t}</div><p>${p}</p></div>` + (main && i < arr.length - 1 ? '<div class="arrow">→</div>' : '')).join(''); };
+strip('main', MAIN, true); strip('rest', REST, false);
+</script>
+</body>
+</html>
