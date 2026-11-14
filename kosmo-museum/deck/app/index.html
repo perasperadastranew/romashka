@@ -5182,7 +5182,7 @@ function loopS(now){ if (!vsOn) return; requestAnimationFrame(loopS); const t = 
   const r = drawScheme(g, S.run, t, { orbit:{ cx:W / 2, cy, R:side * .27 }, map:{ x:16, y:cy + side / 2 + 26, w:W - 32, h:mh }, labels:true, loud:$('#beep').classList.contains('on') });
   $('#vsT').textContent = clock(r.ts); $('#vsAlt').textContent = Math.round(r.alt); $('#vsV').textContent = r.v.toFixed(2).replace('.', ','); $('#vsN').textContent = r.orbit; }
 // mini scheme inside the PS-1 dossier card
-window.DOG_CLEAN = false;   // в интерфейсе — «цифровой» вид: живописный шейдинг и полутон, спокойная улыбка
+window.DOG_CLEAN = false; window.DOG_PAINT = false;   // «цифровой» вид: тун-шейдинг и полутон, приклеенный к собаке (без «масляного» фильтра — он мерцал при движении)
 // ---- Белка в 3D: модель Jacko с настоящим ригом (кости головы, шеи, челюсти, ушей, языка), зубами и языком.
 // Рисованный стиль: две заливки, полутон в тени, мазки, затенение шеи, пушистый край силуэта. Брови нарисованы на шерсти и двигаются формами лица.
 let BELP = null;
@@ -5223,13 +5223,13 @@ window.mountDog3D = (box, opt = {}) => {
   const cur = {}, tgt = {}, sparks = [], lids = [], eyes = [], B = {}, rest = {}, wq = {};
   const NK = new THREE.Vector4();
   const grad = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; const g = c.getContext('2d'); (CLEAN ? ['#7d7484', '#b9b0b8', '#ece6e4', '#fbf7f4'] : ['#5a5070', '#9a8fa8', '#e8e0e2', '#fbf6f2']).forEach((col, i) => { g.fillStyle = col; g.fillRect(i, 0, 1, 1); }); const t = new THREE.CanvasTexture(c); t.minFilter = t.magFilter = CLEAN ? THREE.LinearFilter : THREE.NearestFilter; return t; })();
-  const paint = (m, fur) => { m.onBeforeCompile = sh => { sh.uniforms.uNk2 = { value:NK }; sh.uniforms.uClean = UCL; sh.uniforms.uRecol = URC;
+  const paint = (m, fur) => { m.onBeforeCompile = sh => { sh.uniforms.uNk2 = { value:NK }; sh.uniforms.uClean = UCL; sh.uniforms.uRecol = URC; sh.uniforms.uObjDots = { value:window.DOG_PAINT === false ? 1 : 0 };
     sh.vertexShader = 'varying vec3 vLp;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvLp = position;');
-    sh.fragmentShader = 'varying vec3 vLp; uniform vec4 uNk2; uniform float uClean; uniform float uRecol;\nfloat h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat n2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h2(i), h2(i + vec2(1,0)), f.x), mix(h2(i + vec2(0,1)), h2(i + vec2(1,1)), f.x), f.y); }\n' + sh.fragmentShader
+    sh.fragmentShader = 'varying vec3 vLp; uniform vec4 uNk2; uniform float uClean; uniform float uRecol; uniform float uObjDots;\nfloat h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat n2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h2(i), h2(i + vec2(1,0)), f.x), mix(h2(i + vec2(0,1)), h2(i + vec2(1,1)), f.x), f.y); }\n' + sh.fragmentShader
       .replace('#include <map_fragment>', '#include <map_fragment>\n { float red = clamp((diffuseColor.r - max(diffuseColor.g, diffuseColor.b) * 1.15) * 2.4, 0., 1.) * uRecol * uClean; diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.86, .6, .4) * (.55 + .55 * diffuseColor.r), red); }')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n float fr = pow(1. - clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.), 2.6); totalEmissiveRadiance += mix(vec3(1., .62, .38) * .45, vec3(1., .93, .86) * .16, uClean) * fr;')
       .replace('#include <dithering_fragment>', `#include <dithering_fragment>
-        vec2 fc = gl_FragCoord.xy;
+        vec2 fc = uObjDots > .5 ? vec2(vLp.x + vLp.z * .7, vLp.y) * 2.4 : gl_FragCoord.xy;   // точки полутона приклеены к собаке — не «ползут» при движении
         float lumO = dot(gl_FragColor.rgb, vec3(.299,.587,.114)), lumD = dot(diffuseColor.rgb, vec3(.299,.587,.114)) + 1e-3, sh = 1. - smoothstep(.55, .75, lumO / lumD);
         ${fur ? 'float neck = smoothstep(uNk2.y, uNk2.x, vLp.y) * smoothstep(uNk2.z, uNk2.w, vLp.z); sh = max(sh, neck * .85);' : ''}
         float facing = clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.);
