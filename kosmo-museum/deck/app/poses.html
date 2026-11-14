@@ -115,7 +115,10 @@ window.mountDog3D = (box, opt = {}) => {
     inner.traverse(o => { if (o.isBone) B[o.name] = o; });
     const skinned = [];
     inner.traverse(o => { if (!o.isMesh) return; if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals(); const old = o.material; if (o.morphTargetDictionary) morphs.push(o);
-      if (/^(Spec|Collar|Tag)/.test(o.name)){ o.visible = false; return; }
+      if (/^Spec/.test(o.name)){ o.visible = false; return; }
+      /* ошейник и жетон (v94): узкий кожаный ремешок и металлический жетон, как у собак-космонавтов на фото */
+      if (/^Collar/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0x4A2E22, gradientMap:grad }); return; }
+      if (/^Tag/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE2B25A, gradientMap:grad, emissive:0x3A2A10 }); return; }
       if (/^Eye/.test(o.name)){ const mp = old.map ? old.map.clone() : null; if (mp){ mp.needsUpdate = true; mp.wrapS = mp.wrapT = THREE.ClampToEdgeWrapping; } o.material = new THREE.MeshBasicMaterial({ map:mp, color:0xc8a07a }); o.userData.mp = mp; eyes.push(o); return; }
       if (/^(T_|B_)/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xf4efe6, gradientMap:grad }); return; }
       if (/^Tongue/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE96F7E, gradientMap:grad }); return; }
@@ -275,7 +278,7 @@ window.mountDog3D = (box, opt = {}) => {
     if (act){ const u = Math.min(1, (now - act.t0) / (act.dur * (window.__tslow || 1))), cl = x => Math.min(1, Math.max(0, x)), seg = (a, b) => cl((u - a) / (b - a)), bump = x => Math.sin(cl(x) * Math.PI), sm = x => x * x * (3 - 2 * x), hold = (a, b, c, d) => sm(seg(a, b)) * (1 - sm(seg(c, d)));
       if (act.n === 'shake'){ const e = seg(.1, .95); tY += Math.sin(e * Math.PI * 7) * .32 * Math.pow(1 - e, 1.4) * (e > 0 ? 1 : 0); tP += -.08 * bump(seg(0, .2)); aB = .6 * hold(.08, .14, .8, .95); }
       else if (act.n === 'tilt'){ const h = hold(0, .22, .72, 1); tR += act.sd * .38 * h; tP += -.06 * h; tY += act.sd * .08 * h; }
-      else if (act.n === 'yawn'){ const h = hold(.1, .45, .62, .9); aJ = h * 1.25; tP += -.22 * h + .06 * bump(seg(0, .15)); aB = Math.min(1, h * 1.4); tR += .05 * h; }
+      else if (act.n === 'yawn'){ /* медленно: вдох, голова назад, пасть широко, глаза закрыты, выдох с встряхом */ const h = hold(.12, .5, .66, .9); aJ = Math.pow(h, 1.6) * 1.35; tP += -.36 * h + .07 * bump(seg(0, .14)) + .05 * bump(seg(.88, 1)); aB = Math.min(1, sm(seg(.2, .4)) * (1 - sm(seg(.7, .86)))); tR += .07 * h; tY += Math.sin(seg(.86, 1) * Math.PI * 3) * .06 * (1 - seg(.86, 1)); }
       else if (act.n === 'sniff'){ const h = hold(0, .15, .8, 1); tP += .14 * h + Math.sin(u * Math.PI * 16) * .025 * h; tY += Math.sin(u * Math.PI * 2) * .12 * h; }
       else if (act.n === 'look'){ const h = hold(0, .25, .7, 1); tY += act.sd * .75 * h; tP += -.05 * h; tR += act.sd * .06 * h; }
       if (u >= 1) act = null; }
@@ -311,7 +314,7 @@ window.mountDog3D = (box, opt = {}) => {
   function setWho(w){ who = w; if (!furMat) return; if (w === 'strelka'){ if (!texS){ if (TEXS) texS = TEXS; else { loadTexS().then(() => who === 'strelka' && setWho('strelka')); return; } } furMat.map = texS; shellMats.forEach(m => m.map = texS); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0x7A4A30); }
     else { furMat.map = texB; shellMats.forEach(m => m.map = texB); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0xE9DFDF); } furMat.needsUpdate = true; }
   /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
-  function startAct(n){ act = { n, t0:performance.now(), dur:{ shake:1100, tilt:2200, yawn:2600, sniff:1800, look:2400 }[n] || 1500, sd:Math.random() < .5 ? -1 : 1 }; if (n === 'tilt'){ mood = 'listen'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 2200); } if (n === 'sniff'){ mood = 'think'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 1800); } return true; }
+  function startAct(n){ act = { n, t0:performance.now(), dur:{ shake:1100, tilt:2200, yawn:3400, sniff:1800, look:2400 }[n] || 1500, sd:Math.random() < .5 ? -1 : 1 }; if (n === 'tilt'){ mood = 'listen'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 2200); } if (n === 'sniff'){ mood = 'think'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 1800); } return true; }
   function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (['shake', 'tilt', 'yawn', 'sniff', 'look'].includes(n)) return startAct(n); if (trick && !opt2.force) return false;
     if (n === 'beg' || n === 'paw'){ const back = pose; if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
     const dur = { runIn:2600, runOut:2200, spin:3000, back:1800, dive:1400 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };

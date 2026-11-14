@@ -5301,6 +5301,295 @@ hairline({
 });
 
 })();
+(() => { const hairline = (f) => { window.HLFIG[f.name] = f; };
+/**
+ * RD-107, the engine of the R-7's strap-ons: four main chambers with their bells, two vernier
+ * chambers on gimbals, the mounting frame, the turbopump with its gas generator, and the feed lines.
+ * The pointer's x swings the verniers, as they steer the rocket. Hit areas are the rest pose;
+ * the verniers are bright at rest.
+ */
+const {
+  Cam, clamp, facing, fit, open, poly, prism, proj, put, rings, seg, solid, spring, stepS, disposer, mk, pointer, register,
+} = HL;
+
+const NAMES = ["рулевые камеры", "камеры", "рама", "ТНА", "газогенератор"];
+const BELL = [[0, 1.3], [0.7, 1.12], [1.5, 0.88], [2.4, 0.62], [3.1, 0.46], [3.5, 0.5], [3.9, 0.72], [5.6, 0.74], [6.1, 0.55]];
+const VERN = [[0, 0.86], [0.8, 0.7], [1.8, 0.47], [2.5, 0.36], [2.85, 0.42], [3.2, 0.58], [4.3, 0.58], [4.7, 0.4]];
+
+/** the outline of a body of revolution: profile [[t, r]] along axis ax from o; e1, e2 span its rings */
+function lathe(P, o, ax, e1, e2, prof, n = 32) {
+  const at = (t, r, f) => P(o[0] + ax[0] * t + r * (Math.cos(f) * e1[0] + Math.sin(f) * e2[0]), o[1] + ax[1] * t + r * (Math.cos(f) * e1[1] + Math.sin(f) * e2[1]), o[2] + ax[2] * t + r * (Math.cos(f) * e1[2] + Math.sin(f) * e2[2]));
+  const R = prof.map(([t, r]) => Array.from({ length: n }, (_, k) => at(t, r, (k / n) * 2 * Math.PI)));
+  const c0 = at(prof[0][0], 0, 0), c1 = at(prof[prof.length - 1][0], 0, 0);
+  let d = [c1[0] - c0[0], c1[1] - c0[1]]; const L = Math.hypot(d[0], d[1]) || 1; d = [d[0] / L, d[1] / L];
+  const nn = [-d[1], d[0]], dot = (p, v) => p[0] * v[0] + p[1] * v[1];
+  const arg = (rg, s) => rg.reduce((b, p, i) => (s * dot(p, nn) > s * dot(rg[b], nn) ? i : b), 0);
+  const arc = (rg, i, j, s) => { const a = [], b = []; for (let k = i; ; k = (k + 1) % n) { a.push(rg[k]); if (k === j) break; } for (let k = i; ; k = (k + n - 1) % n) { b.push(rg[k]); if (k === j) break; }
+    const m = (q) => q.reduce((v, p) => v + dot(p, d), 0) / q.length; return s * m(a) > s * m(b) ? a : b; };
+  const left = R.map((rg) => rg[arg(rg, -1)]), right = R.map((rg) => rg[arg(rg, 1)]);
+  const top = R[R.length - 1], bot = R[0];
+  return poly(left.concat(arc(top, arg(top, -1), arg(top, 1), 1), right.slice().reverse(), arc(bot, arg(bot, 1), arg(bot, -1), -1)));
+}
+const nearRing = (P, c, r, z, n = 36) => open(Array.from({ length: n / 2 + 1 }, (_, k) => { const f = -Math.PI / 4 + (k / n) * 2 * Math.PI; return P(c[0] + r * Math.cos(f), c[1] + r * Math.sin(f), z); }));
+
+function mount({ stage, svg, read }, value) {
+  const bag = disposer();
+  let reach = value;
+  const S = 19.5, C = Cam(45, 0.5, S);
+  fit(C, [[-3.5, -3.5, 0], [3.5, 3.5, 0], [0, 0, 11], [-6.5, 0, 2], [6.5, 0, 2]], 200, 170);
+  const P = proj(C);
+  const g = mk("g", {}, svg);
+  const pth = (cls, d = "") => mk("path", { class: cls, d }, g);
+  const up = [0, 0, 1], X = [1, 0, 0], Y = [0, 1, 0];
+  const CH = [[-1.45, -1.45], [1.45, -1.45], [-1.45, 1.45], [1.45, 1.45]];
+  // the verniers hang from pivots on the frame's x ends; drawn far one first, then near one at the end
+  const ZV = 6.4, VX = 4.4;
+  const vern = (s) => ({ s, sil: pth("sil"), cr: pth("nf lo") });
+  const V = [], M = [];
+  const chamber = ([x, y]) => { const e = pth("sil", lathe(P, [x, y, 0.6], up, X, Y, BELL)); pth("nf lo", nearRing(P, [x, y], 0.74, 4.6) + nearRing(P, [x, y], 1.1, 1.3)); return e; };
+  // far to near: (−,−), the far vernier (−x), (+,−) and (−,+), the frame, turbopump, (+,+), the near vernier
+  V.push(vern(-1));
+  M.push(chamber(CH[0]));
+  M.push(chamber(CH[1])); M.push(chamber(CH[2]));
+  const frame = solid(g); const [ring, inner] = rings(-3.2, -3.2, 3.2, 3.2, 0.9, 0.5);
+  put(frame, prism(P, facing(C), ring, inner, 6.7, 7.3));
+  pth("nf lo", CH.map(([x, y]) => seg(P(x * 0.5, y * 0.5, 7.3), P(x * 0.5, y * 0.5 + 0.6, 7.3))).join(""));
+  // feed lines from the pump down to the chamber heads, and from the gas generator into the pump
+  pth("nf", CH.map(([x, y]) => open([P(0.3 + x * 0.35, -0.3 + y * 0.35, 7.6), P(x * 0.8, y * 0.8, 7.5), P(x, y, 7.1)])).join("") + open([P(-2, 1.6, 8.6), P(-0.6, 0.6, 8.6)]));
+  const gg = pth("sil", lathe(P, [-2, 1.6, 7.3], up, X, Y, [[0, 0.5], [1.6, 0.5], [1.9, 0.3]]));
+  const tna = pth("sil", lathe(P, [0.3, -0.3, 7.3], up, X, Y, [[0, 1], [0.4, 1.25], [2.6, 1.25], [3.2, 0.9], [3.6, 0.5]]));
+  pth("nf lo", nearRing(P, [0.3, -0.3], 1.25, 8.4) + nearRing(P, [0.3, -0.3], 1.25, 9.4));
+  M.push(chamber(CH[3]));
+  V.push(vern(1));
+  let drawn = NaN;
+  function draw(a) {
+    V.forEach((v) => { const s = v.s, b = a * s, ax = [Math.sin(b) * 0.25 * s, Math.sin(b), -Math.cos(b)];
+      const L = Math.hypot(...ax), u = ax.map((c) => c / L), o = [s * VX, 0, ZV];
+      // the profile runs from the bell's exit up to the pivot: start the axis at the exit
+      const ex = [o[0] + u[0] * 4.7, o[1] + u[1] * 4.7, o[2] + u[2] * 4.7], back = u.map((c) => -c);
+      const e1 = [1, 0, 0], e2 = [back[1] * e1[2] - back[2] * e1[1], back[2] * e1[0] - back[0] * e1[2], back[0] * e1[1] - back[1] * e1[0]];
+      const n2 = Math.hypot(...e2); const e2n = e2.map((c) => c / n2), e1n = [e2n[1] * back[2] - e2n[2] * back[1], e2n[2] * back[0] - e2n[0] * back[2], e2n[0] * back[1] - e2n[1] * back[0]];
+      v.sil.setAttribute("d", lathe(P, ex, back, e1n, e2n, VERN));
+      v.cr.setAttribute("d", seg(P(o[0], o[1], o[2]), P(s * 3.2, 0, 6.9)) + seg(P(o[0], o[1] - 0.5, o[2] + 0.2), P(o[0], o[1] + 0.5, o[2] + 0.2))); });
+  }
+  let cur = -2;
+  function light(k) {
+    cur = k;
+    V.forEach((v) => v.sil.classList.toggle("hi", k === 0 || k < 0));
+    M.forEach((e) => e.classList.toggle("hi", k === 1)); frame.sil.classList.toggle("hi", k === 2);
+    tna.classList.toggle("hi", k === 3); gg.classList.toggle("hi", k === 4);
+  }
+  const A0 = 0.12, sp = spring(A0);
+  const B = register(stage, (dt) => { const m = stepS(sp, dt); if (sp.x !== drawn) { drawn = sp.x; draw(sp.x); } return m; });
+  bag.add(B.unregister);
+  const T = [[VX, 0, 3.6, 1.4, 0], [-VX, 0, 3.6, 1.2, 0], [1.45, 1.45, 2.4, 1.3, 1], [-1.45, 1.45, 2.4, 1.2, 1], [1.45, -1.45, 2.4, 1.1, 1], [0, 3.2, 7, 0.7, 2], [3.2, 0, 7, 0.7, 2], [0.3, -0.3, 9.2, 1.2, 3], [-2, 1.6, 8.3, 0.6, 4]];
+  function hit([sx, sy]) { let best = -1, bd = 1e9;
+    T.forEach(([x, y, z, r, n]) => { const p = P(x, y, z), d = Math.hypot(sx - p[0], sy - p[1]) / (r * S * 1.2); if (d < 1 && d < bd) { bd = d; best = n; } }); return best; }
+  function move(p) {
+    sp.t = clamp(((p[0] - 200) / 110) * 0.7 * reach, -0.7, 0.7);
+    const k = hit(p);
+    if (k !== cur) { light(k); read.textContent = k < 0 ? "rest" : NAMES[k]; }
+    B.wake();
+  }
+  function leave() { sp.t = A0; light(-1); read.textContent = "rest"; B.wake(); }
+  draw(A0); drawn = A0; light(-1); read.textContent = "rest";
+  bag.add(pointer(stage, { move, down: move, leave }));
+  bag.add(() => svg.replaceChildren());
+  return { set: (v) => { reach = v; B.wake(); }, destroy: bag.dispose };
+}
+
+hairline({
+  name: "rd107",
+  means: "РД-107: палец качает рулевые камеры — так они управляют полётом ракеты.",
+  rules: [1, 3, 4, 5, 6],
+  range: [0.7, 0.85, 1],
+  tour: [[254, 204], [146, 150], [207, 92], null],
+  mount,
+});
+
+})();
+(() => { const hairline = (f) => { window.HLFIG[f.name] = f; };
+/**
+ * Sea Launch: the Odyssey platform — two pontoons, the columns, the deck with its hangar and
+ * helideck — and the Zenit-3SL on its launch table at the open end. The pointer's x lowers the
+ * rocket on its erector towards the hangar, the way it travels; rest is the rocket standing.
+ * Hit areas are the rest pose; the rocket is bright at rest.
+ */
+const {
+  Cam, clamp, facing, fit, open, poly, prism, proj, put, rings, rrect, ringAt, run, hull, seg, solid, spring, stepS, disposer, mk, pointer, register,
+} = HL;
+
+const ZD = 15, HX = 15, HZ = ZD + 3.2;
+const NAMES = ["Зенит-3SL", "палуба", "понтоны", "колонны", "ангар", "стартовый стол"];
+const ZEN = [[0, 2.1], [14, 2.1], [19, 2.1], [19.2, 2], [21.6, 2], [21.8, 2.35], [26, 2.35], [28.2, 1.3], [29.6, 0.3]];
+/** the outline of a body of revolution: profile [[t, r]] along axis ax from o; e1, e2 span its rings */
+function lathe(P, o, ax, e1, e2, prof, n = 32) {
+  const at = (t, r, f) => P(o[0] + ax[0] * t + r * (Math.cos(f) * e1[0] + Math.sin(f) * e2[0]), o[1] + ax[1] * t + r * (Math.cos(f) * e1[1] + Math.sin(f) * e2[1]), o[2] + ax[2] * t + r * (Math.cos(f) * e1[2] + Math.sin(f) * e2[2]));
+  const R = prof.map(([t, r]) => Array.from({ length: n }, (_, k) => at(t, r, (k / n) * 2 * Math.PI)));
+  const c0 = at(prof[0][0], 0, 0), c1 = at(prof[prof.length - 1][0], 0, 0);
+  let d = [c1[0] - c0[0], c1[1] - c0[1]]; const L = Math.hypot(d[0], d[1]) || 1; d = [d[0] / L, d[1] / L];
+  const nn = [-d[1], d[0]], dot = (p, v) => p[0] * v[0] + p[1] * v[1];
+  const arg = (rg, s) => rg.reduce((b, p, i) => (s * dot(p, nn) > s * dot(rg[b], nn) ? i : b), 0);
+  const arc = (rg, i, j, s) => { const a = [], b = []; for (let k = i; ; k = (k + 1) % n) { a.push(rg[k]); if (k === j) break; } for (let k = i; ; k = (k + n - 1) % n) { b.push(rg[k]); if (k === j) break; }
+    const m = (q) => q.reduce((v, p) => v + dot(p, d), 0) / q.length; return s * m(a) > s * m(b) ? a : b; };
+  const left = R.map((rg) => rg[arg(rg, -1)]), right = R.map((rg) => rg[arg(rg, 1)]);
+  const top = R[R.length - 1], bot = R[0];
+  return poly(left.concat(arc(top, arg(top, -1), arg(top, 1), 1), right.slice().reverse(), arc(bot, arg(bot, 1), arg(bot, -1), -1)));
+}
+
+function mount({ stage, svg, read }, value) {
+  const bag = disposer();
+  let reach = value;
+  const S = 4.3, C = Cam(45, 0.5, S);
+  fit(C, [[-27, -13, 0], [27, 13, 0], [HX, 0, HZ + 30], [-12, 0, HZ + 3], [27, 13, ZD], [-27, -13, ZD + 9]], 200, 168);
+  const P = proj(C), front = facing(C);
+  const g = mk("g", {}, svg);
+  const pth = (cls, d = "") => mk("path", { class: cls, d }, g);
+  const block = (x0, y0, x1, y1, r, b, z0, z1) => { const s = solid(g), [ring, inner] = rings(x0, y0, x1, y1, r, b); put(s, prism(P, front, ring, inner, z0, z1)); return s; };
+  const pont = (y) => block(-26, y - 2.2, 26, y + 2.2, 2.1, 0.7, 0, 4.2).sil;
+  // far pontoon and its columns, near pontoon and its columns, the deck, then what stands on it
+  const P1 = pont(-9), cols = [];
+  for (const x of [-18, -6, 6, 18]) cols.push(block(x - 1.9, -10.9, x + 1.9, -7.1, 1.6, 0.5, 4.2, ZD - 1));
+  const P2 = pont(9);
+  for (const x of [-18, -6, 6, 18]) cols.push(block(x - 1.9, 7.1, x + 1.9, 10.9, 1.6, 0.5, 4.2, ZD - 1));
+  pth("nf lo", [-18, -6, 6, 18].map((x) => seg(P(x - 1.6, 9, 7), P(x + 1.6, 9, 7))).join(""));
+  const deck = block(-24, -12.5, 24, 12.5, 2.2, 1.6, ZD - 1, ZD + 1);
+  // the helideck: a ring on the far corner; the hangar: a long rounded box down the deck's far half
+  pth("nf lo", open(Array.from({ length: 33 }, (_, k) => { const f = (k / 32) * 2 * Math.PI; return P(-18 + 4 * Math.cos(f), 7 + 4 * Math.sin(f), ZD + 1); })));
+  const hang = block(-22, -4.2, 1, 4.2, 2.4, 1.2, ZD + 1, ZD + 7.5);
+  pth("nf lo", [-15, -7].map((x) => seg(P(x, 4.2, ZD + 1.4), P(x, 4.2, ZD + 7.1))).join(""));
+  const table = block(HX - 3.4, -3.4, HX + 3.4, 3.4, 1.2, 0.8, ZD + 1, HZ);
+  const erect = pth("nf"), rock = pth("sil"), rcr = pth("nf lo");
+  let drawn = NaN;
+  function draw(u) {
+    const th = u * (Math.PI / 2) * 0.8, ax = [-Math.sin(th), 0, Math.cos(th)], e1 = [0, 1, 0], e2 = [Math.cos(th), 0, Math.sin(th)];
+    const o = [HX, 0, HZ], at = (t, r = 0, side = 0) => P(o[0] + ax[0] * t + side * e2[0] * r, o[1], o[2] + ax[2] * t + side * e2[2] * r);
+    erect.setAttribute("d", seg(at(0, 2.6, -1), at(21, 2.6, -1)) + [5, 11, 17].map((t) => seg(at(t, 2.6, -1), at(t, 1.95, -1))).join(""));
+    rock.setAttribute("d", lathe(P, [o[0] + ax[0] * 0.2, 0, o[2] + ax[2] * 0.2], ax, e1, e2, ZEN));
+    const ring = (t, r) => open(Array.from({ length: 19 }, (_, k) => { const f = -Math.PI / 4 + (k / 36) * 2 * Math.PI; return P(o[0] + ax[0] * t + r * (Math.cos(f) * e1[0] + Math.sin(f) * e2[0]), r * Math.cos(f), o[2] + ax[2] * t + r * Math.sin(f) * e2[2]); }));
+    rcr.setAttribute("d", ring(14, 2.1) + ring(19.1, 2.05) + ring(21.7, 2.3) + ring(26, 2.35));
+  }
+  let cur = -2;
+  function light(k) {
+    cur = k;
+    rock.classList.toggle("hi", k === 0 || k < 0); deck.sil.classList.toggle("hi", k === 1);
+    P1.classList.toggle("hi", k === 2); P2.classList.toggle("hi", k === 2);
+    cols.forEach((c) => c.sil.classList.toggle("hi", k === 3)); hang.sil.classList.toggle("hi", k === 4); table.sil.classList.toggle("hi", k === 5);
+  }
+  const U0 = 0.03, sp = spring(U0);
+  const B = register(stage, (dt) => { const m = stepS(sp, dt); if (sp.x !== drawn) { drawn = sp.x; draw(sp.x); } return m; });
+  bag.add(B.unregister);
+  const T = [[HX, 0, HZ + 14, 3, 0], [HX, 0, HZ + 6, 2.4, 0], [10, 10.5, ZD, 3, 1], [-10, 10.5, ZD, 3, 1], [-12, 9, 1, 2.6, 2], [12, 9, 1, 2.6, 2], [-6, 9, 7, 2.4, 3], [6, 9, 7, 2.4, 3], [-8, 2, ZD + 7.5, 4, 4], [HX + 2, 3, ZD + 2, 2, 5]];
+  function hit([sx, sy]) { let best = -1, bd = 1e9;
+    T.forEach(([x, y, z, r, n]) => { const p = P(x, y, z), d = Math.hypot(sx - p[0], sy - p[1]) / (r * S * 1.2); if (d < 1 && d < bd) { bd = d; best = n; } }); return best; }
+  function move(p) {
+    sp.t = clamp(U0 + ((p[0] - 60) / 280) * reach, U0, reach);
+    const k = hit(p);
+    if (k !== cur) { light(k); read.textContent = k < 0 ? "rest" : NAMES[k]; }
+    B.wake();
+  }
+  function leave() { sp.t = U0; light(-1); read.textContent = "rest"; B.wake(); }
+  draw(U0); drawn = U0; light(-1); read.textContent = "rest";
+  bag.add(pointer(stage, { move, down: move, leave }));
+  bag.add(() => svg.replaceChildren());
+  return { set: (v) => { reach = v; B.wake(); }, destroy: bag.dispose };
+}
+
+hairline({
+  name: "seastart",
+  means: "«Морской старт»: палец укладывает «Зенит» на установщик — так ракета едет из ангара к столу.",
+  rules: [1, 3, 4, 5, 6],
+  range: [0.7, 0.85, 1],
+  tour: [[244, 119], [197, 191], [168, 123], null],
+  mount,
+});
+
+})();
+(() => { const hairline = (f) => { window.HLFIG[f.name] = f; };
+/**
+ * Soyuz, the ship: the orbital module ball with its hatch and docking probe, the descent module's
+ * bell with its window, the service module with its flared skirt, solar wings and antennas.
+ * The pointer's x plays the return: the orbital and service modules part from the descent module,
+ * which alone comes home. Hit areas are the rest pose; the descent module is bright at rest.
+ */
+const {
+  Cam, clamp, fit, hull, open, poly, proj, seg, spring, stepS, disposer, mk, pointer, register,
+} = HL;
+
+const Z0 = 12, RB = 5.4, XB = -12, XS0 = -6.4, XS1 = 1, RS0 = 3.4, RS1 = 6.4, XP1 = 12, RP = 6.6, RF = 7.6;
+const NAMES = ["спускаемый аппарат", "бытовой отсек", "приборно-агрегатный отсек", "батареи", "стыковочный штырь"];
+const ringX = (P, x, r, n = 30) => Array.from({ length: n }, (_, k) => { const t = (k / n) * 2 * Math.PI; return P(x, r * Math.cos(t), Z0 + r * Math.sin(t)); });
+const tubeX = (P, x0, x1, r0, r1) => poly(hull(ringX(P, x0, r0).concat(ringX(P, x1, r1))));
+const nearX = (P, x, r) => { const e = ringX(P, x, r, 36); let iL = 0, iR = 0; e.forEach((p, i) => { if (p[0] < e[iL][0]) iL = i; if (p[0] > e[iR][0]) iR = i; });
+  const f = [], b = []; for (let i = iL; ; i = (i + 1) % 36) { f.push(e[i]); if (i === iR) break; } for (let i = iL; ; i = (i + 35) % 36) { b.push(e[i]); if (i === iR) break; }
+  const my = (q) => q.reduce((s, p) => s + p[1], 0) / q.length; return open(my(f) > my(b) ? f : b); };
+
+function mount({ stage, svg, read }, value) {
+  const bag = disposer();
+  let reach = value;
+  const S = 5.5, C = Cam(45, 0.5, S);
+  fit(C, [[XB - RB - 12, 0, Z0], [XP1 + 8, 0, Z0], [XP1 + 8, 24, Z0], [XP1, -24, Z0], [0, 0, Z0 + RF], [0, 0, Z0 - RF]], 200, 164);
+  const P = proj(C);
+  const g = mk("g", {}, svg);
+  const pth = (cls, d = "") => mk("path", { class: cls, d }, g);
+  // far to near: probe, ball (BO), descent module, far wing, service module, near wing
+  const probe = pth("sil"), bo = mk("ellipse", { class: "sil" }, g), boc = pth("nf lo");
+  const sa = pth("sil", tubeX(P, XS0, XS1, RS0, RS1)), sac = pth("nf lo", nearX(P, XS1 - 0.6, RS1 - 0.2) + poly(Array.from({ length: 14 }, (_, k) => { const t = (k / 14) * 2 * Math.PI; return P(-2.6 + 0.9 * Math.cos(t), 4.4 + 0.2, Z0 + 2.4 + 0.9 * Math.sin(t)); })));
+  const farW = pth("sil"), farWc = pth("nf lo"), fm = pth("nf");
+  const pao = pth("sil"), paoc = pth("nf lo");
+  const nm = pth("nf"), nearW = pth("sil"), nearWc = pth("nf lo");
+  const wing = (dx, side, sil, cr, mast) => { const x = XP1 - 3 + dx, w = 3, y0 = side * (RP + 2), y1 = side * 23;
+    mast.setAttribute("d", seg(P(x, side * RP, Z0), P(x, y0, Z0)));
+    sil.setAttribute("d", poly([[x - w, y0], [x + w, y0], [x + w, y1], [x - w, y1]].map(([a, b]) => P(a, b, Z0))));
+    cr.setAttribute("d", [0.25, 0.5, 0.75].map((f) => seg(P(x - w, y0 + (y1 - y0) * f, Z0), P(x + w, y0 + (y1 - y0) * f, Z0))).join("") + seg(P(x, y0, Z0), P(x, y1, Z0))); };
+  let drawn = NaN;
+  function draw(u) {
+    const db = -7 * u, dp = 7 * u, xb = XB + db;
+    probe.setAttribute("d", tubeX(P, xb - RB - 2.6, xb - RB + 0.6, 0.35, 1.4));
+    const o = P(xb, 0, Z0), e = P(xb + RB * 0.7071, -RB * 0.7071, Z0), rr = Math.hypot(e[0] - o[0], e[1] - o[1]);
+    bo.setAttribute("cx", o[0].toFixed(2)); bo.setAttribute("cy", o[1].toFixed(2)); bo.setAttribute("rx", rr.toFixed(2)); bo.setAttribute("ry", rr.toFixed(2));
+    boc.setAttribute("d", poly(Array.from({ length: 16 }, (_, k) => { const t = (k / 16) * 2 * Math.PI; return P(xb + 1.4 * Math.cos(t), 1.4 * Math.sin(t), Z0 + RB * 0.95); }))
+      + seg(P(xb - 2.4, -3, Z0 + 3.8), P(xb - 4.4, -6, Z0 + 8)) + seg(P(xb - 2.4, 3, Z0 + 3.8), P(xb - 4.4, 6, Z0 + 8)));
+    wing(dp, -1, farW, farWc, fm);
+    pao.setAttribute("d", tubeX(P, XS1 + 0.4 + dp, XP1 - 2.2 + dp, RP, RP) + tubeX(P, XP1 - 2.2 + dp, XP1 + dp, RP, RF));
+    paoc.setAttribute("d", nearX(P, XS1 + 1.4 + dp, RP) + nearX(P, XP1 - 2.2 + dp, RP) + seg(P(XP1 + dp, 0, Z0 + RF), P(XP1 + 3 + dp, 0, Z0 + RF + 4)));
+    wing(dp, 1, nearW, nearWc, nm);
+  }
+  let cur = -2;
+  function light(k) {
+    cur = k;
+    sa.classList.toggle("hi", k === 0 || k < 0); bo.classList.toggle("hi", k === 1); pao.classList.toggle("hi", k === 2);
+    farW.classList.toggle("hi", k === 3); nearW.classList.toggle("hi", k === 3); probe.classList.toggle("hi", k === 4);
+  }
+  const U0 = 0.03, sp = spring(U0);
+  const B = register(stage, (dt) => { const m = stepS(sp, dt); if (sp.x !== drawn) { drawn = sp.x; draw(sp.x); } return m; });
+  bag.add(B.unregister);
+  const T = [[-2.7, 0, Z0, 5, 0], [XB, 0, Z0, 5, 1], [7, 0, Z0, 6.4, 2], [9, 16, Z0, 6, 3], [9, -16, Z0, 6, 3], [XB - RB - 1.2, 0, Z0, 1.8, 4]];
+  function hit([sx, sy]) { let best = -1, bd = 1e9;
+    T.forEach(([x, y, z, r, n]) => { const p = P(x, y, z), d = Math.hypot(sx - p[0], sy - p[1]) / (r * S * 1.15); if (d < 1 && d < bd) { bd = d; best = n; } }); return best; }
+  function move(p) {
+    sp.t = clamp(U0 + ((p[0] - 60) / 280) * reach, U0, reach);
+    const k = hit(p);
+    if (k !== cur) { light(k); read.textContent = k < 0 ? "rest" : NAMES[k]; }
+    B.wake();
+  }
+  function leave() { sp.t = U0; light(-1); read.textContent = "rest"; B.wake(); }
+  draw(U0); drawn = U0; light(-1); read.textContent = "rest";
+  bag.add(pointer(stage, { move, down: move, leave }));
+  bag.add(() => svg.replaceChildren());
+  return { set: (v) => { reach = v; B.wake(); }, destroy: bag.dispose };
+}
+
+hairline({
+  name: "soyuz",
+  means: "«Союз»: палец разделяет отсеки перед спуском — домой возвращается только спускаемый аппарат.",
+  rules: [1, 3, 4, 5, 6],
+  range: [0.7, 0.85, 1],
+  tour: [[181, 148], [152, 134], [268, 142], null],
+  mount,
+});
+
+})();
 /* Схема зала «Утро космической эры» в стиле Hairline: упрощённая, но по плану — проход от входа к памятнику Гагарину, экспонаты двумя рядами по сторонам,
    круглые постаменты со световым кольцом. Расстояния условные, порядок и стороны — как в зале. Клик — наезд на экспонат, повторный клик или «весь зал» — назад. */
 window.mountHallPlan = () => {
@@ -5546,11 +5835,15 @@ L.nextRing = mk('path', { class:'nf hi' }, g);   // кольцо следующ�
 const caseG = mk('g', {}, g), cases = (SCHEME.cases || []).map(c => ({ ...c, s:HL.solid(caseG), items:mk('path', { class:'nf lo' }, caseG) }));
 g.appendChild(L.objs); g.appendChild(L.nextRing);
 const wallSides = mk('path', { class:'lo' }, L.walls), wallTop = mk('path', { class:'nf sil' }, L.walls);
-const FIGN = { 10:'sputnik', 11:'container', 12:'vostok', 13:'sk1', 14:'berkut', 16:'venera', 24:'luna9', 17:'gird09', 50:'veranda', 44:'soyuz45', 49:'yastreb', 19:'orlan', 36:'mir', 45:'airlock', 47:'krechet', 22:'lunokhod', 21:'luna16', 23:'venera4', 15:'mars3', 35:'energia', 26:'asts', 29:'iss', 31:'baikonur', 33:'proton', 38:'shuttle', 900:'saturn5' };
-const FITALL = new Map([[44, 1.5], [36, 1.25], [45, 1.05], [22, 1.1], [21, 1.15], [23, .9], [15, 1.05], [35, 1.5], [26, 1.65], [29, 1.25], [31, 1.1], [33, .72], [38, .95], [900, .62]]);   // длинные экспонаты вписываем в постамент целиком, а не по самой широкой детали
+const FIGN = { 10:'sputnik', 11:'container', 12:'vostok', 13:'sk1', 14:'berkut', 16:'venera', 24:'luna9', 17:'gird09', 50:'veranda', 44:'soyuz45', 49:'yastreb', 19:'orlan', 36:'mir', 45:'airlock', 47:'krechet', 22:'lunokhod', 21:'luna16', 23:'venera4', 15:'mars3', 35:'energia', 26:'asts', 29:'iss', 31:'baikonur', 33:'proton', 38:'shuttle', 900:'saturn5', 32:'rd107', 34:'seastart', 20:'soyuz' };
+const FITALL = new Map([[44, 1.5], [36, 1.25], [45, 1.05], [22, 1.1], [21, 1.15], [23, .9], [15, 1.05], [35, 1.5], [26, 1.65], [29, 1.25], [31, 1.1], [33, .72], [38, .95], [900, .62], [32, 1], [34, 1.1], [20, 1.4]]);   // длинные экспонаты вписываем в постамент целиком, а не по самой широкой детали
 for (const it of items){ it.halo = mk('path', { class:'nf lo' }, L.halo); it.halo2 = mk('path', { class:'nf hi' }, L.halo); it.halo2.style.display = 'none'; it.grp = mk('g', {}, L.objs); it.pl = HL.solid(it.grp); it.body = mk('g', {}, it.grp);
   // подробная фигура экспоната (наша Hairline-иллюстрация), вписанная в круглый постамент схемы
-  const F = window.HLFIG && window.HLFIG[FIGN[it.id]]; if (F){ it.fig = mk('g', {}, it.grp); try { F.mount({ stage:document.createElement('div'), svg:it.fig, read:{ textContent:'' } }, F.range[0]); it.pl.g.style.display = 'none'; } catch (err){ it.fig.remove(); it.fig = null; } }
+  // у каждой фигуры своя невидимая «сцена» внутри карты: по ней ядро понимает, что фигура на экране, и ведёт её жест
+  const F = window.HLFIG && window.HLFIG[FIGN[it.id]]; if (F){ it.fig = mk('g', {}, it.grp); it.F = F; it.part = '';
+    it.fst = document.createElement('div'); it.fst.style.cssText = 'position:absolute;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none'; stage.appendChild(it.fst);
+    const rd = { set textContent(v){ it.part = v && v !== 'rest' ? v : ''; if (it.onRead) it.onRead(); }, get textContent(){ return it.part; } };
+    try { F.mount({ stage:it.fst, svg:it.fig, read:rd }, F.range[0]); it.pl.g.style.display = 'none'; } catch (err){ it.fig.remove(); it.fig = null; it.fst.remove(); } }
   it.post = HL.solid(it.grp); it.desk = mk('path', { class:'sil' }, it.grp);
   // скафандры стоят в стеклянных витринах — так манекен читается как экспонат, а не как человек
   if (it.kind === 'suit') it.glass = mk('path', { class:'nf lo' }, it.grp); }
@@ -5622,14 +5915,22 @@ window.__hlRoute = (ids, i) => { ROUTE.ids = ids || []; ROUTE.i = i == null ? -1
 const restText = () => { const nx = ROUTE.i >= 0 ? items.find(x => x.id === ROUTE.ids[ROUTE.i + 1]) : null; return nx ? `экскурсия · дальше: ${nx.name}` : 'нажмите на экспонат — камера подъедет'; };
 const B = register(stage, (dt, now) => { let mv = stepS(zf, dt); mv = stepS(fx, dt) || mv; mv = stepS(fy, dt) || mv; for (const it of items) if (!tdone(it.z, now)) mv = true; draw(now); drawRoute(HALLS[hallK].floor); return mv; });
 const lab = document.getElementById('m3hlRead');
+// «живая» фигура: при наезде на экспонат его фигура один раз проигрывает свой жест (тур ядра), а подпись называет деталь
+const labText = (it) => (it.yr ? `${it.name} · ${it.yr}` : it.name) + (it === live.it && it.part ? ` · ${it.part}` : '');
+const live = { it:null, tour:null };
+function liveStop(){ const it = live.it; if (live.tour) live.tour.stop(); live.tour = null; live.it = null; if (it){ const on = items[act] === it; it.fig.querySelectorAll('.sil').forEach(el => el.classList.toggle('hi', on)); if (on) lab.textContent = labText(it); } }
+function livePlay(k){ liveStop(); const it = items[k]; if (!it || !it.fig || !it.F.tour) return;
+  live.it = it; it.fig.querySelectorAll('.sil').forEach(el => el.classList.remove('hi'));
+  it.onRead = () => { if (live.it === it && (items[act] === it || items[focused] === it)) lab.textContent = labText(it); };
+  const stops = it.F.tour; live.tour = HL.tour(it.fst, stops, (i) => { if (stops[i] === null && live.it === it) setTimeout(liveStop, 60); }); }
 function setActive(a){ if (a === act) return; act = a; const now = performance.now(), f = items[a >= 0 ? a : 0];
-  items.forEach((it, k) => { const d = Math.hypot(it.cx - f.cx, it.cy - f.cy) / WS; tset(it.z, a < 0 ? 0 : k === a ? LIFT : clamp(LIFT * .4 * (1 - d / 12), 0, LIFT), now, d * 25); const on = k === a; it.pl.sil.classList.toggle('hi', on); it.halo.classList.toggle('hi', on); it.halo.classList.toggle('lo', !on); it.halo2.style.display = on ? '' : 'none'; it.desk.classList.toggle('hi', on); it.body.querySelectorAll('.sil').forEach(el => el.classList.toggle('hi', on)); if (it.fig) it.fig.querySelectorAll('.sil').forEach(el => el.classList.toggle('hi', on)); });
-  lab.textContent = a < 0 ? restText() : (items[a].yr ? `${items[a].name} · ${items[a].yr}` : items[a].name); if (a >= 0 && window.__sel) window.__sel(typeof items[a].id === 'number' ? items[a].id : null); B.wake(); }
+  items.forEach((it, k) => { const d = Math.hypot(it.cx - f.cx, it.cy - f.cy) / WS; tset(it.z, a < 0 ? 0 : k === a ? LIFT : clamp(LIFT * .4 * (1 - d / 12), 0, LIFT), now, d * 25); const on = k === a; it.pl.sil.classList.toggle('hi', on); it.halo.classList.toggle('hi', on); it.halo.classList.toggle('lo', !on); it.halo2.style.display = on ? '' : 'none'; it.desk.classList.toggle('hi', on); it.body.querySelectorAll('.sil').forEach(el => el.classList.toggle('hi', on)); if (it.fig && it !== live.it) it.fig.querySelectorAll('.sil').forEach(el => el.classList.toggle('hi', on)); });
+  lab.textContent = a < 0 ? restText() : labText(items[a]); if (a >= 0 && window.__sel) window.__sel(typeof items[a].id === 'number' ? items[a].id : null); B.wake(); }
 function hit([sx, sy]){ const [wx, wy] = unproj(C, sx, sy, PLH); let best = -1, bd = 1.25; items.forEach((it, k) => { if (HALLS.find(h => h.id === it.hall).floor !== HALLS[hallK].floor) return; const d = Math.hypot(wx - it.cx, wy - it.cy) / (it.h + m(.7)); if (d < bd){ bd = d; best = k; } }); return best; }
 function setHall(i){ hallK = i; hallPts = HALLS[i].pts; hc = HALLS[i].c; const el = document.getElementById('m3hlHallName'); if (el) el.textContent = HALLS[i].name + ' · схема'; }
 window.__hlHall = (id) => { const i = HALLS.findIndex(h => h.id === id); if (i < 0) return; setHall(i); setActive(-1); focus(-1); };
-function focus(k){ focused = k; window.__hlFocused && window.__hlFocused(k >= 0 && typeof items[k].id === 'number' ? items[k].id : null); if (k >= 0 && items[k].hall !== HALLS[hallK].id) setHall(HALLS.findIndex(h => h.id === items[k].hall)); if (k < 0){ zf.t = HALLS[hallK].zoom || 1; fx.t = hc[0]; fy.t = hc[1]; } else { zf.t = items[k].kind === 'gagarin' ? 2.1 : 3.0; fx.t = items[k].cx; fy.t = items[k].cy; } B.wake(); document.getElementById('m3hlBack').hidden = k < 0; }
-pointer(stage, { move:(p) => setActive(hit(p)), down:(p) => { const k = hit(p); setActive(k); focus(k === focused ? -1 : k); }, leave:() => setActive(-1) });
+function focus(k){ focused = k; window.__hlFocused && window.__hlFocused(k >= 0 && typeof items[k].id === 'number' ? items[k].id : null); if (k >= 0 && items[k].hall !== HALLS[hallK].id) setHall(HALLS.findIndex(h => h.id === items[k].hall)); if (k < 0){ zf.t = HALLS[hallK].zoom || 1; fx.t = hc[0]; fy.t = hc[1]; } else { zf.t = items[k].kind === 'gagarin' ? 2.1 : items[k].fig ? 3.0 * clamp(FITALL.get(items[k].id) || 1.2, 1.05, 1.25) : 3.0; fx.t = items[k].cx; fy.t = items[k].cy; } B.wake(); document.getElementById('m3hlBack').hidden = k < 0; if (k >= 0) livePlay(k); else liveStop(); }
+pointer(stage, { move:(p) => setActive(hit(p)), down:(p) => { const k = hit(p); setActive(k); if (k >= 0 && k === focused && items[k].fig) livePlay(k); else focus(k === focused ? -1 : k); }, leave:() => setActive(-1) });
 document.getElementById('m3hlBack').onclick = () => focus(-1);
 window.__hlAmenity = (t) => { const k = items.findIndex(i => i.id === 'a_' + t); if (k >= 0){ setActive(k); focus(k); } };   // t: in, kassa, gard, shop, wc, lift, cafe
 window.__hlFocusId = (id) => { const k = items.findIndex(i => i.id === id); if (k >= 0){ setActive(k); focus(k); } };
@@ -8747,7 +9048,10 @@ window.mountDog3D = (box, opt = {}) => {
     inner.traverse(o => { if (o.isBone) B[o.name] = o; });
     const skinned = [];
     inner.traverse(o => { if (!o.isMesh) return; if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals(); const old = o.material; if (o.morphTargetDictionary) morphs.push(o);
-      if (/^(Spec|Collar|Tag)/.test(o.name)){ o.visible = false; return; }
+      if (/^Spec/.test(o.name)){ o.visible = false; return; }
+      /* ошейник и жетон (v94): узкий кожаный ремешок и металлический жетон, как у собак-космонавтов на фото */
+      if (/^Collar/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0x4A2E22, gradientMap:grad }); return; }
+      if (/^Tag/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE2B25A, gradientMap:grad, emissive:0x3A2A10 }); return; }
       if (/^Eye/.test(o.name)){ const mp = old.map ? old.map.clone() : null; if (mp){ mp.needsUpdate = true; mp.wrapS = mp.wrapT = THREE.ClampToEdgeWrapping; } o.material = new THREE.MeshBasicMaterial({ map:mp, color:0xc8a07a }); o.userData.mp = mp; eyes.push(o); return; }
       if (/^(T_|B_)/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xf4efe6, gradientMap:grad }); return; }
       if (/^Tongue/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE96F7E, gradientMap:grad }); return; }
@@ -8907,7 +9211,7 @@ window.mountDog3D = (box, opt = {}) => {
     if (act){ const u = Math.min(1, (now - act.t0) / (act.dur * (window.__tslow || 1))), cl = x => Math.min(1, Math.max(0, x)), seg = (a, b) => cl((u - a) / (b - a)), bump = x => Math.sin(cl(x) * Math.PI), sm = x => x * x * (3 - 2 * x), hold = (a, b, c, d) => sm(seg(a, b)) * (1 - sm(seg(c, d)));
       if (act.n === 'shake'){ const e = seg(.1, .95); tY += Math.sin(e * Math.PI * 7) * .32 * Math.pow(1 - e, 1.4) * (e > 0 ? 1 : 0); tP += -.08 * bump(seg(0, .2)); aB = .6 * hold(.08, .14, .8, .95); }
       else if (act.n === 'tilt'){ const h = hold(0, .22, .72, 1); tR += act.sd * .38 * h; tP += -.06 * h; tY += act.sd * .08 * h; }
-      else if (act.n === 'yawn'){ const h = hold(.1, .45, .62, .9); aJ = h * 1.25; tP += -.22 * h + .06 * bump(seg(0, .15)); aB = Math.min(1, h * 1.4); tR += .05 * h; }
+      else if (act.n === 'yawn'){ /* медленно: вдох, голова назад, пасть широко, глаза закрыты, выдох с встряхом */ const h = hold(.12, .5, .66, .9); aJ = Math.pow(h, 1.6) * 1.35; tP += -.36 * h + .07 * bump(seg(0, .14)) + .05 * bump(seg(.88, 1)); aB = Math.min(1, sm(seg(.2, .4)) * (1 - sm(seg(.7, .86)))); tR += .07 * h; tY += Math.sin(seg(.86, 1) * Math.PI * 3) * .06 * (1 - seg(.86, 1)); }
       else if (act.n === 'sniff'){ const h = hold(0, .15, .8, 1); tP += .14 * h + Math.sin(u * Math.PI * 16) * .025 * h; tY += Math.sin(u * Math.PI * 2) * .12 * h; }
       else if (act.n === 'look'){ const h = hold(0, .25, .7, 1); tY += act.sd * .75 * h; tP += -.05 * h; tR += act.sd * .06 * h; }
       if (u >= 1) act = null; }
@@ -8943,7 +9247,7 @@ window.mountDog3D = (box, opt = {}) => {
   function setWho(w){ who = w; if (!furMat) return; if (w === 'strelka'){ if (!texS){ if (TEXS) texS = TEXS; else { loadTexS().then(() => who === 'strelka' && setWho('strelka')); return; } } furMat.map = texS; shellMats.forEach(m => m.map = texS); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0x7A4A30); }
     else { furMat.map = texB; shellMats.forEach(m => m.map = texB); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0xE9DFDF); } furMat.needsUpdate = true; }
   /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
-  function startAct(n){ act = { n, t0:performance.now(), dur:{ shake:1100, tilt:2200, yawn:2600, sniff:1800, look:2400 }[n] || 1500, sd:Math.random() < .5 ? -1 : 1 }; if (n === 'tilt'){ mood = 'listen'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 2200); } if (n === 'sniff'){ mood = 'think'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 1800); } return true; }
+  function startAct(n){ act = { n, t0:performance.now(), dur:{ shake:1100, tilt:2200, yawn:3400, sniff:1800, look:2400 }[n] || 1500, sd:Math.random() < .5 ? -1 : 1 }; if (n === 'tilt'){ mood = 'listen'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 2200); } if (n === 'sniff'){ mood = 'think'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 1800); } return true; }
   function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (['shake', 'tilt', 'yawn', 'sniff', 'look'].includes(n)) return startAct(n); if (trick && !opt2.force) return false;
     if (n === 'beg' || n === 'paw'){ const back = pose; if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
     const dur = { runIn:2600, runOut:2200, spin:3000, back:1800, dive:1400 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
@@ -10055,11 +10359,13 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const canOpen = id => !!info(id) || LAND.includes(id) || M3D.includes(id);
   const open = id => { if (LAND.includes(id) && window.LANDING && window[window.LANDING[id]]) return window[window.LANDING[id]](); if (info(id) && typeof openEx === 'function') return openEx(id); if (M3D.includes(id) && window.open3d) return open3d({ id, title:data(id).title }); };
   const inRoute = id => { const R = window.TOUR_ROUTES || {}; return ['short', 'kids', 'full'].find(k => R[k] && R[k].ids.includes(id)); };
+  /* экспонат вне маршрутов: первый шаг «Весь музей» в том же зале */
+  const hallStep = id => { const R = window.TOUR_ROUTES || {}, m = MEX.get(id); if (!m || !R.full) return null; const ids = R.full.ids, i = ids.findIndex(x => (MEX.get(x) || [])[3] === m[3]); return i >= 0 ? i : null; };
   const html = (d, mode) => `<button class="exx" aria-label="Закрыть">×</button><div class="exh">${d.img ? `<div class="exi" style="background-image:url(${d.img})"></div>` : `<div class="exi nb"><b>${String(d.id).padStart(2, '0')}</b></div>`}
     <div style="min-width:0;padding-right:22px"><div class="exk">${[d.hall, d.floor].filter(Boolean).join(' · ')}</div><div class="ext">${d.title}</div>${d.sum ? `<div class="exs">${d.sum}</div>` : ''}</div></div>
     ${d.nums.length ? `<div class="exn">${d.nums.map(n => `<span><b>${n[0]}${n[1] ? ' ' + n[1] : ''}</b>${n[2]}</span>`).join('')}</div>` : ''}
     <button class="exgo" ${canOpen(d.id) ? '' : 'disabled'}>${canOpen(d.id) ? (LAND.includes(d.id) ? 'Подробнее и облёт в 3D' : 'Подробнее') + ' <span>→</span>' : 'Досье готовим'}</button>
-    <div class="exr">${info(d.id) ? '<button data-a="audio">▶ Слушать</button>' : ''}${inRoute(d.id) ? '<button class="hot" data-a="from">Экскурсия отсюда</button>' : ''}</div>`;
+    <div class="exr">${info(d.id) ? '<button data-a="audio">▶ Слушать</button>' : ''}${inRoute(d.id) ? '<button class="hot" data-a="from">Экскурсия отсюда</button>' : hallStep(d.id) != null ? '<button class="hot" data-a="hall0">Экскурсия с этого зала</button>' : ''}</div>`;
   function mk(host, mode){ const c = document.createElement('div'); c.className = 'exc'; host.appendChild(c); let cur = null;
     const show = id => { cur = id; if (id == null){ c.classList.remove('on'); return; } const d = data(id); c.style.setProperty('--hc', d.color); c.innerHTML = html(d, mode); c.classList.add('on'); if (mode === 'scheme') setTimeout(() => { try { c.scrollIntoView({ block:'nearest', behavior:'smooth' }); } catch(_){} }, 60);
       c.querySelector('.exh').onclick = () => canOpen(id) && open(id); c.querySelector('.exgo').onclick = () => open(id);
@@ -10067,6 +10373,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       c.querySelectorAll('.exr button').forEach(b => b.onclick = () => { const a = b.dataset.a;
         if (a === 'audio') window.PL && PL.play(id, 'route');
         if (a === 'hall'){ $('#m3hlBack') && $('#m3hlBack').click(); }
+        if (a === 'hall0'){ const i = hallStep(id); if (i != null && window.tourStart){ tourStart('full'); const r = tourState(); r.i = i; tourSave(r); window.renderTour && renderTour(); window.renderHome && renderHome(); } }
         if (a === 'from'){ if (mode === 'scheme'){ const g = $('#m3hlGo'); g && g.onclick && g.onclick(); } else { const g = $('#m3from'); g && g.click(); } } }); onShow && onShow(); };
     let onShow = null, onHide = null; return { show, el:c, get cur(){ return cur; }, set onShow(f){ onShow = f; }, set onHide(f){ onHide = f; } }; }
   /* --- схема */
@@ -10083,5 +10390,20 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 })();
 </script>
 
+<script>
+/* собаки радуются печати (v94): после «Я у экспоната» собака в досье и гид встряхиваются/служат/кружатся */
+(() => { let lastCheer = 0; window.dogCheer = (big) => { const nw = Date.now(); if (nw - lastCheer < 3000) return; lastCheer = nw; const ds = [window.__DOGF, window.__DOG].filter(Boolean); ds.forEach((d, i) => setTimeout(() => { try { d.setMood && d.setMood('joy', 2600); d.trick && d.trick(big ? 'spin' : ['beg', 'shake', 'beg', 'spin'][Math.random() * 4 | 0], { force:true }); } catch(_){} }, i * 350)); };
+  const h = window.tourHere; if (!h) return;
+  window.tourHere = function(){ const n0 = (window.tourState && tourState().done.length) || 0; const out = h.apply(this, arguments);
+    setTimeout(() => { const r = window.tourState && tourState(); if (!r) return; const n1 = r.done.length, all = window.TOUR_ROUTES && TOUR_ROUTES[r.key] ? TOUR_ROUTES[r.key].ids.length : 99; if (n1 > n0) dogCheer(n1 >= all); }, 2900); return out; };
+})();
+</script>
+<script>
+/* пуш «Факт дня» не закрывает схему (v94): на вкладке «Карта» не показываем, при переходе на карту — убираем */
+(() => { const p = document.getElementById('push'); if (!p) return; const onMap = () => typeof curTab !== 'undefined' && curTab === 'map';
+  new MutationObserver(() => { if (p.classList.contains('on') && onMap()) p.classList.remove('on'); }).observe(p, { attributes:true, attributeFilter:['class'] });
+  const st = window.showTab; if (st) window.showTab = function(t){ const r = st.apply(this, arguments); if (t === 'map') p.classList.remove('on'); return r; };
+})();
+</script>
 </body>
 </html>
