@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Сайт Музея космонавтики: мобильная версия</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#05060A;overflow:hidden}
+#deck{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0}
+#deck>section{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;isolation:isolate;display:none}
+#deck>section.on{display:flex}
+.nav{position:fixed;right:20px;bottom:16px;font:500 13px 'JetBrains Mono',monospace;color:#8B8F9C;letter-spacing:.06em;z-index:9;user-select:none}
+.nav button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#ECEAE6;border-radius:12px;width:38px;height:34px;cursor:pointer;margin-left:6px}
+/* Design system of the «Музей в кармане» app and its presentation */
+:root {
+  --bg: #0B0D12;
+  --panel: #13161D;
+  --line: #24272E;
+  --fg: #ECEAE6;
+  --body: #C9C7C2;
+  --mu: #8B8F9C;
+  --ac: #FF8A4A;
+  --ac2: #F0B898;
+  --bezel: #05060A;
+}
+
+section {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Onest', Arial, sans-serif;
+  font-weight: 400;
+  padding: 150px 128px 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+/* museum wordmark instead of the studio logo */
+section::after {
+  content: "МУЗЕЙ КОСМОНАВТИКИ";
+  position: absolute;
+  left: 128px;
+  top: 64px;
+  font-family: 'Onest', Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--fg);
+}
+section::before {
+  content: "КОНЦЕПТ САЙТА";
+  position: absolute;
+  right: 128px;
+  top: 66px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  color: var(--mu);
+}
+
+/* kicker: mono caps in the accent, as in the app deck */
+.eyebrow, .kick {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ac);
+  margin: 0;
+}
+.kick.muted { color: var(--mu); }
+
+h1 { font-size: 104px; line-height: 1.02; font-weight: 500; letter-spacing: -0.02em; margin: 0; }
+h2 { font-size: 64px; line-height: 1.1; font-weight: 500; letter-spacing: -0.01em; margin: 0; }
+h3 { font-size: 34px; line-height: 1.15; font-weight: 500; margin: 0; }
+h1 em, h2 em, .big em { font-style: normal; color: var(--ac); }
+p { font-size: 28px; line-height: 1.45; color: var(--body); margin: 0; }
+p b { color: var(--fg); font-weight: 500; }
+
+.acc { color: var(--ac); }
+.lead { font-size: 36px; line-height: 1.4; color: var(--fg); }
+.head { display: flex; flex-direction: column; gap: 20px; }
+
+.note {
+  position: absolute;
+  left: 128px;
+  bottom: 64px;
+  width: 1664px;
+  font-size: 24px;
+  line-height: 1.35;
+  color: var(--mu);
+}
+
+/* cover */
+.cover { flex: 1; display: flex; align-items: center; gap: 96px; }
+.cover-text { flex: 1; display: flex; flex-direction: column; gap: 36px; }
+
+/* phone, as in the app deck: dark bezel, rounded screen, soft shadow */
+.phone {
+  width: 320px;
+  height: 700px;
+  object-fit: cover;
+  object-position: top;
+  border: 8px solid var(--bezel);
+  border-radius: 44px;
+  box-shadow: 0 0 0 2px #2A2D35, 0 40px 80px rgba(0,0,0,0.6);
+  background: var(--panel);
+}
+.phone.sm { width: 226px; height: 492px; border-width: 6px; border-radius: 32px; }
+
+/* caption above a phone: dot + mono caps */
+.lbl {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mu);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lbl::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--mu); flex: none; }
+.lbl.new::before { background: var(--ac); box-shadow: 0 0 14px var(--ac); }
+
+/* compare slides */
+.cmp { display: flex; gap: 72px; flex: 1; }
+.cmp-text { flex: 1; display: flex; flex-direction: column; gap: 24px; }
+.cmp-text .head { margin-bottom: 12px; }
+.cmp-shots { display: flex; gap: 48px; align-items: flex-end; }
+.shot { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+.block {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 28px;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.block p.k { color: var(--fg); }
+
+/* cards */
+.cards { display: flex; gap: 20px; }
+.card {
+  flex: 1;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 28px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card .top { display: flex; flex-direction: column; gap: 12px; }
+.card .num {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  color: var(--ac);
+  margin: 0;
+}
+
+/* problems list */
+.rows { display: flex; flex-direction: column; }
+.row {
+  display: flex;
+  gap: 48px;
+  padding: 24px 0;
+  border-bottom: 2px solid var(--line);
+  align-items: baseline;
+}
+.row h3 { width: 340px; flex: none; font-size: 32px; }
+.row p { flex: 1; }
+
+/* path slides */
+.steps { display: flex; gap: 40px; justify-content: space-between; }
+.step { display: flex; flex-direction: column; gap: 16px; width: 226px; }
+.cap { font-size: 24px; line-height: 1.3; color: var(--body); }
+.cap .n { font-family: 'JetBrains Mono', 'Courier New', monospace; color: var(--ac); }
+.arrow-row { display: flex; align-items: flex-end; gap: 40px; }
+.big { font-size: 160px; line-height: 0.8; font-weight: 500; letter-spacing: -0.04em; color: var(--fg); margin: 0; }
+
+/* priorities */
+.cols { display: flex; gap: 20px; flex: 1; }
+.col {
+  flex: 1;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 28px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.col.hot { border-color: var(--ac); }
+.col .lbl::before { display: none; }
+.col .lbl.new { color: var(--ac); }
+
+/* bullets: orange rings, as in the app deck */
+.col ul, .needs ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.col li, .needs li { font-size: 26px; line-height: 1.35; color: var(--body); padding-left: 32px; position: relative; }
+.col li::before, .needs li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 3px solid var(--ac);
+}
+
+/* table */
+table { border-collapse: collapse; flex: 1; align-self: flex-start; }
+th {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mu);
+  text-align: left;
+  padding: 0 24px 18px 0;
+  border-bottom: 2px solid var(--line);
+}
+td {
+  font-size: 26px;
+  line-height: 1.3;
+  padding: 20px 24px 20px 0;
+  border-bottom: 2px solid var(--line);
+  color: var(--body);
+  vertical-align: top;
+}
+td.m { color: var(--fg); font-weight: 500; }
+td.v { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 24px; color: var(--ac2); }
+
+.split { display: flex; gap: 64px; flex: 1; }
+.needs {
+  width: 580px;
+  flex: none;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 28px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-self: flex-start;
+}
+
+/* motion */
+.cmp-shots .shot, .steps .step { animation: rise 500ms ease-out both; }
+.cmp-shots .shot:nth-child(2) { animation-delay: 150ms; }
+.steps .step:nth-child(2) { animation-delay: 80ms; }
+.steps .step:nth-child(3) { animation-delay: 160ms; }
+.steps .step:nth-child(4) { animation-delay: 240ms; }
+.steps .step:nth-child(5) { animation-delay: 320ms; }
+.steps .step:nth-child(6) { animation-delay: 400ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } }
+
+/* compare slides: phone — what happens — prototype — what happens */
+.pair { display: flex; gap: 40px; align-items: flex-start; }
+.pair .phone { width: 300px; height: 656px; flex: none; }
+.pair .phone.new { box-shadow: 0 0 0 2px var(--ac), 0 40px 80px rgba(0,0,0,0.6); }
+.pair .desc { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
+.pair .desc + .phone { margin-left: 32px; }
+
+</style></head><body>
+<div id="deck">
+<section id="cover" data-transition="fade">
+<div class="cover">
+<div class="cover-text">
+<p class="eyebrow">Разбор мобильной версии</p>
+<h1>С телефона до билета: 7&nbsp;шагов сейчас, <em>4&nbsp;в&nbsp;прототипе</em></h1>
+<p class="lead">Разбор мобильной версии kosmo-museum.ru и прототип нового сайта: что мешает посетителю и что поправить первым.</p>
+</div>
+<div class="shot"><p class="lbl new">Главная · прототип</p><img class="phone" src="img/p_home.jpg" alt="Прототип главной нового сайта на телефоне: кнопка «Купить билет · 500 ₽» на первом экране"></div>
+</div>
+<p class="note">16 ноября 2026 · независимый концепт студии, не официальный материал музея</p>
+
+</section>
+
+<section id="audience">
+<div class="head">
+<p class="eyebrow">КТО ЗАХОДИТ НА САЙТ</p>
+<h2>Четыре посетителя, и у всех первый вопрос один: <em>когда открыто и сколько стоит</em></h2>
+</div>
+<div class="cards">
+<div class="card"><div class="top"><p class="num">01</p><h3>Турист</h3></div><p>Часы и адрес, билет на сегодня. Часто нужен английский.</p></div>
+<div class="card"><div class="top"><p class="num">02</p><h3>Семья с детьми</h3></div><p>Что интересно детям, сколько стоит на всех, какие льготы.</p></div>
+<div class="card"><div class="top"><p class="num">03</p><h3>Школа и группа</h3></div><p>Заказать экскурсию, бесплатный вход московских школьников.</p></div>
+<div class="card"><div class="top"><p class="num">04</p><h3>Исследователь</h3></div><p>Экспонаты и залы, выставки и лекции.</p></div>
+</div>
+<p class="lead">Зачем приходят: купить билет, узнать часы и дорогу, понять, что посмотреть.</p>
+<p class="note">Аудитории — рабочая гипотеза. Проверить по Яндекс Метрике музея и короткому опросу на кассе.</p>
+
+</section>
+
+<section id="good">
+<div class="head">
+<p class="eyebrow">ЧТО УЖЕ ХОРОШО</p>
+<h2>Контента много, и он живой. Его не надо придумывать, его надо <em>найти быстрее</em></h2>
+</div>
+<div class="cards">
+<div class="card"><h3>Живая афиша</h3><p>Сейчас идут выставки «Звезда Гая Северина», «Дни Дальнего Востока в Москве», работает планетарий.</p></div>
+<div class="card"><h3>Быстрые кнопки</h3><p>На мобильной главной есть «Купить билет», «Пушкинская карта», «Музейная неделя», «Заказать экскурсию».</p></div>
+<div class="card"><h3>Статус часов</h3><p>В шапке десктопа строка «Музей сегодня работает до&nbsp;21:00» — правильная идея.</p></div>
+<div class="card"><h3>Касса работает</h3><p>На Мосбилете вход по времени и все категории: взрослый 500&nbsp;₽, пенсионер 300&nbsp;₽.</p></div>
+</div>
+<p class="note">Проверено на сайте и в кассе Мосбилета 14 ноября 2026.</p>
+
+</section>
+
+<section id="problems">
+<div class="head">
+<p class="eyebrow">ЧТО МЕШАЕТ НА ТЕЛЕФОНЕ</p>
+<h2>Пять проблем, каждую мы <em>проверили</em> на экране 390&nbsp;px</h2>
+</div>
+<div class="rows">
+<div class="row"><h3>Навигация</h3><p>Телефон перебрасывает на отдельный сайт m.kosmo-museum.ru. В меню <b>9 пунктов</b>, пункта «Билеты» среди них нет.</p></div>
+<div class="row"><h3>Путь к билету</h3><p><b>7 шагов и два сайта.</b> Цен на странице «Стоимость билетов» нет — прейскурант лежит в PDF.</p></div>
+<div class="row"><h3>Читаемость</h3><p>Низ экрана закрывают cookie-баннер и плашка Мосбилета. Текст страницы цен набран моноширинным шрифтом.</p></div>
+<div class="row"><h3>Визуальный язык</h3><p><b>13 одинаковых кнопок-картинок</b> «Купить билет» подряд. На главной — карусель из 10 слайдов с кнопкой «Подробнее».</p></div>
+<div class="row"><h3>Скорость</h3><p>Мобильная главная весит <b>≈5,5&nbsp;МБ</b>, из них фото ≈5,2&nbsp;МБ. Самое тяжёлое фото — 1,2&nbsp;МБ.</p></div>
+</div>
+<p class="note">Замеры 14.11.2026 в браузере, экран 390×844. Вес — по данным браузера о загруженных файлах; время загрузки на 4G не замеряли.</p>
+
+</section>
+
+<section id="cmp-home">
+<h2>Первый экран отвечает на <em>вопросы</em> посетителя</h2>
+<div class="pair">
+<img class="phone" src="img/m_home.jpg" alt="Текущая мобильная главная: баннер «График работы на ноябрь» и кнопка «Подробнее»">
+<div class="desc"><h3>Новость вместо билета</h3><p>Баннер «График работы на ноябрь» и&nbsp;кнопка «Подробнее». «Купить билет» — ниже первого экрана, под каруселью из&nbsp;10&nbsp;слайдов.</p></div>
+<img class="phone new" src="img/p_home.jpg" alt="Главная прототипа: кнопка «Купить билет · 500 ₽» и плитки задач">
+<div class="desc"><h3>Билет и дорога сразу</h3><p>«Купить билет · 500&nbsp;₽» и&nbsp;«Как добраться» на&nbsp;первом экране. Ниже — плитки по&nbsp;задачам: билеты, залы, сегодня, детям.</p></div>
+</div>
+
+</section>
+
+<section id="cmp-tickets">
+<h2>Цены — <em>текстом</em> на странице, а не в PDF</h2>
+<div class="pair">
+<img class="phone" src="img/m_tickets.jpg" alt="Текущая страница «Стоимость билетов»: одинаковые красные кнопки «Купить билет»">
+<div class="desc"><h3>13 одинаковых кнопок</h3><p>Страница длиной 7,5&nbsp;экрана. Цен в&nbsp;тексте нет: прейскурант и&nbsp;льготы открываются PDF-файлами.</p></div>
+<img class="phone new" src="img/p_prices.jpg" alt="Блок цен в прототипе: полный билет, аудиогид, Пушкинская карта, школьники">
+<div class="desc"><h3>Одна таблица цен</h3><p>Полный 500&nbsp;₽, Пушкинская карта, московские школьники бесплатно. Остальные льготы — по&nbsp;данным музея.</p></div>
+</div>
+
+</section>
+
+<section id="cmp-events">
+<h2>Что идёт <em>сегодня</em>, по времени</h2>
+<div class="pair">
+<img class="phone" src="img/m_events.jpg" alt="Текущая страница «События сегодня» с карточками выставок">
+<div class="desc"><h3>Выставки на два года</h3><p>«События сегодня» — 6&nbsp;карточек с&nbsp;датами вроде «1&nbsp;августа 2024 – 31&nbsp;декабря 2026». Нет фильтра, цены и&nbsp;записи.</p></div>
+<img class="phone new" src="img/p_today.jpg" alt="Блок «Сегодня в музее» в прототипе: события по времени">
+<div class="desc"><h3>Сегодня в музее</h3><p>События по&nbsp;времени: что, где и&nbsp;сколько длится. Ссылка «Афиша» ведёт к&nbsp;полному списку.</p></div>
+</div>
+
+</section>
+
+<section id="cmp-exhibits">
+<h2><em>Залы и карточки</em> вместо длинной статьи</h2>
+<div class="pair">
+<img class="phone" src="img/m_exhibits.jpg" alt="Текущая страница «Экспонаты»: статья «Топ-15 экспонатов»">
+<div class="desc"><h3>Статья на 15 экранов</h3><p>«Экспонаты» — одна статья «Топ-15». Нет поиска, фильтров и&nbsp;страниц экспонатов.</p></div>
+<img class="phone new" src="img/p_halls.jpg" alt="Прототип: залы по этажам и лента главных экспонатов">
+<div class="desc"><h3>Залы и главные экспонаты</h3><p>Залы по&nbsp;этажам и&nbsp;лента экспонатов. У&nbsp;каждого — своя карточка и&nbsp;место на&nbsp;карте.</p></div>
+</div>
+
+</section>
+
+<section id="cmp-mobile">
+<h2><em>Один сайт</em> для телефона и компьютера</h2>
+<div class="pair">
+<img class="phone" src="img/m_menu_old.jpg" alt="Меню текущей мобильной версии: девять пунктов, нет пункта «Билеты»">
+<div class="desc"><h3>Отдельный m.kosmo-museum.ru</h3><p>Телефон перебрасывает на&nbsp;отдельный сайт с&nbsp;меню из&nbsp;9&nbsp;пунктов: «Пресс-служба», «Мы в&nbsp;эфире». «Билетов» нет.</p></div>
+<img class="phone new" src="img/p_home.jpg" alt="Прототип: кнопка «Билеты» в шапке и плитки разделов">
+<div class="desc"><h3>«Билеты» всегда в шапке</h3><p>Один адаптивный сайт. Разделы названы по&nbsp;вопросам посетителя: «Как добраться», «Залы и&nbsp;карта».</p></div>
+</div>
+
+</section>
+
+<section id="path-before">
+<div class="arrow-row">
+<p class="big">7</p>
+<div class="head">
+<p class="eyebrow">ПУТЬ ДО БИЛЕТА · СЕЙЧАС</p>
+<h2>Семь шагов и <em>два сайта</em> после поиска</h2>
+</div>
+</div>
+<div class="steps">
+<div class="step"><img class="phone sm" src="img/m_home_scroll.jpg" alt="Главная: кнопка «Купить билет» под каруселью"><p class="cap"><span class="n">1 · </span>Прокрутить главную до «Купить билет»</p></div>
+<div class="step"><img class="phone sm" src="img/m_tickets.jpg" alt="Страница «Стоимость билетов» с одинаковыми кнопками"><p class="cap"><span class="n">2 · </span>Выбрать билет из 13 кнопок без цен</p></div>
+<div class="step"><img class="phone sm" src="img/m_mosbilet.jpg" alt="Страница билета на Мосбилете с кнопкой «Купить от 300 ₽»"><p class="cap"><span class="n">3 · </span>На bilet.mos.ru — «Купить от 300&nbsp;₽»</p></div>
+<div class="step"><img class="phone sm" src="img/m_mb_schedule.jpg" alt="Расписание на Мосбилете: даты и время 10:00"><p class="cap"><span class="n">4 · </span>Дата и время сеанса</p></div>
+<div class="step"><img class="phone sm" src="img/m_mb_categories.jpg" alt="Категории билетов на Мосбилете с ценами"><p class="cap"><span class="n">5 · </span>Категория и «Продолжить»</p></div>
+<div class="step"><img class="phone sm" src="img/m_mb_checkout.jpg" alt="Подтверждение заказа на Мосбилете: предложение войти через mos ID и поля покупателя"><p class="cap"><span class="n">6–7 · </span>ФИО, почта, телефон, два согласия, оплата</p></div>
+</div>
+<p class="note">Пройдено 14.11.2026 до формы покупателя, без оплаты.</p>
+
+</section>
+
+<section id="path-after">
+<div class="arrow-row">
+<p class="big"><em>4</em></p>
+<div class="head">
+<p class="eyebrow">ПУТЬ ДО БИЛЕТА · ПРОТОТИП</p>
+<h2>Четыре шага, <em>не уходя</em> с сайта музея</h2>
+</div>
+</div>
+<div class="steps">
+<div class="step"><img class="phone sm" src="img/p_home.jpg" alt="Главная прототипа с кнопкой «Купить билет · 500 ₽»"><p class="cap"><span class="n">старт · </span>«Купить билет · 500&nbsp;₽» на первом экране</p></div>
+<div class="step"><img class="phone sm" src="img/p_t1.jpg" alt="Шаг 1 из 4: выбор даты и сеанса"><p class="cap"><span class="n">1 · </span>Дата и сеанс</p></div>
+<div class="step"><img class="phone sm" src="img/p_t2.jpg" alt="Шаг 2 из 4: кто идёт — полный, школьник, Пушкинская карта, аудиогид"><p class="cap"><span class="n">2 · </span>Кто идёт и аудиогид</p></div>
+<div class="step"><img class="phone sm" src="img/p_t3.jpg" alt="Шаг 3 из 4: оплата через СБП, карту или Пушкинскую карту"><p class="cap"><span class="n">3 · </span>Оплата: СБП, карта, Пушкинская</p></div>
+<div class="step"><img class="phone sm" src="img/p_t4.jpg" alt="Шаг 4 из 4: электронный билет с QR-кодом и кнопкой «Добавить в Wallet»"><p class="cap"><span class="n">4 · </span>Билет с QR, Wallet</p></div>
+</div>
+<p class="note">Прототип — демо. Продажа на сайте возможна, только если у Мосбилета есть виджет или API.</p>
+
+</section>
+
+<section id="priorities">
+<div class="head">
+<p class="eyebrow">ЧТО ДЕЛАТЬ</p>
+<h2>Начать можно <em>без редизайна</em></h2>
+</div>
+<div class="cols">
+<div class="col hot">
+<p class="lbl new">БЫСТРО · 1–2 НЕДЕЛИ</p>
+<h3>Починить путь</h3>
+<ul>
+<li>Пункт «Билеты» в меню телефона</li>
+<li>Цены текстом на странице билетов, а не в PDF</li>
+<li>Вместо 13 картинок — кнопки с названием и ценой билета</li>
+<li>Сжать фото главной: сейчас ≈5,2&nbsp;МБ</li>
+<li>Кнопки глаголом, без «Подробнее»</li>
+</ul>
+</div>
+<div class="col">
+<p class="lbl">СРЕДНЕ · 1–2 МЕСЯЦА</p>
+<h3>Перестроить страницы</h3>
+<ul>
+<li>Страница «Билеты»: таблица цен и частые вопросы</li>
+<li>Афиша с фильтром «Сегодня / Выходные / Дата»</li>
+<li>Страницы залов и экспонатов вместо статьи «Топ-15»</li>
+<li>Компактный cookie-баннер, не поверх кнопок</li>
+</ul>
+</div>
+<div class="col">
+<p class="lbl">БОЛЬШОЙ РЕДИЗАЙН · КВАРТАЛ</p>
+<h3>Один сайт</h3>
+<ul>
+<li>Адаптивный сайт вместо m.kosmo-museum.ru</li>
+<li>Покупка без ухода на другой сайт — если касса позволит</li>
+<li>Дизайн-система «Орбита» в коде</li>
+<li>Карта залов на страницах экспонатов</li>
+</ul>
+</div>
+</div>
+<p class="note">Сроки — оценка студии, уточняются после разговора с командой, которая ведёт сайт.</p>
+
+</section>
+
+<section id="app">
+<div class="head">
+<p class="eyebrow">САЙТ И ПРИЛОЖЕНИЕ</p>
+<h2 style="width:1400px">Сайт продаёт билет. Приложение ведёт по залам. Связь — в <em>двух точках</em></h2>
+</div>
+<div class="cards" style="margin-top:auto">
+<div class="card"><div class="top"><p class="num">01 · НА САЙТЕ</p><h3>Одна ссылка «Открыть гид»</h3></div><p>Блок «Музей в кармане» на главной, без экранов приложения на сайте.</p></div>
+<div class="card"><div class="top"><p class="num">02 · НА БИЛЕТЕ</p><h3>Кнопка «В приложение»</h3></div><p>Рядом с QR-кодом билета: билет и маршрут по залам в одном месте.</p></div>
+</div>
+<p class="note">Само приложение «Музей в кармане» — в отдельной презентации.</p>
+
+</section>
+
+<section id="metrics">
+<div class="head">
+<p class="eyebrow">КАК ПОЙМЁМ, ЧТО СТАЛО ЛУЧШЕ</p>
+<h2>Метрики <em>без выдуманных</em> цифр</h2>
+</div>
+<div class="split">
+<table>
+<tr><th>МЕТРИКА</th><th>КАК СЧИТАТЬ</th><th>СЕЙЧАС</th></tr>
+<tr><td class="m">Доля визитов с телефона</td><td>Яндекс Метрика, устройства</td><td class="v">нужно от музея</td></tr>
+<tr><td class="m">Переход в кассу</td><td>Визиты с переходом на bilet.mos.ru ÷ все визиты, отдельно для телефона</td><td class="v">нужно от музея</td></tr>
+<tr><td class="m">Шагов до билета</td><td>Проходим путь сами</td><td class="v">7 → 4 в прототипе</td></tr>
+<tr><td class="m">Время до билета</td><td>5 человек покупают с телефона, засекаем</td><td class="v">замерить</td></tr>
+<tr><td class="m">Вес главной</td><td>Браузер, экран 390&nbsp;px</td><td class="v">≈5,5 МБ</td></tr>
+</table>
+<div class="needs">
+<h3>Что нужно от музея</h3>
+<ul>
+<li>Доступ к Яндекс Метрике или выгрузка за 3 месяца</li>
+<li>Можно ли встроить продажу Мосбилета на сайт</li>
+<li>Прейскурант и льготы текстом</li>
+<li>Кто ведёт сайт и CMS</li>
+<li>Данные о доступной среде</li>
+</ul>
+</div>
+</div>
+<p class="note">Цифры в колонке «Сейчас» — наши замеры 14.11.2026. Остальное появится после доступа к данным музея.</p>
+
+</section>
+
+</div>
+<div class="nav"><span id="cnt"></span><button id="pv" aria-label="Назад">←</button><button id="nx" aria-label="Вперёд">→</button></div>
+<script>
+const S=[...document.querySelectorAll('#deck>section')],D=document.getElementById('deck');let i=Math.max(0,Math.min(S.length-1,(parseInt(location.hash.slice(2))||1)-1));
+function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);D.style.transform=`scale(${k}) translate(-50%,-50%)`;D.style.left='50%';D.style.top='50%';D.style.transform=`translate(-50%,-50%) scale(${k})`;D.style.transformOrigin='50% 50%'}
+function go(n){i=Math.max(0,Math.min(S.length-1,n));S.forEach((s,j)=>s.classList.toggle('on',j===i));document.getElementById('cnt').textContent=String(i+1).padStart(2,'0')+' / '+S.length;history.replaceState(null,'','#s'+(i+1))}
+addEventListener('resize',fit);addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(i+1)}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(i-1)}});
+document.getElementById('nx').onclick=()=>go(i+1);document.getElementById('pv').onclick=()=>go(i-1);
+let tx=null;addEventListener('touchstart',e=>tx=e.touches[0].clientX);addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(i+(dx<0?1:-1));tx=null});
+fit();go(i);
+</script></body></html>
