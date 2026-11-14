@@ -265,6 +265,17 @@
 .stampbtn i{width:34px;height:34px;border-radius:50%;background:var(--ac2);display:grid;place-items:center;flex:none}.stampbtn i svg{width:18px;height:18px}
 .stampbtn em{display:block;font:500 11px var(--m);font-style:normal;color:#F0B898;margin-top:2px}
 .stampbtn.ok{border-color:var(--line);background:var(--card);cursor:default}.stampbtn.ok i{background:#2A2E35}
+/* v79: онбординг влезает в мобильный браузер, крупные «Досье», плашка экскурсии в досье */
+.ob{height:100%;max-height:100dvh}.obtrack{min-height:0}.obs{overflow-y:auto;scrollbar-width:none;min-height:0}
+.obnav{flex:none;position:relative;z-index:5;padding:12px 20px max(20px,calc(env(safe-area-inset-bottom,0px) + 12px));background:linear-gradient(transparent,rgba(10,11,13,.92) 40%)}
+@media (max-height:780px){.obv{height:min(420px,44dvh)!important}.obs{padding-top:64px!important}.obt{margin-top:-30px}.obt p{font-size:14px}}
+@media (max-height:640px){.obv{height:38dvh!important}.obt h2{font-size:24px}}
+.m3hldos{font-size:14px!important;padding:11px 18px!important;border-radius:14px!important}
+.m3card #m3open{height:40px;padding:0 18px;font-size:14px}
+.rtgh{min-width:84px}
+.tourbar{position:sticky;bottom:12px;z-index:6;display:flex;align-items:center;gap:12px;margin:18px 12px 12px;padding:10px 10px 10px 16px;border-radius:22px;background:rgba(20,22,26,.94);backdrop-filter:blur(12px);border:1px solid rgba(255,138,74,.45);box-shadow:0 12px 30px rgba(0,0,0,.5);cursor:pointer}
+.tourbar small{display:block;font:500 10.5px var(--m);letter-spacing:.06em;text-transform:uppercase;color:var(--ac)}.tourbar b{display:block;font:500 15px/1.25 var(--f);color:#fff;margin-top:3px}
+.tourbar i{margin-left:auto;width:42px;height:42px;border-radius:21px;background:var(--ac2);display:grid;place-items:center;flex:none}.tourbar i svg{width:18px;height:18px;color:#fff}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -7921,7 +7932,7 @@ const POSE_MOOD = { sleep:'sleep' };
 window.DOG_POSES = ['stand', 'wag', 'sniff', 'walk', 'run', 'jump', 'bow', 'sit', 'beg', 'paw', 'lie', 'sleep'];
 window.mountDog3D = (box, opt = {}) => {
   const CLEAN = window.DOG_CLEAN !== false; const UCL = { value:CLEAN ? 1 : 0 }, URC = { value:1 };
-  const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .82; r.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+  const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRatio(Math.min(devicePixelRatio || 1, 3)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .82; r.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
   box.appendChild(r.domElement); const sc = new THREE.Scene(); sc.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture; sc.environmentIntensity = .12;
   const cam = new THREE.PerspectiveCamera(24, 1, .1, 500);
   const key = new THREE.DirectionalLight(CLEAN ? 0xfff4ea : 0xffd9b8, CLEAN ? 2.6 : 2.4); key.position.set(-70, 40, 18); sc.add(key);
@@ -7938,7 +7949,7 @@ window.mountDog3D = (box, opt = {}) => {
       .replace('#include <map_fragment>', '#include <map_fragment>\n { float red = clamp((diffuseColor.r - max(diffuseColor.g, diffuseColor.b) * 1.15) * 2.4, 0., 1.) * uRecol * uClean; diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.86, .6, .4) * (.55 + .55 * diffuseColor.r), red); }')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n float fr = pow(1. - clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.), 2.6); totalEmissiveRadiance += mix(vec3(1., .62, .38) * .45, vec3(1., .93, .86) * .16, uClean) * fr;')
       .replace('#include <dithering_fragment>', `#include <dithering_fragment>
-        vec2 fc = uObjDots > .5 ? vec2(vLp.x + vLp.z * .7, vLp.y) * 2.4 : gl_FragCoord.xy;   // точки полутона приклеены к собаке — не «ползут» при движении
+        vec2 fc = uObjDots > .5 ? vec2(vLp.x + vLp.z * .7, vLp.y) * 3.2 : gl_FragCoord.xy;   // точки полутона приклеены к собаке — не «ползут» при движении
         float lumO = dot(gl_FragColor.rgb, vec3(.299,.587,.114)), lumD = dot(diffuseColor.rgb, vec3(.299,.587,.114)) + 1e-3, sh = 1. - smoothstep(.55, .75, lumO / lumD);
         ${fur ? 'float neck = smoothstep(uNk2.y, uNk2.x, vLp.y) * smoothstep(uNk2.z, uNk2.w, vLp.z); sh = max(sh, neck * .85);' : ''}
         float facing = clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.);
@@ -8166,7 +8177,7 @@ const QA = [
 function vgName(){ return vgWho === 'belka' ? 'Белка' : 'Стрелка'; }
 function addMsg(cls, html){ const d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html; $('#vgChat').appendChild(d); $('#vgChat').scrollTop = 1e6; }
 function stopSpeak(){ try{ speechSynthesis.cancel(); }catch(_){} clearInterval(speakT); DOG && DOG.mouth(0); }
-function speak(text, done){ stopSpeak(); let flap = 0; speakT = setInterval(() => { flap = (flap + 1) % 6; DOG && DOG.mouth(flap < 3 ? .28 * Math.random() + .1 : 0); }, 70);
+function speak(text, done){ stopSpeak(); let k = 0; DOG && DOG.setMood('listen', 1800); /* без «шлёпанья» ртом: спокойно дышит и оглядывается, пока говорит */ speakT = setInterval(() => { k++; DOG && DOG.look && DOG.look(Math.sin(k * .9) * .35, Math.cos(k * .7) * .15); if (k % 3 === 0) DOG && DOG.setMood(['show', 'joy', 'think'][k / 3 % 3 | 0], 1600); }, 1300);
   const end = () => { clearInterval(speakT); DOG && DOG.mouth(0); done && done(); };
   try{ const u = new SpeechSynthesisUtterance(text); u.lang = 'ru-RU'; u.pitch = vgWho === 'belka' ? 1.5 : 1.7; u.rate = 1.05; u.onend = end; u.onerror = () => setTimeout(end, text.length * 55); speechSynthesis.speak(u); }
   catch(_){ setTimeout(end, text.length * 55); } }
@@ -8873,9 +8884,11 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   let DOGF = null, T = null, io = null;
   function stop(){ clearInterval(T); T = null; io && io.disconnect(); io = null; if (DOGF){ DOGF.destroy && DOGF.destroy(); DOGF = null; } }
   function say(){ const p = $('#dfT'); if (!p) return; const txt = p.dataset.t; let k = 0; clearInterval(T); p.innerHTML = '<span class="cur"></span>'; DOGF && DOGF.setMood('hello', 1200);
-    T = setInterval(() => { k += 2; p.innerHTML = txt.slice(0, k) + (k < txt.length ? '<span class="cur"></span>' : ''); const ch = txt[k - 1] || ' ';
-      DOGF && DOGF.mouth && DOGF.mouth(/[ ,.—!?]/.test(ch) ? .05 : .25 + Math.random() * .45);
-      if (k >= txt.length){ clearInterval(T); T = null; DOGF && DOGF.mouth && DOGF.mouth(0); DOGF && DOGF.setMood('joy', 2400); } }, 45); }
+    let n = 0; T = setInterval(() => { k += 1; n++; p.innerHTML = txt.slice(0, k) + (k < txt.length ? '<span class="cur"></span>' : '');
+      /* без движения ртом: дышит, смотрит по сторонам, иногда реагирует */
+      if (n % 28 === 0 && DOGF){ DOGF.look && DOGF.look(Math.sin(n * .05) * .4, Math.cos(n * .04) * .15); }
+      if (n % 70 === 0 && DOGF) DOGF.setMood(['think', 'listen', 'hello'][n / 70 % 3 | 0], 1500);
+      if (k >= txt.length){ clearInterval(T); T = null; DOGF && DOGF.look && DOGF.look(0, 0); DOGF && DOGF.setMood('joy', 2400); } }, 32); }
   window.mountDogFact = () => { stop(); const c = $('#dfc'); if (!c) return; const who = c.dataset.who;
     io = new IntersectionObserver(es => { if (!es.some(x => x.isIntersecting)) return; io.disconnect(); io = null;
       const mk = window.mountDog3D || window.mountDog2D; if (mk){ DOGF = mk($('#dfDog'), { pose:'sit' }); who === 'strelka' && DOGF.setWho && DOGF.setWho('strelka'); }
@@ -8914,6 +8927,11 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   /* --- печать прямо из досье --- */
   const _open = window.openEx; if (_open) window.openEx = function(id){ _open.apply(this, arguments); try { stampBtn(id); } catch(_){} };
   function stampBtn(id){ const r = st(), ids = R[r.key].ids, k = ids.indexOf(id), host = $('#vEx .acts2'); if (!host || k < 0) return; const got = r.started && r.done.includes(id);
+    /* экскурсия идёт — внизу досье плашка «что дальше», чтобы не терять маршрут */
+    if (r.started && r.done.length < ids.length){ const nx = ids.find(x => !r.done.includes(x) && x !== id) ?? null, nxi = nx != null ? ids.indexOf(nx) : -1, nn = nx != null ? window.tourEx(nx) : null;
+      const bar = document.createElement('div'); bar.className = 'tourbar'; bar.innerHTML = `<div><small>Экскурсия «${R[r.key].name}» · ${r.done.length} из ${ids.length}</small><b>${nn ? 'Дальше: ' + nn.title : 'Последний шаг'}</b></div><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>`;
+      bar.onclick = () => { const q = st(); if (nxi >= 0 && q.done.includes(id)) { q.i = nxi; window.tourSave(q); } closeEx(); showTab('tour'); };
+      $('#vEx').appendChild(bar); }
     host.insertAdjacentHTML('afterend', `<button class="stampbtn ${got ? 'ok' : ''}" id="stampBtn"><i>${NFC}</i><span>${got ? 'Печать уже в паспорте' : 'Я у экспоната — получить печать'}<em>${got ? R[r.key].name + ' · шаг ' + (k + 1) : 'как будто приложил телефон к метке · шаг ' + (k + 1) + ' из ' + ids.length}</em></span></button>`);
     if (!got) $('#stampBtn').onclick = () => { const q = st(); q.started = true; q.i = k; window.tourSave(q); closeEx(); setTimeout(() => window.tourHere && tourHere(), 200); }; }
   /* --- возврат в «Ещё» из магазина и звуков --- */
