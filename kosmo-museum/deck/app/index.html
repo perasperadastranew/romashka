@@ -8714,7 +8714,7 @@ window.mountDog3D = (box, opt = {}) => {
   const rimO = new THREE.DirectionalLight(CLEAN ? 0xffd2b0 : 0xFF8A4A, CLEAN ? 1.1 : 2.6); rimO.position.set(50, 20, -40); sc.add(rimO); const rimB = new THREE.DirectionalLight(0x8FB0FF, CLEAN ? 1.2 : 1.6); rimB.position.set(-50, 30, -30); sc.add(rimB);
   sc.add(new THREE.HemisphereLight(0xdfe6f4, 0x3a2a30, CLEAN ? .7 : .12));
   const life = { g:1, gx:0, gy:0, x:0, y:0, e:2, ev:0, c:3, ct:0, tilt:0 };
-  let trick = null, snapCb = null, clipUntil = 0, refreeze = false; const spr = {}; const ADD = ['Head_M', 'Neck1_M', 'Chest_M', 'Spine1_M', 'L_JNT_ear2', 'L_JNT_ear3', 'R_JNT_ear2', 'R_JNT_ear3', 'Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M']; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
+  let trick = null, act = null, snapCb = null, clipUntil = 0, refreeze = false; const spr = {}; const ADD = ['Head_M', 'Neck1_M', 'Chest_M', 'Spine1_M', 'L_JNT_ear2', 'L_JNT_ear3', 'R_JNT_ear2', 'R_JNT_ear3', 'Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M']; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
   const mixBase = {}; const cur = {}, tgt = {}, sparks = [], lids = [], curtains = [], eyes = [], B = {}, rest = {}, wq = {};
   const NK = new THREE.Vector4();
   const grad = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; const g = c.getContext('2d'); (CLEAN ? ['#7d7484', '#b9b0b8', '#ece6e4', '#fbf7f4'] : ['#5a5070', '#9a8fa8', '#e8e0e2', '#fbf6f2']).forEach((col, i) => { g.fillStyle = col; g.fillRect(i, 0, 1, 1); }); const t = new THREE.CanvasTexture(c); t.minFilter = t.magFilter = CLEAN ? THREE.LinearFilter : THREE.NearestFilter; return t; })();
@@ -8870,7 +8870,7 @@ window.mountDog3D = (box, opt = {}) => {
     life.m = (life.m ?? 2) - fdt; if (life.m < 0){ life.mt = .4 + Math.random() * .25; life.mh = .8 + Math.random() * .8; life.m = (who === 'strelka' ? 2.6 : 3.4) + Math.random() * 3; }
     if (life.mh > 0){ life.mh -= fdt; if (life.mh <= 0) life.mt = 0; }
     life.mo = (life.mo || 0) + ((life.mt || 0) - (life.mo || 0)) * (1 - Math.pow(.9, f60));
-    const jaw = Math.min(1, cur.jaw + mouthV * 2.2 + life.mo) * .2 + Math.sin(t * 2.2) * .006;
+    let jaw = Math.min(1, cur.jaw + mouthV * 2.2 + life.mo) * .2 + Math.sin(t * 2.2) * .006;
     // поза: целевые углы → плавное смешивание
     const dt = window.__tslow ? Math.max(0, t - lastT) / window.__tslow : Math.min(.05, Math.max(0, t - lastT)); lastT = t; // микшер three.js пишет в кость только когда значение анимации изменилось; если сбрасывать голову в «покой» каждый кадр,
     // в кадрах без записи голова прыгала в позу покоя и обратно — отсюда дрожь. Сбрасываем к прошлому выходу микшера.
@@ -8879,10 +8879,8 @@ window.mountDog3D = (box, opt = {}) => {
       else if (!ACT.sit) mixer.update(dt); }
     else if (mixer) mixer.update(window.DOG_SNAP ? .5 : dt);
     /* моргание: глаз сам плавно сплющивается в линию и раскрывается — через кость глазницы, без накладок (после анимации, чтобы клип не перезаписал) */
-    { const blv = Math.max(M.blink || 0, blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0); for (const bn of ['Eye_L_socket', 'Eye_R_socket']){ const b = B[bn]; if (b){ if (!b.userData.upAx){ const q = b.getWorldQuaternion(new THREE.Quaternion()).invert(); const v = new THREE.Vector3(0, 1, 0).applyQuaternion(q); const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)]; b.userData.upAx = 'xyz'[a.indexOf(Math.max(...a))]; } const s = Math.max(.06, 1 - blv * .94); b.scale.set(1, 1, 1); b.scale[b.userData.upAx] = s; } } }
     for (const n of ADD) if (B[n]) (mixBase[n] = mixBase[n] || new THREE.Quaternion()).copy(B[n].quaternion);
     const rotP = (n, ...rs) => rotOn(n, ...rs);
-    rot('jaw_JNT', ['x', jaw]); rot('tongue_JNT2', ['x', -jaw * .35]); rot('tongue_JNT4', ['x', -jaw * .5]);
     // появление: просто плавно высовывается снизу, без пауз, поворота и перелёта
     const ENT = 900, ea = enterAt ? Math.min(1, (now - enterAt) / ENT) : 1, HID = -36; const eLook = 0, ePerk = 0;
     const ey = ea < 1 ? HID * Math.pow(1 - ea, 3) : 0;
@@ -8903,6 +8901,18 @@ window.mountDog3D = (box, opt = {}) => {
       else if (trick.n === 'dive'){ const a = seg(0, .14), d = seg(.12, .42), up = seg(.62, 1);
         ky = 1.6 * bump(a) - 32 * (u < .62 ? Math.pow(d, 2.2) : 1 - back(up)); tP = -.18 * bump(a) + .12 * bump(up); }
       if (u >= 1){ const done = trick.cb; trick = null; done && done(); } }
+    /* собачьи действия (v92): встряхнуть головой, наклонить голову, зевнуть, принюхаться, оглянуться — сами раз в 6–11 с и по тапу */
+    let aJ = 0, aB = 0;
+    if (!trick && !act && !(window.dogCalm && dogCalm())){ life.a = (life.a ?? 6) - fdt; if (life.a < 0){ life.a = 6 + Math.random() * 5; const L = ['shake', 'tilt', 'yawn', 'sniff', 'look', 'tilt', 'look']; startAct(L[Math.floor(Math.random() * L.length)]); } }
+    if (act){ const u = Math.min(1, (now - act.t0) / (act.dur * (window.__tslow || 1))), cl = x => Math.min(1, Math.max(0, x)), seg = (a, b) => cl((u - a) / (b - a)), bump = x => Math.sin(cl(x) * Math.PI), sm = x => x * x * (3 - 2 * x), hold = (a, b, c, d) => sm(seg(a, b)) * (1 - sm(seg(c, d)));
+      if (act.n === 'shake'){ const e = seg(.1, .95); tY += Math.sin(e * Math.PI * 7) * .32 * Math.pow(1 - e, 1.4) * (e > 0 ? 1 : 0); tP += -.08 * bump(seg(0, .2)); aB = .6 * hold(.08, .14, .8, .95); }
+      else if (act.n === 'tilt'){ const h = hold(0, .22, .72, 1); tR += act.sd * .38 * h; tP += -.06 * h; tY += act.sd * .08 * h; }
+      else if (act.n === 'yawn'){ const h = hold(.1, .45, .62, .9); aJ = h * 1.25; tP += -.22 * h + .06 * bump(seg(0, .15)); aB = Math.min(1, h * 1.4); tR += .05 * h; }
+      else if (act.n === 'sniff'){ const h = hold(0, .15, .8, 1); tP += .14 * h + Math.sin(u * Math.PI * 16) * .025 * h; tY += Math.sin(u * Math.PI * 2) * .12 * h; }
+      else if (act.n === 'look'){ const h = hold(0, .25, .7, 1); tY += act.sd * .75 * h; tP += -.05 * h; tR += act.sd * .06 * h; }
+      if (u >= 1) act = null; }
+    { const blv = Math.max(M.blink || 0, aB, blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0); for (const bn of ['Eye_L_socket', 'Eye_R_socket']){ const b = B[bn]; if (b){ if (!b.userData.upAx){ const q = b.getWorldQuaternion(new THREE.Quaternion()).invert(); const v = new THREE.Vector3(0, 1, 0).applyQuaternion(q); const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)]; b.userData.upAx = 'xyz'[a.indexOf(Math.max(...a))]; } const s = Math.max(.06, 1 - blv * .94); b.scale.set(1, 1, 1); b.scale[b.userData.upAx] = s; } } }
+    jaw += aJ * .38; rot('jaw_JNT', ['x', jaw]); rot('tongue_JNT2', ['x', -jaw * .35]); rot('tongue_JNT4', ['x', -jaw * .5]);
     const CALMK = window.DOG_CALM !== false ? P.k : 1; const yaw = cur.yaw + eLook + life.x * .36 * CALMK, pitch = cur.pitch + life.y * .18 * CALMK + Math.sin(t * .8) * .03 * CALMK, roll = cur.roll + life.tilt * P.tl * CALMK + Math.sin(t * .7) * .03 * CALMK;
     rotP('Head_M', ['y', yaw * .65 + tY * .6], ['x', pitch * .6 + tP * .6], ['z', roll * .7 + tR]); rotP('Neck1_M', ['y', yaw * .35 + tY * .4], ['x', pitch * .4 + tP * .4], ['z', roll * .3]);
     /* корпус: дыхание и наклон в поворот/рывок */
@@ -8928,7 +8938,8 @@ window.mountDog3D = (box, opt = {}) => {
   function setWho(w){ who = w; if (!furMat) return; if (w === 'strelka'){ if (!texS){ if (TEXS) texS = TEXS; else { loadTexS().then(() => who === 'strelka' && setWho('strelka')); return; } } furMat.map = texS; shellMats.forEach(m => m.map = texS); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0x7A4A30); }
     else { furMat.map = texB; shellMats.forEach(m => m.map = texB); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0xE9DFDF); } furMat.needsUpdate = true; }
   /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
-  function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (trick && !opt2.force) return false;
+  function startAct(n){ act = { n, t0:performance.now(), dur:{ shake:1100, tilt:2200, yawn:2600, sniff:1800, look:2400 }[n] || 1500, sd:Math.random() < .5 ? -1 : 1 }; if (n === 'tilt'){ mood = 'listen'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 2200); } if (n === 'sniff'){ mood = 'think'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 1800); } return true; }
+  function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (['shake', 'tilt', 'yawn', 'sniff', 'look'].includes(n)) return startAct(n); if (trick && !opt2.force) return false;
     if (n === 'beg' || n === 'paw'){ const back = pose; if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
     const dur = { runIn:2600, runOut:2200, spin:3000, back:1800, dive:1400 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
     if (n === 'spin' || n === 'runIn' || n === 'runOut'){ trick.clip = true; const TS = window.__tslow || 1; clipUntil = now + (dur + 900) * TS; refreeze = true; clearTimeout(trick.tm1); clearTimeout(trick.tm2); const tk = trick;
@@ -9810,11 +9821,11 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 </script>
 <script>
 /* собаки делают трюки: нажатие на иллюминатор — случайный трюк; в гиде иногда сами (v86) */
-(() => { const $ = s => document.querySelector(s); const LIST = ['spin', 'beg', 'back', 'paw', 'dive', 'spin'];
-  let k = 0; window.dogTrick = (D, n) => { if (!D || !D.trick) return false; let nm = n || LIST[k++ % LIST.length]; if (window.dogCalm && dogCalm() && !/beg|paw/.test(nm)) nm = k % 2 ? 'beg' : 'paw'; return D.trick(nm); };
+(() => { const $ = s => document.querySelector(s); const LIST = ['spin', 'shake', 'beg', 'tilt', 'back', 'yawn', 'paw', 'dive', 'look', 'spin'];
+  let k = 0; window.dogTrick = (D, n) => { if (!D || !D.trick) return false; let nm = n || LIST[k++ % LIST.length]; if (window.dogCalm && dogCalm() && !/beg|paw|tilt|look/.test(nm)) nm = ['beg', 'paw', 'tilt', 'look'][k % 4]; return D.trick(nm); };
   /* гид */
   const port = $('#vgPort'); if (port){ port.style.cursor = 'pointer'; port.addEventListener('click', () => window.__DOG && dogTrick(__DOG)); }
-  setInterval(() => { const vg = $('#vg'); if (!vg || vg.classList.contains('off') || document.hidden || !window.__DOG || (window.dogCalm && dogCalm())) return; if (Math.random() < .5) dogTrick(__DOG, ['spin', 'beg', 'back', 'paw'][Math.random() * 4 | 0]); }, 18000);
+  setInterval(() => { const vg = $('#vg'); if (!vg || vg.classList.contains('off') || document.hidden || !window.__DOG || (window.dogCalm && dogCalm())) return; if (Math.random() < .5) dogTrick(__DOG, ['spin', 'beg', 'back', 'paw', 'shake', 'yawn'][Math.random() * 6 | 0]); }, 18000);
   /* досье: иллюминатор в карточке факта */
   document.addEventListener('click', e => { const po = e.target.closest('#dfc .po'); if (po && window.__DOGF) dogTrick(__DOGF); });
 })();
