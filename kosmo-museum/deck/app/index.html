@@ -5341,12 +5341,13 @@ window.mountDog3D = (box, opt = {}) => {
   const t0 = performance.now();
   let inView = true; const vio = 'IntersectionObserver' in window ? new IntersectionObserver(es => { inView = es[0].isIntersecting; }) : null; vio && vio.observe(box);
   (function loop(now){ if (!alive) return; requestAnimationFrame(loop); if (!dog){ return; } if (!inView || document.hidden || !box.offsetParent || box.closest('.off')){ return; } const t = (now - t0) / 1000;
-    const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; cur[n] = (cur[n] || 0) + (tgt[n] - (cur[n] || 0)) * .12; }
-    blinkT -= 1 / 60; if (blinkT < 0){ blinkV = 1; blinkT = Math.random() < .25 ? .22 : 2.2 + Math.random() * 3; } blinkV *= .78;
-    life.g -= 1 / 60; if (life.g < 0){ life.gx = (Math.random() - .5) * .9; life.gy = (Math.random() - .5) * .4; life.g = 1.5 + Math.random() * 2.5; }
-    life.e -= 1 / 60; if (life.e < 0){ life.ev = 1; life.e = 3 + Math.random() * 4; } life.ev *= .86;
-    life.c -= 1 / 60; if (life.c < 0){ life.ct = Math.random() < .5 ? (Math.random() - .5) * .4 : 0; life.c = 3 + Math.random() * 4; }
-    life.x += (life.gx - life.x) * .05; life.y += (life.gy - life.y) * .05; life.tilt += (life.ct - life.tilt) * .04;
+    const fdt = Math.min(.1, Math.max(0, t - (loop.pt || t))); loop.pt = t; const kM = 1 - Math.exp(-fdt * 3.2), kL = 1 - Math.exp(-fdt * 1.6), f60 = fdt * 60;
+    const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; cur[n] = (cur[n] || 0) + (tgt[n] - (cur[n] || 0)) * kM; }
+    blinkT -= fdt; if (blinkT < 0){ blinkV = 1; blinkT = Math.random() < .25 ? .22 : 2.2 + Math.random() * 3; } blinkV *= Math.pow(.78, f60);
+    life.g -= fdt; if (life.g < 0){ life.gx = (Math.random() - .5) * .9; life.gy = (Math.random() - .5) * .4; life.g = 1.5 + Math.random() * 2.5; }
+    life.e -= fdt; if (life.e < 0){ life.ev = 1; life.e = 3 + Math.random() * 4; } life.ev *= Math.pow(.93, f60);
+    life.c -= fdt; if (life.c < 0){ life.ct = Math.random() < .5 ? (Math.random() - .5) * .4 : 0; life.c = 3 + Math.random() * 4; }
+    life.x += (life.gx - life.x) * kL; life.y += (life.gy - life.y) * kL; life.tilt += (life.ct - life.tilt) * kL * .8;
     for (const n of ['L_mouthup', 'R_mouthup', 'L_mouthwide', 'R_mouthwide', 'brows_up', 'brows_down', 'brows_sad', 'brows_angry']) setW(n, cur[n]);
     const bl = Math.max(M.blink || 0, blinkV > .05 ? Math.min(1, blinkV * 1.4) : 0), closed = bl > .55;
     setW('blink', 0); for (const e of eyes) e.visible = !closed; setW('big', cur.big); for (const sp of sparks) sp.visible = !closed; for (const l of lids) l.visible = closed;
@@ -5355,9 +5356,9 @@ window.mountDog3D = (box, opt = {}) => {
     const dt = Math.min(.05, Math.max(0, t - lastT)); lastT = t; for (const n of ['Head_M', 'Neck1_M']) if (B[n] && rest[n]) B[n].quaternion.copy(rest[n]); if (mixer) mixer.update(window.DOG_SNAP ? .5 : dt);
     const rotP = (n, ...rs) => rotOn(n, ...rs);
     rot('jaw_JNT', ['x', jaw]); rot('tongue_JNT2', ['x', -jaw * .35]); rot('tongue_JNT4', ['x', -jaw * .5]);
-    const CALMK = window.DOG_CALM !== false ? .8 : 1; const yaw = cur.yaw + life.x * .3 * CALMK, pitch = cur.pitch + life.y * .15 * CALMK + Math.sin(t * .8) * .025 * CALMK, roll = cur.roll + life.tilt * .5 * CALMK + Math.sin(t * .7) * .025 * CALMK;
+    const CALMK = window.DOG_CALM !== false ? .55 : 1; const yaw = cur.yaw + life.x * .3 * CALMK, pitch = cur.pitch + life.y * .15 * CALMK + Math.sin(t * .8) * .025 * CALMK, roll = cur.roll + life.tilt * .5 * CALMK + Math.sin(t * .7) * .025 * CALMK;
     rotP('Head_M', ['y', yaw * .65], ['x', pitch * .6], ['z', roll * .7]); rotP('Neck1_M', ['y', yaw * .35], ['x', pitch * .4], ['z', roll * .3]);
-    const eb = cur.earsBack, eo = cur.earsOut + life.ev * (window.DOG_CALM !== false ? .45 : .5);
+    const eb = cur.earsBack, eo = cur.earsOut + life.ev * (window.DOG_CALM !== false ? .3 : .5);
     const fold = who === 'strelka' ? 1 : 0; rot('L_JNT_ear1', ['x', -eb * .55 - fold * .35], ['z', -eo * .35 - fold * .75]); rot('L_JNT_ear2', ['z', -fold * .55]); rot('R_JNT_ear1', ['x', -eb * .55], ['z', eo * .35]);
     const ea = enterAt ? Math.min(1, (now - enterAt) / 900) : 1, eo2 = 1 + 2.4 * Math.pow(ea - 1, 3) + 1.4 * Math.pow(ea - 1, 2);
     dog.position.set(0, Math.sin(t * 1.6) * .18 - (1 - eo2) * 26 , 0); dog.rotation.z = (1 - ea) * .25 * Math.sin(ea * 9); if (!opt.full && dog.userData.np0){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); dog.position.sub(d); } if (opt.full && ea >= 1){ dog.updateMatrixWorld(true); fitCam(window.DOG_SNAP ? 1 : .05); }
@@ -5442,7 +5443,7 @@ function ask(k){ if (busy) return; busy = true; VG.classList.remove('chatmode');
     typeInto($('#vgQ'), a, Math.min(4200, a.length * 40));
     speak(a, () => { addMsg('dog', '<small>' + vgName() + '</small>' + a); DOG.setMood(k === 2 ? 'wow' : k === 3 ? 'show' : k === 1 ? 'think' : 'joy', 3000); $('#vgSt').textContent = vgName() + ' на связи'; busy = false; }); }, 350)); }
 window.openGuide = () => { VG.classList.remove('off'); $('#push').classList.remove('on');
-  if (!DOG){ DOG = (window.mountDog3D || window.mountDog2D)($('#vgDog'), { pose:'sit' }); setInterval(() => { if (!busy && DOG && !document.hidden) DOG.setMood(['joy', 'listen', 'think', 'hello', 'idle', 'wow', 'show'][Math.floor(Math.random() * 7)], 2200 + Math.random() * 1600); }, 3400);window.__DOG = DOG; $('#vgPort').addEventListener('pointermove', e => { const r = $('#vgPort').getBoundingClientRect(); DOG.look((e.clientX - r.left) / r.width * 2 - 1, (e.clientY - r.top) / r.height * 2 - 1); }); }
+  if (!DOG){ DOG = (window.mountDog3D || window.mountDog2D)($('#vgDog'), { pose:'sit' }); setInterval(() => { if (!busy && DOG && !document.hidden) DOG.setMood(['joy', 'listen', 'think', 'hello', 'idle', 'wow', 'show'][Math.floor(Math.random() * 7)], 3200 + Math.random() * 1400); }, 5200);window.__DOG = DOG; $('#vgPort').addEventListener('pointermove', e => { const r = $('#vgPort').getBoundingClientRect(); DOG.look((e.clientX - r.left) / r.width * 2 - 1, (e.clientY - r.top) / r.height * 2 - 1); }); }
   setTimeout(() => DOG.setMood('hello', 3000), 500); };
 
 $('#vgClose').addEventListener('click', () => { VG.classList.add('off'); stopSpeak(); busy = false; VG.classList.remove('listening'); });
