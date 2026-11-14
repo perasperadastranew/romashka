@@ -1,8 +1,4 @@
-<!doctype html>
-<html lang="ru">
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Музей в кармане</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -103,6 +99,42 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
         <li><b>Возвращение.</b> После визита ничего не держит связь с музеем.</li>
       </ul>
       <p class="note">Источник цифр посещаемости: <a href="https://www.mos.ru/news/item/138734073/" target="_blank" rel="noopener">mos.ru, май 2024</a>.</p>
+    </section>
+
+    <section class="ch" data-act="home" data-cap="Главный экран · Экскурсия">
+      <div class="kick">Первый экран</div>
+      <h2>«Начать <em>экскурсию</em>» — главная кнопка</h2>
+      <ul class="pts">
+        <li><b>В музее человек спрашивает «куда идти».</b> Поэтому первым экраном — экскурсия и выбор времени: 45 минут, с детьми или весь музей.</li>
+        <li><b>Во время визита</b> на месте кнопки — «Продолжить»: следующий экспонат, «Я на месте», «На карте» и полоска печатей.</li>
+        <li><b>Таб-бар:</b> Сегодня · Экскурсия · Карта · Паспорт · Ещё. Магазин, кафе, билеты и звуки ушли в «Ещё».</li>
+        <li><b>Факт дня</b> — вниз и в утренний пуш: он держит приложение на телефоне после визита.</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="home">До визита</button><button class="btn" data-run="homelive">Во время визита</button></div>
+    </section>
+
+    <section class="ch" data-act="tour" data-cap="Экскурсия">
+      <div class="kick">Во время визита</div>
+      <h2>Экскурсия: <em>один</em> следующий шаг</h2>
+      <ul class="pts">
+        <li><b>Не список из 29 экспонатов, а один шаг:</b> что смотреть, в каком зале и на каком этаже.</li>
+        <li><b>«На карте»</b> показывает оранжевую дорожку до экспоната, <b>«Слушать»</b> включает аудиогид всего маршрута.</li>
+        <li><b>Начать можно с любого экспоната:</b> на карте — кнопка «Начать экскурсию отсюда».</li>
+      </ul>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="tour">Экскурсия</button><button class="btn" data-run="tourpre">Выбор маршрута</button></div>
+    </section>
+
+    <section class="ch" data-act="nfc" data-cap="NFC у экспоната">
+      <div class="kick">У таблички</div>
+      <h2>Приложил телефон — <em>печать</em> в паспорте</h2>
+      <ul class="pts">
+        <li><b>Метка NFC в табличке</b> экспоната: телефон подносят к значку — без QR и камеры.</li>
+        <li><b>Вибрация и волна:</b> метка найдена, сразу открывается досье этого экспоната.</li>
+        <li><b>Печать падает в паспорт</b> с названием и датой, маршрут сдвигается на следующий шаг.</li>
+        <li><b>Значки за прогресс:</b> 5 печатей — «Курсант», 15 — «Пилот», весь маршрут — «Космонавт музея». Значок можно получить на кассе.</li>
+      </ul>
+      <p class="note">Метки — пассивные NFC-наклейки под табличкой, без питания. Современные iPhone и Android читают их, просто поднеся телефон. Названия уровней — черновик, согласовать с музеем.</p>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="nfc">Повторить</button></div>
     </section>
 
     <section class="ch" data-act="onboarding" data-cap="Онбординг">
@@ -250,9 +282,14 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
   // управление прототипом
   const W = () => { try { return F.contentWindow; } catch(_){ return null; } };
   const OV = ['ob', 'vtl', 'vq', 'vt', 'vl', 'v3', 'vg', 'vEx', 'vc', 'vs'];
-  function reset(w){ const d = w.document; OV.forEach(id => { const el = d.getElementById(id); el && el.classList.add('off'); }); const fp = d.getElementById('fp'); fp && fp.classList.remove('on'); }
+  function reset(w){ const d = w.document; w.nfcClose && w.nfcClose(); OV.forEach(id => { const el = d.getElementById(id); el && el.classList.add('off'); }); const fp = d.getElementById('fp'); fp && fp.classList.remove('on'); }
+  const tst = (w, s) => { if (!w.tourState) return; const r = w.tourState(); Object.assign(r, { key:'short', on:true }, s); w.tourSave(r); w.badgeUpd && w.badgeUpd(); };
+  const LIVE = { started:true, i:3, done:[10, 12, 11] }, FRESH = { started:false, i:0, done:[] };
   const ACT = {
     today(w){ reset(w); w.showTab && w.showTab('today'); },
+    home(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('today'); }, homelive(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('today'); },
+    tour(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('tour'); }, tourpre(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('tour'); },
+    nfc(w){ reset(w); tst(w, { started:true, i:4, done:[10, 12, 11, 14] }); w.showTab && w.showTab('tour'); setTimeout(() => w.nfcPlay && w.nfcPlay(24, null, { loop:true, badge:true, n:5, total:10 }), 400); },
     onboarding(w){ reset(w); w.openOnboarding && w.openOnboarding(); },
     map(w){ reset(w); w.showTab && w.showTab('map'); },
     find(w){ reset(w); w.showTab && w.showTab('map'); setTimeout(() => { w.m3floor && w.m3floor('all', true); w.m3select && w.m3select(22, true); }, 900); },

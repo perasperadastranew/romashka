@@ -145,6 +145,69 @@
 .tdone svg{width:84px;height:84px;color:#fff}.tdone h2{font:500 28px/1.1 var(--f);margin-top:10px}.tdone p{font-size:14px;color:rgba(255,255,255,.8);margin-top:8px}
 .m3card{flex-wrap:wrap}.m3card .m3from{order:3;width:100%;background:rgba(255,138,74,.14)!important;color:var(--ac)!important;border:1px solid rgba(255,138,74,.45)!important}
 .m3card .m3from[hidden]{display:none}
+/* ===== NFC: телефон к табличке → досье → печать → значок (v71) */
+.nfov{position:absolute;inset:0;z-index:45;background:radial-gradient(120% 70% at 50% 35%,#16110E,#07080A 70%);display:flex;flex-direction:column;align-items:center;padding:104px 20px 36px;opacity:0;transition:opacity .3s;overflow:hidden}
+.nfov.on{opacity:1}
+.nfov .nk{font:500 11px/1 var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--ac)}
+.nfov h3{font:500 26px/1.15 var(--f);letter-spacing:-.02em;text-align:center;margin-top:10px;min-height:60px;color:#fff;transition:opacity .25s}
+.nfst{position:relative;width:350px;height:430px;margin-top:8px}
+.nfsc{position:absolute;inset:0;transition:opacity .45s, transform .6s cubic-bezier(.3,.7,.2,1)}
+/* сцена 1: табличка + телефон */
+.nfpl{position:absolute;left:25px;right:25px;bottom:38px;height:170px;border-radius:14px;background:linear-gradient(170deg,#EDE7DC,#D9D1C3);box-shadow:0 30px 60px rgba(0,0,0,.5),inset 0 1px 0 #fff;transform:perspective(700px) rotateX(38deg);transform-origin:50% 100%;padding:18px 20px;color:#1A1A1F}
+.nfpl small{font:500 10px var(--m);letter-spacing:.08em;color:#7A6F60;text-transform:uppercase}.nfpl b{display:block;font:600 19px/1.15 var(--f);margin-top:6px;max-width:190px}.nfpl span{display:block;font-size:11.5px;color:#5E564B;margin-top:6px;max-width:180px;line-height:1.35}
+.nftag{position:absolute;right:18px;bottom:18px;width:64px;height:64px;border-radius:50%;background:#1A1A1F;color:#FF8A4A;display:grid;place-items:center}.nftag svg{width:30px;height:30px}
+.nftag::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,138,74,.6);animation:nfpulse 1.4s ease-out infinite}
+@keyframes nfpulse{from{transform:scale(.9);opacity:1}to{transform:scale(1.5);opacity:0}}
+.nfph{position:absolute;left:50%;top:0;width:128px;height:250px;margin-left:12px;border-radius:24px;background:#111318;border:3px solid #3A3F49;box-shadow:0 30px 50px rgba(0,0,0,.6);transform:translate(0,-60px) rotate(-8deg);opacity:0;transition:transform 1s cubic-bezier(.3,.7,.2,1),opacity .4s;overflow:hidden}
+.nfph::before{content:"";position:absolute;left:50%;top:7px;width:36px;height:10px;margin-left:-18px;border-radius:5px;background:#000;z-index:3}
+.nfov.p1 .nfph{opacity:1;transform:translate(0,40px) rotate(-8deg)}
+.nfov.p2 .nfph{transform:translate(18px,118px) rotate(-14deg)}
+.nfov.p2b .nfph{animation:nfbuzz .32s linear 2}
+@keyframes nfbuzz{0%,100%{margin-left:12px}25%{margin-left:16px}75%{margin-left:8px}}
+.nfps{position:absolute;inset:0;padding:30px 10px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#8E95A0;font:500 9px var(--m);letter-spacing:.06em;text-transform:uppercase;text-align:center}
+.nfps svg{width:34px;height:34px;color:#FF8A4A}
+.nfdos{position:absolute;inset:0;background:#0A0B0D;padding:28px 8px 8px;transform:translateY(100%);transition:transform .5s cubic-bezier(.3,.7,.2,1)}
+.nfov.p3 .nfdos{transform:none}
+.nfdos i{display:block;height:92px;border-radius:12px;background:#1B1E23 center/cover no-repeat;border:1px solid rgba(255,255,255,.08)}
+.nfdos small{display:block;font:500 7px var(--m);color:var(--hc,#F0B898);letter-spacing:.06em;text-transform:uppercase;margin-top:8px}.nfdos b{display:block;font:600 12px/1.2 var(--f);color:#fff;margin-top:3px}
+.nfdos u{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:6px;text-decoration:none}.nfdos u+u{width:70%}
+.nfwv{position:absolute;left:50%;bottom:72px;width:60px;height:60px;margin:0 0 0 70px;border-radius:50%;border:2px solid #FF8A4A;opacity:0;pointer-events:none}
+.nfov.p2b .nfwv{animation:nfwave 1.1s ease-out forwards}.nfov.p2b .nfwv.w2{animation-delay:.18s}.nfov.p2b .nfwv.w3{animation-delay:.36s}
+@keyframes nfwave{0%{transform:scale(.6);opacity:.9}100%{transform:scale(4.2);opacity:0}}
+.nfov.p4 .nfs1{opacity:0;transform:translateY(-40px) scale(.94);pointer-events:none}
+/* сцена 2: паспорт и печать */
+.nfs2{opacity:0;transform:translateY(60px)}
+.nfov.p4 .nfs2{opacity:1;transform:none}
+.nfpp{position:absolute;left:20px;right:20px;top:10px;height:330px;border-radius:18px;background:#F1E9DC;background-image:radial-gradient(rgba(120,90,60,.08) 1px,transparent 1.2px);background-size:9px 9px;box-shadow:0 30px 60px rgba(0,0,0,.5);padding:16px;color:#3A2E22}
+.nfpp .hd2{display:flex;justify-content:space-between;font:500 10px var(--m);letter-spacing:.08em;text-transform:uppercase;color:#8C7559}
+.nfgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.nfgrid div{aspect-ratio:1;border-radius:50%;border:1.5px dashed rgba(140,117,89,.35);display:grid;place-items:center}
+.nfgrid div.g{border:0;background:radial-gradient(circle,rgba(255,106,31,.0) 54%,rgba(255,106,31,.0) 55%);}
+.nfgrid div.g svg{width:100%;height:100%;color:rgba(214,86,20,.55);transform:rotate(var(--r,0deg))}
+.nfstamp{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-60px 0 0 -75px;color:#E5520F;opacity:0;transform:scale(2.6) rotate(-30deg);filter:blur(2px)}
+.nfov.p5 .nfstamp{animation:nfslam .42s cubic-bezier(.5,0,.75,0) forwards}
+@keyframes nfslam{0%{opacity:0;transform:scale(2.6) rotate(-30deg);filter:blur(3px)}80%{opacity:1;transform:scale(.94) rotate(-11deg);filter:blur(0)}100%{opacity:.92;transform:scale(1) rotate(-12deg);filter:blur(0)}}
+.nfov.p5 .nfpp{animation:nfthud .35s .34s ease-out}
+@keyframes nfthud{0%{transform:none}35%{transform:translateY(5px) scale(.985)}100%{transform:none}}
+.nfink{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:12px 0 0 -3px;border-radius:50%;background:#E5520F;opacity:0}
+.nfov.p5 .nfink{animation:nfink .5s .33s ease-out forwards}
+@keyframes nfink{0%{opacity:.9;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.4)}}
+.nfcnt{position:absolute;left:0;right:0;bottom:44px;text-align:center;font:500 13px var(--f);color:#C9CED8;opacity:0;transition:opacity .3s}.nfcnt b{font:600 30px var(--f);color:#fff;display:block;letter-spacing:-.02em}
+.nfov.p5 .nfcnt{opacity:1;transition-delay:.5s}
+/* значок */
+.nfbadge{position:absolute;left:50%;top:40px;width:300px;margin-left:-150px;text-align:center;opacity:0;transform:scale(.4) rotateY(180deg);transition:all .7s cubic-bezier(.2,1.4,.4,1)}
+.nfbadge .md{width:150px;height:150px;margin:0 auto;border-radius:50%;background:conic-gradient(from 200deg,#FFB27A,#FF6A1F,#B83E0B,#FF8A4A,#FFD2A8,#FF6A1F,#FFB27A);display:grid;place-items:center;box-shadow:0 0 60px rgba(255,120,40,.55),inset 0 0 0 6px rgba(255,255,255,.25);position:relative;overflow:hidden}
+.nfbadge .md::after{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.65) 50%,transparent 60%);transform:translateX(-80%);animation:nfshine 1.6s 1s ease-in-out infinite}
+@keyframes nfshine{to{transform:translateX(80%)}}
+.nfbadge .md svg{width:76px;height:76px;color:#2A1206}
+.nfbadge b{display:block;font:600 22px var(--f);color:#fff;margin-top:16px}.nfbadge span{font:500 12px var(--m);color:#F0B898;letter-spacing:.04em}
+.nfov.p6 .nfpp,.nfov.p6 .nfcnt{opacity:.0;transition:opacity .4s}
+.nfov.p6 .nfbadge{opacity:1;transform:none}
+.nfbtns{display:flex;gap:8px;width:100%;max-width:350px;margin-top:auto;opacity:0;transform:translateY(16px);transition:all .4s}
+.nfov.p7 .nfbtns{opacity:1;transform:none}
+.nfbtns button{flex:1;height:52px;border-radius:26px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font:600 15px var(--f);cursor:pointer}
+.nfbtns button.pr{background:#fff;color:#0A0B0D;border:0}
+.nfskip{position:absolute;right:16px;top:58px;height:32px;padding:0 14px;border-radius:16px;border:0;background:rgba(255,255,255,.1);color:#C9CED8;font:500 12.5px var(--f);cursor:pointer;z-index:2}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -7714,6 +7777,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const EXM = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
   const meta = id => { const n = window.tourEx(id); return n; };
   window.openStop = (id) => { if (window.LANDING && LANDING[id]) return window[LANDING[id]](); if (typeof INFO !== 'undefined' && INFO[id]) return openEx(id); if (window.open3d && [10, 12, 36].includes(id)) return open3d({ id, title:(EXM.get(id) || [])[2] }); toast('Досье скоро появится'); };
+  window.badgeUpd = () => badge();
   function badge(){ const r = st(), b = $('#passBadge'); if (!b) return; const n = r.started ? r.done.length : 0; b.hidden = !n; b.textContent = n; }
   window.tourHere = (opts = {}) => { const r = st(), ids = R[r.key].ids; if (!r.started){ r.started = true; }
     const id = ids[r.i], first = !r.done.includes(id); if (first) r.done.push(id); if (r.i < ids.length - 1) r.i++; save(r); badge();
@@ -7745,6 +7809,53 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
         const r = st(); r.key = k; r.i = R[k].ids.indexOf(id); r.done = []; r.started = true; r.on = true; save(r); window.routeSet && routeSet(k); setTimeout(() => window.routeGo && routeGo(r.i, true), 80);
         toast(`Экскурсия «${R[k].name}» с шага ${r.i + 1}`); renderHome(); }; } }
   badge(); renderTour();
+})();
+
+</script>
+<script>
+// ===== NFC: телефон к табличке → досье → печать → значок (v71)
+(() => { const $ = s => document.querySelector(s);
+  const NFC_I = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8.5a6 6 0 0 1 0 7M9.2 6a10 10 0 0 1 0 12M3 10.5a2 2 0 0 1 0 3"/><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/></svg>';
+  const STAR = '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="22" ry="8" transform="rotate(-25 24 24)" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".55"/><path fill="currentColor" d="M24 9l4.4 9.2 10.1 1.4-7.3 7.1 1.7 10L24 32l-8.9 4.7 1.7-10-7.3-7.1 10.1-1.4z"/></svg>';
+  const LEVELS = [[5, 'Курсант'], [15, 'Пилот']];
+  const stampSvg = (title, hall) => { const t = ('МУЗЕЙ КОСМОНАВТИКИ · ' + (hall || '').toUpperCase() + ' · ').slice(0, 52);
+    const d = new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+    return `<svg viewBox="0 0 150 150"><defs><path id="nfArc" d="M75 75 m-56 0 a56 56 0 1 1 112 0 a56 56 0 1 1 -112 0"/></defs><g fill="none" stroke="currentColor"><circle cx="75" cy="75" r="70" stroke-width="4"/><circle cx="75" cy="75" r="64" stroke-width="1.5"/><circle cx="75" cy="75" r="44" stroke-width="1.5"/></g><text font-family="JetBrains Mono,monospace" font-size="9.2" font-weight="600" letter-spacing="1.4" fill="currentColor"><textPath href="#nfArc">${t}</textPath></text><g transform="translate(75 62)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle r="9"/><ellipse rx="22" ry="8" transform="rotate(-25)"/></g><text x="75" y="92" text-anchor="middle" font-family="Onest,Inter,sans-serif" font-size="11" font-weight="700" fill="currentColor">${title.replace(/[«»]/g, '').slice(0, 18).toUpperCase()}</text><text x="75" y="106" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="currentColor">${d}</text></svg>`; };
+  const mini = '<svg viewBox="0 0 150 150"><g fill="none" stroke="currentColor"><circle cx="75" cy="75" r="68" stroke-width="5"/><circle cx="75" cy="75" r="44" stroke-width="2"/></g><g transform="translate(75 75)" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><circle r="12"/><ellipse rx="30" ry="11" transform="rotate(-25)"/></g></svg>';
+  let T = [], ov = null;
+  const clear = () => { T.forEach(clearTimeout); T = []; };
+  function close(){ clear(); if (!ov) return; const o = ov; ov = null; o.classList.remove('on'); setTimeout(() => o.remove(), 320); }
+  window.nfcClose = close;
+  // id — экспонат; after() — после закрытия; opt: { loop, badge, n, total } для слайда
+  window.nfcPlay = (id, after, opt = {}) => { close(); const ex = window.tourEx ? tourEx(id) : { title:'Экспонат', hall:'', color:'#F0B898' };
+    const r = window.tourState ? tourState() : { done:[], key:'short' }, R = window.TOUR_ROUTES || {}, total = opt.total || ((R[r.key] || {}).ids || []).length || 10;
+    const n = opt.n || r.done.length || 1, lvl = opt.badge ? LEVELS[0] : LEVELS.find(([k]) => k === n), allDone = !opt.loop && n >= total;
+    const badge = lvl ? { name:lvl[1], sub:`${lvl[0]} печатей` } : allDone ? { name:'Космонавт музея', sub:'весь маршрут' } : null;
+    const scr = $('.scr') || document.body; ov = document.createElement('div'); ov.className = 'nfov'; ov.style.setProperty('--hc', ex.color);
+    const slots = Array.from({ length:9 }, (_, k) => k < Math.min(8, n - 1) ? `<div class="g" style="--r:${(k * 37 % 50) - 25}deg">${mini}</div>` : '<div></div>').join('');
+    const ink = Array.from({ length:9 }, (_, k) => { const a = k / 9 * 6.283 + .3, d = 70 + (k * 13 % 30); return `<i class="nfink" style="--x:${Math.cos(a) * d}px;--y:${Math.sin(a) * d}px"></i>`; }).join('');
+    ov.innerHTML = `<button class="nfskip">Пропустить</button><div class="nk">NFC · у экспоната</div><h3 id="nfH">Приложи телефон<br>к метке на табличке</h3>
+      <div class="nfst"><div class="nfsc nfs1"><div class="nfpl"><small>${ex.inv || ''} · ${ex.hall}</small><b>${ex.title}</b><span>Приложите телефон к метке — откроется рассказ об экспонате</span><div class="nftag">${NFC_I}</div></div>
+          <i class="nfwv"></i><i class="nfwv w2"></i><i class="nfwv w3"></i>
+          <div class="nfph"><div class="nfps">${NFC_I}Поднесите<br>к метке</div><div class="nfdos"><i style="${ex.big || ex.th ? `background-image:url(${ex.big || ex.th})` : ''}"></i><small>${ex.hall}</small><b>${ex.title}</b><u></u><u></u></div></div></div>
+        <div class="nfsc nfs2"><div class="nfpp"><div class="hd2"><span>Паспорт · печати</span><span>${R[r.key] ? R[r.key].name : ''}</span></div><div class="nfgrid">${slots}</div><div class="nfstamp">${stampSvg(ex.title, ex.hall)}</div>${ink}</div>
+          <div class="nfcnt"><b id="nfN">${n - 1} из ${total}</b>печатей маршрута</div>
+          ${badge ? `<div class="nfbadge"><div class="md">${STAR}</div><b>Значок «${badge.name}»</b><span>${badge.sub} · покажи на кассе</span></div>` : ''}</div></div>
+      <div class="nfbtns"><button id="nfNext">Дальше по маршруту</button><button class="pr" id="nfOpen">Открыть досье</button></div>`;
+    scr.appendChild(ov); const o = ov, H = o.querySelector('#nfH'), set = (c, h) => { o.classList.add(c); if (h != null){ H.style.opacity = 0; T.push(setTimeout(() => { H.innerHTML = h; H.style.opacity = 1; }, 180)); } };
+    const at = (ms, f) => T.push(setTimeout(f, ms));
+    requestAnimationFrame(() => o.classList.add('on'));
+    at(250, () => set('p1')); at(1100, () => set('p2'));
+    at(1900, () => { set('p2b', 'Метка найдена'); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch(_){} });
+    at(2500, () => set('p3', 'Открываем досье'));
+    at(3500, () => set('p4', 'Печать в паспорте'));
+    at(4000, () => { set('p5'); at(520, () => { const N = o.querySelector('#nfN'); N && (N.textContent = `${n} из ${total}`); }); });
+    let tEnd = 5200; if (badge){ at(5400, () => set('p6', 'Новый значок!')); tEnd = 6600; }
+    at(tEnd, () => set('p7'));
+    if (opt.loop) at(tEnd + 2600, () => { if (ov === o) nfcPlay(id, after, opt); });
+    const done = (open) => { const keep = opt.loop; close(); if (!keep){ after && after(); if (open) setTimeout(() => window.openStop && openStop(id), 120); } };
+    o.querySelector('#nfOpen').onclick = () => done(true); o.querySelector('#nfNext').onclick = () => done(false);
+    o.querySelector('.nfskip').onclick = () => done(false); };
 })();
 
 </script>
