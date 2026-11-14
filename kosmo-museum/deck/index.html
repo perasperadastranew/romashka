@@ -71,6 +71,10 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
   h1{font-size:40px}h2{font-size:26px}.lead{font-size:16px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.wrap{transition:grid-template-columns .45s}.wrap.wide{max-width:1640px;grid-template-columns:minmax(0,1fr) 0;gap:0}.wrap.wide .stage{visibility:hidden}.ch[data-wide]{max-width:none}.ch[data-wide] h2,.ch[data-wide]>p{max-width:860px}.ch[data-wide] .flowimg{max-height:58vh}
+.flowimg{display:block;margin:18px 0 0;border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:auto;background:#141516;max-height:52vh}
+.flowimg img{display:block;width:100%;min-width:1100px;height:auto}
+.flowleg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:13px;color:#A9A7A2}.flowleg i{display:inline-block;width:26px;height:12px;border-radius:7px;margin-right:8px;vertical-align:-1px;background:#FF8A4A}.flowleg i.g{background:#55585D}.flowleg i.o{background:none;border:1px solid #3A3C40}
 </style>
 
 <div class="wrap">
@@ -135,6 +139,14 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
       </ul>
       <p class="note">Метки — пассивные NFC-наклейки под табличкой, без питания. Современные iPhone и Android читают их, просто поднеся телефон. Названия уровней — черновик, согласовать с музеем.</p>
       <div class="try"><span>Попробуйте</span><button class="btn" data-run="nfc">Повторить</button></div>
+    </section>
+
+    <section class="ch" data-act="flow" data-wide="1" data-cap="Карта приложения">
+      <div class="kick">Карта приложения · user flow</div>
+      <h2>Главный путь: от первого экрана до <em>значка</em></h2>
+      <p>Сегодня → «Начать экскурсию» → Экскурсия → следующий экспонат → NFC у таблички → досье → печать → значок → итог визита. Всё остальное — ветки вкладок Карта, Паспорт и Ещё.</p>
+      <div class="flowimg"><img src="img/flow_map.webp" alt="Карта приложения: экраны и переходы, главный путь выделен оранжевым"></div>
+      <div class="flowleg"><span><i></i>главный путь</span><span><i class="o"></i>раздел</span><span><i class="g"></i>экран внутри раздела</span><span>Интерактивная версия: <a href="https://claude.ai/artifact/8z7RQiwquugKeYgE1LTpr3" target="_blank" rel="noopener">карта приложения</a></span></div>
     </section>
 
     <section class="ch" data-act="onboarding" data-cap="Онбординг">
@@ -316,6 +328,7 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
     document.getElementById('cnt').textContent = (i + 1) + ' / ' + chs.length; document.getElementById('prog').style.width = ((i + 1) / chs.length * 100) + '%';
     document.getElementById('prev').disabled = i === 0; document.getElementById('next').disabled = i === chs.length - 1;
     try { history.replaceState(null, '', '#s' + (i + 1)); } catch(_){}
+    document.querySelector('.wrap').classList.toggle('wide', !!c.dataset.wide);
     if (c.dataset.act !== curAct){ curAct = c.dataset.act; run(curAct); } }
   document.getElementById('prev').onclick = () => go(cur - 1); document.getElementById('next').onclick = () => go(cur + 1);
   const h0 = /^#s(\d+)$/.exec(location.hash); go(h0 ? +h0[1] - 1 : 0);
