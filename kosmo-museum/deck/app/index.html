@@ -7945,8 +7945,8 @@ window.mountDog3D = (box, opt = {}) => {
   const rimO = new THREE.DirectionalLight(CLEAN ? 0xffd2b0 : 0xFF8A4A, CLEAN ? 1.1 : 2.6); rimO.position.set(50, 20, -40); sc.add(rimO); const rimB = new THREE.DirectionalLight(0x8FB0FF, CLEAN ? 1.2 : 1.6); rimB.position.set(-50, 30, -30); sc.add(rimB);
   sc.add(new THREE.HemisphereLight(0xdfe6f4, 0x3a2a30, CLEAN ? .7 : .12));
   const life = { g:1, gx:0, gy:0, x:0, y:0, e:2, ev:0, c:3, ct:0, tilt:0 };
-  let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
-  const mixBase = {}; const cur = {}, tgt = {}, sparks = [], lids = [], eyes = [], B = {}, rest = {}, wq = {};
+  let trick = null, snapCb = null; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
+  const mixBase = {}; const cur = {}, tgt = {}, sparks = [], lids = [], curtains = [], eyes = [], B = {}, rest = {}, wq = {};
   const NK = new THREE.Vector4();
   const grad = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; const g = c.getContext('2d'); (CLEAN ? ['#7d7484', '#b9b0b8', '#ece6e4', '#fbf7f4'] : ['#5a5070', '#9a8fa8', '#e8e0e2', '#fbf6f2']).forEach((col, i) => { g.fillStyle = col; g.fillRect(i, 0, 1, 1); }); const t = new THREE.CanvasTexture(c); t.minFilter = t.magFilter = CLEAN ? THREE.LinearFilter : THREE.NearestFilter; return t; })();
   const paint = (m, fur) => { m.onBeforeCompile = sh => { sh.uniforms.uNk2 = { value:NK }; sh.uniforms.uClean = UCL; sh.uniforms.uRecol = URC; sh.uniforms.uObjDots = { value:window.DOG_PAINT === false ? 1 : 0 };
@@ -7999,7 +7999,9 @@ window.mountDog3D = (box, opt = {}) => {
       const put = (m, p) => { m.position.copy(bone.worldToLocal(p.clone())); m.quaternion.copy(bq); bone.add(m); m.renderOrder = 12; };
       for (const [dx, dy, s0] of [[-.18, .26, .22], [.22, -.2, .1]]){ const sp = new THREE.Mesh(new THREE.CircleGeometry(rr * s0, 20), flat(0xffffff)); put(sp, new THREE.Vector3(ec.x + dx * rr, ec.y + dy * rr, ec.z + rr * 1.1)); sparks.push(sp); }
       const lsh = new THREE.Shape(); lsh.moveTo(-1, .05); lsh.quadraticCurveTo(0, -.85, 1, .05); lsh.lineTo(.92, .2); lsh.quadraticCurveTo(0, -.55, -.92, .2); lsh.lineTo(-1, .05); const lid = new THREE.Mesh(new THREE.ShapeGeometry(lsh, 16), flat(0x2e2226)); lid.scale.setScalar(rr * .9); put(lid, new THREE.Vector3(ec.x, ec.y + rr * .05, ec.z + rr * 1.0)); lid.visible = false; lids.push(lid); lid.renderOrder = 13;
-      const cap = new THREE.Mesh(new THREE.SphereGeometry(rr * 1.02, 24, 16), lidMat); put(cap, new THREE.Vector3(ec.x, ec.y, ec.z + rr * .08)); cap.renderOrder = 0; cap.visible = false; lids.push(cap); }
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(rr * 1.02, 24, 16), lidMat); put(cap, new THREE.Vector3(ec.x, ec.y, ec.z + rr * .08)); cap.renderOrder = 0; cap.visible = false; lids.push(cap); 
+      /* веко-шторка цвета шерсти: при моргании опускается сверху на глаз и поднимается обратно */
+      { const g = new THREE.CircleGeometry(rr * .98, 32); g.translate(0, -rr * .98, 0); const cm = new THREE.MeshBasicMaterial({ color:0xffffff, depthTest:false, toneMapped:false }); const cur2 = new THREE.Mesh(g, cm); put(cur2, new THREE.Vector3(ec.x, ec.y + rr * .98, ec.z + rr * 1.06)); cur2.renderOrder = 14; cur2.scale.y = .001; cur2.visible = false; curtains.push(cur2); lid.renderOrder = 15; } }
     { const nose = inner.getObjectByName('Nose'), hb = B.Head_M; if (nose && hb){ const nb = new THREE.Box3().setFromObject(nose), n0 = nb.getCenter(new THREE.Vector3()); const pts = [];
       for (const sd of [-1, 1]) for (let k = 0; k < 2; k++){ const o = new THREE.Vector3(n0.x + sd * rr * (1.2 + k * .15), nb.min.y + rr * (1.6 - k * .3), nb.min.z + rr * .1);
         const cv = new THREE.QuadraticBezierCurve3(o, o.clone().add(new THREE.Vector3(sd * rr * .9, rr * (.25 - k * .2), -rr * .1)), o.clone().add(new THREE.Vector3(sd * rr * (1.7 - k * .2), rr * (-.05 - k * .28), -rr * .55)));
@@ -8079,7 +8081,7 @@ window.mountDog3D = (box, opt = {}) => {
   (function loop(now){ if (!alive) return; requestAnimationFrame(loop); if (!dog){ return; } if (!inView || document.hidden || !box.offsetParent || box.closest('.off')){ return; } const t = (now - t0) / 1000;
     const fdt = Math.min(.1, Math.max(0, t - (loop.pt || t))); loop.pt = t; const kM = 1 - Math.exp(-fdt * 3.2), kL = 1 - Math.exp(-fdt * 1.6), f60 = fdt * 60;
     const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; cur[n] = (cur[n] || 0) + (tgt[n] - (cur[n] || 0)) * kM; }
-    blinkT -= fdt; if (blinkT < 0){ blinkV = .13; blinkT = Math.random() < .12 ? .3 : 2.6 + Math.random() * 3.4; } blinkV = Math.max(0, blinkV - fdt); /* моргание фиксированной длины — не зависит от частоты кадров */
+    blinkT -= fdt; if (blinkT < 0){ blinkV = .17; blinkT = Math.random() < .12 ? .32 : 2.6 + Math.random() * 3.4; } blinkV = Math.max(0, blinkV - fdt); /* моргание фиксированной длины — не зависит от частоты кадров */
     /* характер: Белка спокойнее и плавнее, Стрелка живее — чаще смотрит по сторонам и дёргает ушами */
     const P = who === 'strelka' ? { gx:1.35, gy:.55, g0:.9, g1:1.8, e0:1.4, e1:2.8, ev:.75, k:.85, tl:.75, es:.09, ef:2.3 } : { gx:1.1, gy:.45, g0:1.4, g1:2.6, e0:2.6, e1:4.2, ev:.55, k:.7, tl:.6, es:.05, ef:1.4 };
     life.g -= fdt; if (life.g < 0){ life.gx = (Math.random() - .5) * P.gx; life.gy = (Math.random() - .5) * P.gy; life.g = P.g0 + Math.random() * P.g1; }
@@ -8087,8 +8089,12 @@ window.mountDog3D = (box, opt = {}) => {
     life.c -= fdt; if (life.c < 0){ life.ct = Math.random() < .6 ? (Math.random() - .5) * .55 : 0; life.c = 2 + Math.random() * 3; }
     life.x += (life.gx - life.x) * kL; life.y += (life.gy - life.y) * kL; life.tilt += (life.ct - life.tilt) * kL * .8;
     for (const n of ['L_mouthup', 'R_mouthup', 'L_mouthwide', 'R_mouthwide', 'brows_up', 'brows_down', 'brows_sad', 'brows_angry']) setW(n, cur[n]);
-    const bl = Math.max(M.blink || 0, blinkV > 0 ? 1 : 0), closed = bl > .55;
-    setW('blink', 0); for (const e of eyes) e.visible = !closed; setW('big', .62); /* размер глаз постоянный — при смене настроения не «прыгают» */ for (const sp of sparks) sp.visible = !closed; for (const l of lids) l.visible = closed;
+    /* моргание: веко плавно закрывается и открывается (0 → 1 → 0 за 0,17 с), глаз не «выключается» */
+    const bp = blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0, bl = Math.max(M.blink || 0, bp), closed = bl > .92;
+    setW('blink', 0); setW('big', .62); /* размер глаз постоянный — при смене настроения не «прыгают» */
+    for (const sp of sparks) sp.visible = bl < .3; for (const l of lids) l.visible = false; if (lids[0]) for (let q = 0; q < lids.length; q += 2) lids[q].visible = closed;
+    for (const c of curtains) c.visible = false;
+    window.__bl = bl;
     /* рот иногда плавно приоткрывается — как будто дышит или улыбается; без быстрого «шлёпанья» */
     life.m = (life.m ?? 2) - fdt; if (life.m < 0){ life.mt = .4 + Math.random() * .25; life.mh = .8 + Math.random() * .8; life.m = (who === 'strelka' ? 2.6 : 3.4) + Math.random() * 3; }
     if (life.mh > 0){ life.mh -= fdt; if (life.mh <= 0) life.mt = 0; }
@@ -8101,6 +8107,8 @@ window.mountDog3D = (box, opt = {}) => {
       if (!loop.frozen && ACT.sit){ mixer.stopAllAction(); const a = ACT.sit; a.reset(); a.enabled = true; a.setEffectiveWeight(1); a.play(); a.time = 1.5; a.paused = true; mixer.update(0); loop.frozen = true; }
       else if (!ACT.sit) mixer.update(dt); }
     else if (mixer) mixer.update(window.DOG_SNAP ? .5 : dt);
+    /* моргание: глаз сам плавно сплющивается в линию и раскрывается — через кость глазницы, без накладок (после анимации, чтобы клип не перезаписал) */
+    { const blv = Math.max(M.blink || 0, blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0); for (const bn of ['Eye_L_socket', 'Eye_R_socket']){ const b = B[bn]; if (b){ if (!b.userData.upAx){ const q = b.getWorldQuaternion(new THREE.Quaternion()).invert(); const v = new THREE.Vector3(0, 1, 0).applyQuaternion(q); const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)]; b.userData.upAx = 'xyz'[a.indexOf(Math.max(...a))]; } const s = Math.max(.06, 1 - blv * .94); b.scale.set(1, 1, 1); b.scale[b.userData.upAx] = s; } } }
     for (const n of ['Head_M', 'Neck1_M']) if (B[n]) (mixBase[n] = mixBase[n] || new THREE.Quaternion()).copy(B[n].quaternion);
     const rotP = (n, ...rs) => rotOn(n, ...rs);
     rot('jaw_JNT', ['x', jaw]); rot('tongue_JNT2', ['x', -jaw * .35]); rot('tongue_JNT4', ['x', -jaw * .5]);
@@ -8111,12 +8119,30 @@ window.mountDog3D = (box, opt = {}) => {
     rotP('Head_M', ['y', yaw * .65], ['x', pitch * .6], ['z', roll * .7]); rotP('Neck1_M', ['y', yaw * .35], ['x', pitch * .4], ['z', roll * .3]);
     const eb = cur.earsBack - ePerk * .35, eo = cur.earsOut + ePerk * .25 + life.ev * P.ev + Math.sin(t * P.ef) * P.es;
     const fold = who === 'strelka' ? 1 : 0; const eL = eo + (life.side < 0 ? life.ev * .45 : 0), eR = eo + (life.side > 0 ? life.ev * .45 : 0) + Math.sin(t * P.ef + 1.3) * P.es; rot('L_JNT_ear1', ['x', -eb * .55 - fold * .35], ['z', -eL * .35 - fold * .75]); rot('L_JNT_ear2', ['z', -fold * .55]); rot('R_JNT_ear1', ['x', -eb * .55], ['z', eR * .35]);
-    dog.position.set(0, Math.sin(t * 1.6) * .18 + ey, 0); dog.rotation.z = 0; if (!opt.full && dog.userData.np0){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); dog.position.sub(d); }
+    /* трюки в иллюминаторе: прибегает сбоку, кружится, отходит назад, ныряет, служит, даёт лапу */
+    let kx = 0, ky = 0, kz = 0, kr = 0, ks = 1, kOn = 0;
+    if (trick){ const u = Math.min(1, (now - trick.t0) / trick.dur), ease = x => 1 - Math.pow(1 - x, 3), hop = (n, a) => Math.abs(Math.sin(u * Math.PI * n)) * a * (1 - u); kOn = u < 1 ? 1 : 0;
+      if (trick.n === 'runIn'){ const sd = trick.sd || 1; kx = sd * 46 * (1 - ease(u)); ky = hop(4, 3.2); kr = sd * -1.1 * (1 - ease(Math.min(1, u * 1.25))); }
+      else if (trick.n === 'runOut'){ const sd = trick.sd || 1; kx = sd * 46 * Math.pow(u, 2); ky = hop(4, 3.2) * 4 * u; kr = sd * 1.1 * Math.min(1, u * 3); }
+      else if (trick.n === 'spin'){ kr = Math.PI * 2 * (u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2); ky = Math.sin(u * Math.PI) * 2.6; }
+      else if (trick.n === 'back'){ const w = Math.sin(Math.min(1, u * 1.15) * Math.PI); kz = -26 * w; ks = 1 - .18 * w; ky = hop(3, 1.2); }
+      else if (trick.n === 'dive'){ ky = -30 * Math.sin(Math.min(1, u) * Math.PI) * (u < .5 ? 1 : 1); }
+      if (u >= 1){ const done = trick.cb; trick = null; done && done(); } }
+    /* поворот — вокруг оси тела, а не вокруг точки между глаз */
+    if (kr && dog.userData.bb && dog.userData.pz == null){ dog.userData.pz = dog.userData.bb.getCenter(new THREE.Vector3()).z; }
+    const pz = dog.userData.pz || 0, ox = kr ? -pz * Math.sin(kr) : 0, oz = kr ? pz * (1 - Math.cos(kr)) : 0;
+    dog.position.set(kx + ox, Math.sin(t * 1.6) * .18 + ey + ky, kz + oz); dog.rotation.z = 0; dog.rotation.y = kr; dog.scale.setScalar(ks);
+    if (!opt.full && dog.userData.np0 && !kOn){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); dog.position.sub(d); }
     if (opt.full && ea >= 1){ dog.updateMatrixWorld(true); fitCam(window.DOG_SNAP ? 1 : .05); }
-    if (window.DOG_PAINT !== false && !CLEAN){ r.setRenderTarget(rt); r.setClearColor(0, 0); r.clear(); r.render(sc, cam); r.setRenderTarget(null); r.clear(); r.render(pScene, pCam); cam.layers.set(1); r.autoClear = false; r.render(sc, cam); r.autoClear = true; cam.layers.set(0); } else { r.setRenderTarget(null); cam.layers.enableAll(); r.render(sc, cam); cam.layers.set(0); } })(t0);
+    if (window.DOG_PAINT !== false && !CLEAN){ r.setRenderTarget(rt); r.setClearColor(0, 0); r.clear(); r.render(sc, cam); r.setRenderTarget(null); r.clear(); r.render(pScene, pCam); cam.layers.set(1); r.autoClear = false; r.render(sc, cam); r.autoClear = true; cam.layers.set(0); } else { r.setRenderTarget(null); cam.layers.enableAll(); r.render(sc, cam); cam.layers.set(0); } if (snapCb){ const f = snapCb; snapCb = null; try { f(r.domElement.toDataURL('image/png')); } catch(_){ f(null); } } })(t0);
   function setWho(w){ who = w; if (!furMat) return; if (w === 'strelka'){ if (!texS){ if (TEXS) texS = TEXS; else { loadTexS().then(() => who === 'strelka' && setWho('strelka')); return; } } furMat.map = texS; shellMats.forEach(m => m.map = texS); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0x7A4A30); }
     else { furMat.map = texB; shellMats.forEach(m => m.map = texB); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0xE9DFDF); } furMat.needsUpdate = true; }
-  return { setPose(p){ if (p === pose) return; pose = p; play(p); const pm = POSE_MOOD[p]; if (pm){ mood = pm; clearTimeout(moodT); } else if (mood === 'sleep') mood = 'idle'; }, enter(){ const nw = performance.now(); if (!dog || (enterAt && nw - enterAt < 1200)) return; /* модель ещё грузится или уже появляется — второй раз не запускаем */ enterAt = nw; mood = 'idle'; clearTimeout(moodT); /* пока высовывается — спокойно, без наклона головы; привет — после */ moodT = setTimeout(() => { mood = 'hello'; moodT = setTimeout(() => mood = 'idle', 1800); }, 950); }, setMood(m, ms){ mood = m; clearTimeout(moodT); if (ms) moodT = setTimeout(() => mood = 'idle', ms); }, setWho, mouth(v){ mouthV = v; }, look(){}, destroy(){ vio && vio.disconnect(); alive = false; ro.disconnect(); r.dispose(); r.domElement.remove(); } };
+  /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
+  function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (trick && !opt2.force) return false;
+    if (n === 'beg' || n === 'paw'){ const back = pose; play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
+    const dur = { runIn:1100, runOut:800, spin:1300, back:1700, dive:1200 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
+    if (n === 'runIn') { enterAt = 0; dog.visible = true; } if (n === 'spin' || n === 'runIn'){ mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', dur + 900); } return true; }
+  return { snap(){ return new Promise(res => { snapCb = res; setTimeout(() => { if (snapCb === res){ snapCb = null; res(null); } }, 1500); }); }, trick:doTrick, setPose(p){ if (p === pose) return; pose = p; play(p); const pm = POSE_MOOD[p]; if (pm){ mood = pm; clearTimeout(moodT); } else if (mood === 'sleep') mood = 'idle'; }, enter(){ const nw = performance.now(); if (!dog || (enterAt && nw - enterAt < 1200)) return; /* модель ещё грузится или уже появляется — второй раз не запускаем */ enterAt = nw; mood = 'idle'; clearTimeout(moodT); /* пока высовывается — спокойно, без наклона головы; привет — после */ moodT = setTimeout(() => { mood = 'hello'; moodT = setTimeout(() => mood = 'idle', 1800); }, 950); }, setMood(m, ms){ mood = m; clearTimeout(moodT); if (ms) moodT = setTimeout(() => mood = 'idle', ms); }, setWho, mouth(v){ mouthV = v; }, look(){}, destroy(){ vio && vio.disconnect(); alive = false; ro.disconnect(); r.dispose(); r.domElement.remove(); } };
 };
 
 // собаки грузятся сразу при старте: модель, текстура Стрелки — чтобы гид появлялся без паузы
@@ -8465,7 +8491,8 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
   function obGo(i){ obI = i; $('#obTrack').style.transform = `translateX(${-i * 100}%)`; document.querySelectorAll('#obDots i').forEach((d, k) => d.classList.toggle('on', k === i)); $('#obNext').textContent = i === OBN - 1 ? 'Начать' : 'Далее';
     $('#obCol').classList.toggle('go', i === 3); if (i === 4 && !obFig && window.mountFig){ obFig = window.mountFig($('#obFig'), 'sputnik', 'ПС-1', () => {}); }
     if (i >= 4 && !obDogR && window.mountDog2D){ const mk = window.mountDog3D || window.mountDog2D; obDogR = mk($('#obDog'), { pose:'sit' }); obDogS = mk($('#obDog2'), { pose:'sit' }); obDogS.setWho && obDogS.setWho('strelka'); }
-    if (i === 5 && obDogR){ obDuoStop(); obDogR.enter && obDogR.enter(); obDT.push(setTimeout(() => obDogS && obDogS.enter && obDogS.enter(), 700)); obDT.push(setTimeout(() => obSay(0), 1900)); } else obDuoStop(); }
+    if (i === 5 && obDogR){ obDuoStop(); obDogR.enter && obDogR.enter(); if (obDogS){ obDogS.trick && obDogS.trick('runIn', { sd:1, force:true }) || (obDogS.enter && obDogS.enter()); } obDT.push(setTimeout(() => obSay(0), 1900)); } else obDuoStop(); }
+  $('#obDuo').addEventListener('click', e => { const b = e.target.closest('.obdog'); if (!b) return; const D = b.dataset.d === 'belka' ? obDogR : obDogS; window.dogTrick && dogTrick(D); });
   /* Белка и Стрелка по очереди говорят фразу в облачке над иллюминатором */
   let obDogS = null, obDT = [];
   function obDuoStop(){ obDT.forEach(clearTimeout); obDT = []; document.querySelectorAll('#obDuo .obdog').forEach(b => b.classList.remove('say', 'on')); }
@@ -8929,7 +8956,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       if (k >= txt.length){ clearInterval(T); T = null; DOGF && DOGF.look && DOGF.look(0, 0); DOGF && DOGF.setMood('joy', 2400); } }, 32); }
   window.mountDogFact = () => { stop(); const c = $('#dfc'); if (!c) return; const who = c.dataset.who;
     io = new IntersectionObserver(es => { if (!es.some(x => x.isIntersecting)) return; io.disconnect(); io = null;
-      const mk = window.mountDog3D || window.mountDog2D; if (mk){ DOGF = mk($('#dfDog'), { pose:'sit' }); who === 'strelka' && DOGF.setWho && DOGF.setWho('strelka'); }
+      const mk = window.mountDog3D || window.mountDog2D; if (mk){ DOGF = window.__DOGF = mk($('#dfDog'), { pose:'sit' }); who === 'strelka' && DOGF.setWho && DOGF.setWho('strelka'); }
       setTimeout(say, 1500); }, { threshold:.5 });
     io.observe(c);
     $('#dfAgain').onclick = () => { DOGF && DOGF.enter && DOGF.enter(); setTimeout(say, 1200); };
@@ -8985,5 +9012,188 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 })();
 
 </script>
+<script>
+/* собаки делают трюки: нажатие на иллюминатор — случайный трюк; в гиде иногда сами (v86) */
+(() => { const $ = s => document.querySelector(s); const LIST = ['spin', 'beg', 'back', 'paw', 'dive', 'spin'];
+  let k = 0; window.dogTrick = (D, n) => { if (!D || !D.trick) return false; let nm = n || LIST[k++ % LIST.length]; if (window.dogCalm && dogCalm() && !/beg|paw/.test(nm)) nm = k % 2 ? 'beg' : 'paw'; return D.trick(nm); };
+  /* гид */
+  const port = $('#vgPort'); if (port){ port.style.cursor = 'pointer'; port.addEventListener('click', () => window.__DOG && dogTrick(__DOG)); }
+  setInterval(() => { const vg = $('#vg'); if (!vg || vg.classList.contains('off') || document.hidden || !window.__DOG || (window.dogCalm && dogCalm())) return; if (Math.random() < .5) dogTrick(__DOG, ['spin', 'beg', 'back', 'paw'][Math.random() * 4 | 0]); }, 18000);
+  /* досье: иллюминатор в карточке факта */
+  document.addEventListener('click', e => { const po = e.target.closest('#dfc .po'); if (po && window.__DOGF) dogTrick(__DOGF); });
+})();
+
+</script>
+<style>
+/* ===== итог визита + открытка (v87) */
+.vs{padding:4px 4px 0}
+.vs .hmk{margin-top:6px}
+.vs h2{font:500 30px/1.08 var(--f);letter-spacing:-.025em;margin:8px 0 0}
+.vsst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.vsst div{border-radius:18px;background:var(--card);border:1px solid var(--line);padding:12px 12px 10px}
+.vsst b{display:block;font:500 26px/1 var(--f);letter-spacing:-.02em}.vsst span{display:block;margin-top:6px;font:500 11px var(--m);color:var(--mu)}
+.vsdog{position:relative;display:flex;align-items:flex-end;gap:12px;margin-top:18px}
+.vsport{position:relative;width:118px;height:118px;flex:none;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 40%,#2A2F3A,#12151C 70%);box-shadow:inset 0 0 0 6px #3A3F4A,inset 0 0 0 8px #1A1D24,0 10px 30px rgba(0,0,0,.35);cursor:pointer}
+.vsport>div{position:absolute;inset:0}
+.vssay{flex:1;position:relative;margin-bottom:26px;padding:12px 14px;border-radius:18px 18px 18px 6px;background:var(--card);border:1px solid var(--line);font:500 14px/1.35 var(--f)}
+.vscard{margin-top:18px;border-radius:22px;background:var(--card);border:1px solid var(--line);padding:14px}
+.vscard h3{font:500 17px var(--f);margin:0}.vscard p{margin:6px 0 0;font-size:13px;color:var(--mu);line-height:1.4}
+.vspc{display:block;width:100%;margin-top:12px;border-radius:14px;aspect-ratio:4/5;background:#0B0D12 center/cover;object-fit:cover}
+.vsbtns{display:flex;gap:8px;margin-top:12px}.vsbtns button{flex:1;height:46px;border-radius:23px;border:1px solid var(--line);background:none;color:inherit;font:500 14px var(--f);cursor:pointer}
+.vsbtns button.pr{background:var(--ac);border-color:var(--ac);color:#111}
+.vsrate{display:flex;justify-content:space-between;margin-top:12px}
+.vsrate button{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--mu);cursor:pointer;display:grid;place-items:center;transition:background .2s,color .2s,transform .2s}
+.vsrate button svg{width:24px;height:24px}.vsrate button.on{background:var(--ac);color:#111;border-color:var(--ac);transform:scale(1.06)}
+.vsbadge{display:flex;align-items:center;gap:12px}.vsbadge i{width:46px;height:46px;flex:none;border-radius:50%;background:radial-gradient(circle,#FFB27A,#E0622A);box-shadow:0 0 0 3px rgba(255,140,80,.25)}
+.vsnext{display:flex;gap:8px;margin-top:12px}.vsnext button{flex:1;text-align:left;padding:12px;border-radius:16px;border:1px solid var(--line);background:none;color:inherit;cursor:pointer}.vsnext b{display:block;font:500 14px var(--f)}.vsnext span{font:500 11px var(--m);color:var(--mu)}
+/* ===== удобства и часы (v87) */
+.amchip{display:inline-flex;align-items:center;gap:8px;margin-top:10px;height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--line);background:var(--card);color:inherit;font:500 12px var(--m);cursor:pointer}
+.amchip i{width:8px;height:8px;border-radius:50%;background:#5BD38A}.amchip.cl i{background:#E5654B}
+.amov{position:absolute;inset:0;z-index:46;background:rgba(5,6,9,.55);opacity:0;transition:opacity .25s;display:flex;align-items:flex-end}
+.amov.on{opacity:1}
+.amsh{width:100%;max-height:86%;overflow-y:auto;border-radius:26px 26px 0 0;background:#101218;color:#fff;border-top:1px solid var(--line);padding:10px 16px max(22px,env(safe-area-inset-bottom));transform:translateY(40px);transition:transform .3s cubic-bezier(.3,.7,.2,1)}
+.amov.on .amsh{transform:none}
+.amsh .gr{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.amsh h3{font:500 22px/1.1 var(--f);margin:0}.amsh .sub{font:500 12px var(--m);color:var(--mu);margin-top:6px}
+.amhr{margin-top:14px;border-radius:18px;background:var(--card);border:1px solid var(--line);padding:4px 14px}
+.amhr div{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.amhr div:last-child{border:0}.amhr div.t{color:var(--ac);font-weight:600}
+.amli{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.amli div{border-radius:16px;background:var(--card);border:1px solid var(--line);padding:12px}
+.amli b{display:block;font:500 14px var(--f)}.amli span{display:block;margin-top:4px;font-size:12px;color:var(--mu);line-height:1.3}
+.amev{margin-top:14px;border-radius:18px;padding:14px;background:linear-gradient(135deg,rgba(255,138,76,.16),rgba(255,138,76,.04));border:1px solid rgba(255,138,76,.3)}
+.amev b{display:block;font:500 15px var(--f);color:#fff}.amev span{display:block;margin-top:4px;font-size:12.5px;color:var(--mu);line-height:1.35}
+.amnote{margin-top:12px;font:500 11px/1.4 var(--m);color:var(--mu)}
+/* ===== доступность (v87) */
+.scr.a11y-big .view:not(#vHall){zoom:1.14}
+.scr.a11y-calm *,.scr.a11y-calm *::before,.scr.a11y-calm *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+.mlist .val{margin-left:auto;font:600 13px var(--m);color:var(--ac)}
+</style>
+<script>
+/* ===== Итог визита, открытка, удобства, часы, доступность (v87) */
+(() => { const $ = s => document.querySelector(s); const R = window.TOUR_ROUTES, st = window.tourState, save = window.tourSave;
+  const meta = id => window.tourEx ? tourEx(id) : { title:'Экспонат', big:'' };
+  const scr = () => document.querySelector('.scr') || document.body;
+  const A = window.A11Y = Object.assign({ big:false, quiet:false, calm:false }, (() => { try { return JSON.parse(localStorage.getItem('kosmoA11y')) || {}; } catch(_){ return {}; } })());
+  const aSave = () => { try { localStorage.setItem('kosmoA11y', JSON.stringify(A)); } catch(_){} };
+  const aApply = () => { const s = scr(); s.classList.toggle('a11y-big', !!A.big); s.classList.toggle('a11y-calm', !!A.calm); document.querySelectorAll('[data-a11y]').forEach(t => t.classList.toggle('on', !!A[t.dataset.a11y])); };
+  const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch(_){} };
+  const STAR = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
+  const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return n + ' ' + (m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c); };
+
+  /* --- часы работы (официальный сайт музея) */
+  const HRS = { 0:[10,19], 1:null, 2:[10,19], 3:[10,19], 4:[10,21], 5:[10,19], 6:[10,21] };
+  const DN = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const status = (d = new Date()) => { const h = HRS[d.getDay()], m = d.getHours() + d.getMinutes() / 60;
+    if (h && m >= h[0] && m < h[1]){ const left = h[1] - m, lh = Math.floor(left), lm = Math.round((left - lh) * 60); return { open:true, t:`Открыто до ${h[1]}:00`, s:`ещё ${lh ? lh + ' ч ' : ''}${lm} мин` }; }
+    if (h && m < h[0]) return { open:false, t:`Откроется в ${h[0]}:00`, s:'сегодня' };
+    for (let k = 1; k < 8; k++){ const n = new Date(d); n.setDate(d.getDate() + k); const hh = HRS[n.getDay()]; if (hh) return { open:false, t:'Сейчас закрыто', s:`откроется ${k === 1 ? 'завтра' : DN[n.getDay()].toLowerCase()} в ${hh[0]}:00` }; } };
+  const FREE = [new Date(2026, 10, 12), new Date(2026, 11, 17)];
+  const nextFree = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return FREE.find(d => d >= t); };
+  const amHtml = () => { const s = status(), today = new Date().getDay(), f = nextFree();
+    return `<div class="gr"></div><h3>${s.t}</h3><div class="sub">${s.s} · ВДНХ, проспект Мира, 111</div>
+    <div class="amhr">${[2,3,4,5,6,0,1].map(d => `<div class="${d === today ? 't' : ''}"><span>${DN[d]}${d === today ? ' · сегодня' : ''}</span><span>${HRS[d] ? HRS[d][0] + ':00 — ' + HRS[d][1] + ':00' : 'выходной'}</span></div>`).join('')}</div>
+    ${f ? `<div class="amev"><b>Бесплатный вход ${f.getDate()} ${['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'][f.getMonth()]}</b><span>Каждый третий четверг месяца — акция «Московская музейная неделя». Билет всё равно нужно получить на сайте или в кассе.</span></div>` : ''}
+    <div class="amli"><div><b>Касса и вход</b><span>главный вход, рядом гардероб</span></div><div><b>Гардероб</b><span>бесплатно, у входа</span></div><div><b>Туалеты</b><span>на обоих этажах</span></div><div><b>Лифт</b><span>для колясок и маломобильных</span></div><div><b>Кафе</b><span>перекусить между залами</span></div><div><b>Магазин</b><span>книги, мерч, значки</span></div></div>
+    <div class="amnote">Точные места кафе, туалетов и лифта сверим с музеем и поставим точками на карту. Часы — с официального сайта.</div>`; };
+  const openAm = () => { closeAm(); const ov = document.createElement('div'); ov.className = 'amov'; ov.id = 'amOv'; ov.innerHTML = `<div class="amsh">${amHtml()}</div>`; ov.onclick = e => { if (e.target === ov) closeAm(); }; scr().appendChild(ov); requestAnimationFrame(() => ov.classList.add('on')); };
+  const closeAm = () => { const o = $('#amOv'); if (!o) return; o.classList.remove('on'); setTimeout(() => o.remove(), 260); };
+  window.openAmenities = openAm;
+  const chip = () => { const hd = $('#vHall .hd'); if (!hd) return; let c = $('#amChip'); if (!c){ c = document.createElement('button'); c.id = 'amChip'; c.className = 'amchip'; c.onclick = openAm; hd.appendChild(c); } const s = status(); c.classList.toggle('cl', !s.open); c.innerHTML = `<i></i>${s.t} · удобства ›`; };
+  chip(); setInterval(chip, 60000);
+
+  /* --- «Ещё»: удобства + доступность */
+  { const ml = document.querySelectorAll('#vMore .mlist'); const first = ml[0];
+    if (first){ first.insertAdjacentHTML('beforeend', `<button data-x="am"><div><b>Часы и удобства</b><span>кафе, гардероб, лифт, бесплатные дни</span></div><em>›</em></button>`); first.querySelector('[data-x="am"]').onclick = openAm; }
+    const last = ml[ml.length - 1];
+    last && last.insertAdjacentHTML('beforebegin', `<div class="sec" style="padding:18px 20px 0"><h2>Доступность</h2><span>тихий зал и удобный режим</span></div><div class="mlist" id="a11yList">
+      <button data-x="spd"><div><b>Скорость аудиогида</b><span>медленнее или быстрее рассказ</span></div><b class="val" id="a11ySpd">1×</b></button>
+      <button data-x="big"><div><b>Крупный текст</b><span>всё, кроме карты, крупнее</span></div><i class="tg" data-a11y="big"></i></button>
+      <button data-x="quiet"><div><b>Тихий зал</b><span>без звука: печать — вибрацией, гиды молчат</span></div><i class="tg" data-a11y="quiet"></i></button>
+      <button data-x="calm"><div><b>Меньше движения</b><span>собаки не крутятся, без анимаций</span></div><i class="tg" data-a11y="calm"></i></button></div>`);
+    const L = $('#a11yList'); if (L) L.querySelectorAll('button').forEach(b => b.onclick = () => { const k = b.dataset.x;
+      if (k === 'spd'){ const s = $('#fpSpd'); s && s.click(); setTimeout(() => { $('#a11ySpd').textContent = s ? s.textContent : '1×'; }, 30); return; }
+      A[k] = !A[k]; aSave(); aApply(); k === 'quiet' && A.quiet && buzz(30);
+      if (k === 'quiet' && A.quiet){ try { speechSynthesis.cancel(); } catch(_){} const bg = $('#bgTg'); bg && bg.classList.contains('on') && bg.closest('button').click(); }
+      typeof toast === 'function' && toast({ big:'Крупный текст', quiet:'Тихий зал', calm:'Меньше движения' }[k] + (A[k] ? ' — включено' : ' — выключено')); });
+    const sp = $('#fpSpd'); sp && new MutationObserver(() => { const v = $('#a11ySpd'); v && (v.textContent = sp.textContent); }).observe(sp, { childList:true, characterData:true, subtree:true }); }
+  aApply();
+  /* тихий зал: голос гидов и звуки выключены, печать — вибрацией */
+  try { const sp = speechSynthesis.speak.bind(speechSynthesis); speechSynthesis.speak = u => { if (!A.quiet) sp(u); }; } catch(_){}
+  { const h = window.tourHere; if (h) window.tourHere = function(){ const out = h.apply(this, arguments); A.quiet && buzz([40, 60, 120]); return out; }; }
+  window.dogCalm = () => !!A.calm;
+
+  /* --- итог визита */
+  let VD = null;
+  const stopVD = () => { try { VD && VD.destroy && VD.destroy(); } catch(_){} VD = null; };
+  const mins = r => { const t = (r.t1 || Date.now()) - (r.t0 || Date.now()); return Math.max(1, Math.round(t / 60000)); };
+  const fmtT = m => m >= 60 ? `${Math.floor(m / 60)} ч ${m % 60}` : `${m}`;
+  const summary = (box, r) => { const ids = R[r.key].ids, n = ids.length, m = mins(r), who = Math.random() < .5 ? 'belka' : 'strelka';
+    const other = ['short', 'kids', 'full'].filter(k => k !== r.key);
+    const rate = +(localStorage.getItem('kosmoRate_' + r.key) || 0);
+    box.innerHTML = `<div class="vs"><div class="hmk">Экскурсия «${R[r.key].name}» пройдена</div><h2>Ты увидел ${plural(n, 'экспонат', 'экспоната', 'экспонатов')}</h2>
+      <div class="vsst"><div><b>${n}</b><span>экспонатов</span></div><div><b>${fmtT(m)}</b><span>${m >= 60 ? 'мин' : 'минут'} в залах</span></div><div><b>${(r.done || []).length}</b><span>печатей</span></div></div>
+      <div class="vsdog"><div class="vsport" id="vsPort"><div id="vsDog"></div></div><div class="vssay" id="vsSay">${who === 'belka' ? 'Гав! Мы прошли весь маршрут — я горжусь тобой.' : 'Ура! Весь маршрут! Забирай открытку со мной.'}</div></div>
+      <div class="vscard"><div class="vsbadge"><i></i><div><h3>Значок ждёт на кассе</h3><p>Покажи паспорт с печатями — получишь значок «${R[r.key].name}».</p></div></div><div class="vsbtns"><button class="pr" id="vsPass">Открыть паспорт</button></div></div>
+      <div class="vscard"><h3>Открытка на память</h3><p>С собакой-гидом и экспонатами, которые ты видел.</p><img class="vspc" id="vsPc" alt="Открытка"><div class="vsbtns"><button class="pr" id="vsShare">Поделиться</button><button id="vsSave">Сохранить</button></div></div>
+      <div class="vscard"><h3>Как прошла экскурсия?</h3><p id="vsRateT">${rate ? 'Спасибо! Оценка уйдёт музею.' : 'Один тап — и музей узнает.'}</p><div class="vsrate">${[1,2,3,4,5].map(k => `<button data-v="${k}" class="${k <= rate ? 'on' : ''}" aria-label="${k} из 5">${STAR}</button>`).join('')}</div></div>
+      <div class="vscard"><h3>Что дальше</h3><div class="vsnext">${other.map(k => `<button data-k="${k}"><b>${R[k].name}</b><span>${R[k].time} · ${R[k].note}</span></button>`).join('')}</div></div>
+      </div><div class="tfoot"><button id="tfNew">Новая экскурсия</button></div>`;
+    $('#vsPass').onclick = () => showTab('pass');
+    $('#tfNew').onclick = () => { stopVD(); r.started = false; r.done = []; r.i = 0; delete r.t0; delete r.t1; save(r); renderTour(); window.renderHome && renderHome(); };
+    box.querySelectorAll('.vsnext button').forEach(b => b.onclick = () => { stopVD(); delete r.t0; delete r.t1; save(r); window.tourStart(b.dataset.k); });
+    box.querySelectorAll('.vsrate button').forEach(b => b.onclick = () => { const v = +b.dataset.v; try { localStorage.setItem('kosmoRate_' + r.key, v); } catch(_){} box.querySelectorAll('.vsrate button').forEach(x => x.classList.toggle('on', +x.dataset.v <= v)); $('#vsRateT').textContent = v >= 4 ? 'Спасибо! Оценка уйдёт музею.' : 'Спасибо. Что улучшить? Напиши на кассе или в отзыве — мы прочитаем.'; buzz(20); });
+    stopVD(); const mk = window.mountDog3D || window.mountDog2D;
+    if (mk){ VD = mk($('#vsDog'), { pose:'sit' }); who === 'strelka' && VD.setWho && VD.setWho('strelka');
+      setTimeout(() => { VD && VD.trick && !A.calm && VD.trick('spin'); }, 1600);
+      $('#vsPort').onclick = () => { if (!VD || !VD.trick || A.calm) return; VD.trick(['spin', 'back', 'beg', 'paw'][Math.floor(Math.random() * 4)]); }; }
+    /* открытка: снимок собаки берём, когда она уже вылезла и села */
+    const pc = $('#vsPc'); let url = null, blob = null;
+    const build = async () => { const dogUrl = VD && VD.snap ? await VD.snap() : null; const c = await postcard(r, dogUrl, who); c.toBlob(b => { if (!b) return; blob = b; url && URL.revokeObjectURL(url); url = URL.createObjectURL(b); pc.src = url; }, 'image/png'); };
+    setTimeout(build, 2600);
+    const fname = `kosmo-otkrytka-${r.key}.png`;
+    $('#vsSave').onclick = async () => { if (!url) return; try { const dl = window.claude && claude.use ? await claude.use('downloads') : null; if (dl){ try { await dl.save({ filename:fname, data:blob }); } catch(e){ if (e && /type|data/i.test(String(e.message || e))) await dl.save({ filename:fname, data:new Uint8Array(await blob.arrayBuffer()) }); } return; } } catch(_){ return; } const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); };
+    $('#vsShare').onclick = async () => { if (!blob) return; const f = new File([blob], fname, { type:'image/png' });
+      try { if (navigator.canShare && navigator.canShare({ files:[f] })){ await navigator.share({ files:[f], title:'Музей космонавтики', text:`Прошёл экскурсию «${R[r.key].name}» в Музее космонавтики` }); return; } } catch(_){ return; }
+      $('#vsSave').click(); };
+  };
+  const img = src => new Promise(res => { if (!src) return res(null); const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+  const cover = (x, i, dx, dy, dw, dh) => { const s = Math.max(dw / i.width, dh / i.height), w = i.width * s, h = i.height * s; x.drawImage(i, dx + (dw - w) / 2, dy + (dh - h) / 2, w, h); };
+  const rr = (x, a, b, w, h, r) => { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); };
+  const postcard = async (r, dogUrl, who) => { const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+    const F = getComputedStyle(document.body).fontFamily, ids = R[r.key].ids;
+    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#14100D'); g.addColorStop(1, '#07080B'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    /* растр-точки в углу */
+    x.fillStyle = 'rgba(255,138,76,.55)'; for (let i = 0; i < 26; i++) for (let j = 0; j < 20; j++){ const px = W - i * 26, py = j * 26, d = Math.hypot(i, j); const rad = Math.max(0, 6.5 - d * .42); if (rad > .3){ x.beginPath(); x.arc(px, py, rad, 0, 7); x.fill(); } }
+    /* фото экспонатов */
+    const pics = (await Promise.all(ids.map(id => img(meta(id).big)))).map((p, k) => p && { p, t:meta(ids[k]).title }).filter(Boolean).slice(0, 3);
+    if (pics[0]){ x.save(); rr(x, 60, 300, 620, 560, 36); x.clip(); cover(x, pics[0].p, 60, 300, 620, 560); x.restore(); }
+    if (pics[1]){ x.save(); rr(x, 700, 300, 320, 270, 30); x.clip(); cover(x, pics[1].p, 700, 300, 320, 270); x.restore(); }
+    if (pics[2]){ x.save(); rr(x, 700, 590, 320, 270, 30); x.clip(); cover(x, pics[2].p, 700, 590, 320, 270); x.restore(); }
+    /* иллюминатор с собакой */
+    const cx = 250, cy = 930, R0 = 190; x.save(); x.beginPath(); x.arc(cx, cy, R0 + 26, 0, 7); x.fillStyle = '#3A3F4A'; x.fill(); x.beginPath(); x.arc(cx, cy, R0 + 10, 0, 7); x.fillStyle = '#1A1D24'; x.fill();
+    x.beginPath(); x.arc(cx, cy, R0, 0, 7); x.clip(); const rg = x.createRadialGradient(cx, cy - 40, 10, cx, cy, R0); rg.addColorStop(0, '#2E3440'); rg.addColorStop(1, '#10131A'); x.fillStyle = rg; x.fillRect(cx - R0, cy - R0, R0 * 2, R0 * 2);
+    const di = await img(dogUrl); if (di) cover(x, di, cx - R0, cy - R0, R0 * 2, R0 * 2); x.restore();
+    for (let a = 0; a < 8; a++){ const t = a / 8 * Math.PI * 2; x.beginPath(); x.arc(cx + Math.cos(t) * (R0 + 18), cy + Math.sin(t) * (R0 + 18), 6, 0, 7); x.fillStyle = '#6A6F7A'; x.fill(); }
+    /* тексты */
+    x.fillStyle = '#FF8A4C'; x.font = `600 30px ${F}`; x.fillText('МУЗЕЙ КОСМОНАВТИКИ · МОСКВА', 60, 110);
+    x.fillStyle = '#fff'; x.font = `500 76px ${F}`; x.fillText('Я прошёл экскурсию', 60, 200); x.fillStyle = '#FFB27A'; x.fillText(`«${R[r.key].name}»`, 60, 278);
+    const m = mins(r); x.fillStyle = '#fff'; x.font = `500 60px ${F}`; x.fillText(`${ids.length}`, 500, 960); x.fillText(`${(r.done || []).length}`, 790, 960);
+    x.fillStyle = 'rgba(255,255,255,.6)'; x.font = `500 26px ${F}`; x.fillText('экспонатов', 500, 1000); x.fillText('печатей', 790, 1000);
+    x.fillStyle = '#fff'; x.font = `500 60px ${F}`; x.fillText(`${fmtT(m)}`, 500, 1110); x.fillStyle = 'rgba(255,255,255,.6)'; x.font = `500 26px ${F}`; x.fillText(m >= 60 ? 'мин в залах' : 'минут в залах', 500, 1150);
+    x.fillStyle = 'rgba(255,255,255,.75)'; x.font = `500 30px ${F}`; x.fillText(`${who === 'belka' ? 'Белка' : 'Стрелка'} была моим гидом`, 60, 1235);
+    const d = new Date(); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = `500 24px ${F}`; x.fillText(`${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()} · «Музей в кармане»`, 60, 1290);
+    /* печать */
+    x.save(); x.translate(900, 1170); x.rotate(-.18); x.strokeStyle = '#FF8A4C'; x.lineWidth = 6; x.beginPath(); x.arc(0, 0, 92, 0, 7); x.stroke(); x.lineWidth = 2; x.setLineDash([4, 6]); x.beginPath(); x.arc(0, 0, 78, 0, 7); x.stroke(); x.setLineDash([]); x.fillStyle = '#FF8A4C'; x.font = `700 22px ${F}`; x.textAlign = 'center'; x.fillText('ПРОЙДЕНО', 0, -6); x.font = `600 18px ${F}`; x.fillText(R[r.key].time.toUpperCase(), 0, 22); x.restore();
+    return c; };
+
+  const _rt = window.renderTour;
+  window.renderTour = function(){ const r = st(); if (r.started && !r.t0){ r.t0 = Date.now(); save(r); }
+    const live = window.tourLive();
+    if (r.started && !live){ if (!r.t1){ r.t1 = Date.now(); save(r); } const box = $('#tourBody'); if (box){ if (box.querySelector('.vs') && box.dataset.vs === r.key + ':' + r.t1) return; box.dataset.vs = r.key + ':' + r.t1; summary(box, r); return; } }
+    const box = $('#tourBody'); box && (box.dataset.vs = ''); stopVD(); return _rt.apply(this, arguments); };
+  window.renderTour();
+})();
+</script>
+
 </body>
 </html>
