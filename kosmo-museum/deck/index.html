@@ -156,21 +156,21 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
         <li><b>Монумент «Покорителям космоса»</b> в 3D, металл и звёзды — узнаваемая точка входа.</li>
         <li><b>Выбор маршрута:</b> «Главное» за 45 минут, «С детьми» или «Весь музей».</li>
         <li><b>NFC-метки</b> у экспонатов: приложи телефон — откроется досье и печать в паспорт.</li>
-        <li><b>Гид Белка</b> представляется в иллюминаторе, а финальный экран ныряет из космоса прямо в карту.</li>
+        <li><b>Белка и Стрелка выглядывают из двух иллюминаторов:</b> нажми на любую — она обрадуется, и дальше экскурсию поведёт она.</li>
       </ul>
       <div class="try"><span>Попробуйте</span><button class="btn" data-run="onboarding">Пролистать онбординг заново</button></div>
     </section>
 
     <section class="ch" data-act="map" data-cap="Карта">
       <div class="kick">Навигация</div>
-      <h2>Тёмная 3D-карта со <em>светящимся</em> маршрутом</h2>
+      <h2>Две карты: <em>схема</em> и 3D</h2>
       <ul class="pts">
-        <li><b>Стены стали линиями света на полу</b>, у каждого зала свой цвет.</li>
-        <li><b>Маршрут идёт по сетке залов</b> пунктиром, текущий шаг подсвечен.</li>
-        <li><b>Этажи переключаются без отлёта камеры</b>, лишний этаж приглушается.</li>
-        <li><b>Поиск</b> по всем экспонатам: «Луноход» — и карта сама долетит до него.</li>
+        <li><b>По умолчанию — контурная схема зала:</b> стены одной линией, маршрут пунктиром, следующий экспонат подсвечен. Понятно, куда идти и что где стоит.</li>
+        <li><b>Переключатель «3D»</b> показывает оба этажа объёмом: залы своим цветом, дорожка на полу, лестница между этажами.</li>
+        <li><b>Одна логика на оба режима:</b> этаж, выбранный экспонат, поиск и маршрут сохраняются при переключении.</li>
+        <li><b>«Начать экскурсию отсюда»</b> — с любого экспоната на схеме или в 3D.</li>
       </ul>
-      <div class="try"><span>Попробуйте</span><button class="btn" data-run="find">Найти «Луноход»</button></div>
+      <div class="try"><span>Попробуйте</span><button class="btn" data-run="map">Схема</button><button class="btn" data-run="map3d">3D</button><button class="btn" data-run="find">Найти «Луноход»</button></div>
     </section>
 
     <section class="ch" data-act="dossier" data-cap="Досье экспоната">
@@ -205,7 +205,8 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
         <li><b>3D-персонаж в «цифровом» рисованном стиле:</b> живописный шейдинг, полутон, усы, красный комбинезон.</li>
         <li><b>Живёт в интерфейсе:</b> всё время что-то делает — смотрит по сторонам, улыбается, шевелит ушами, моргает; реагирует на вопрос.</li>
         <li><b>Только в иллюминаторе:</b> сидит в окошке гида и в карточке «Спроси Белку» — без полного роста, аккуратно.</li>
-        <li><b>Стрелка</b> — та же модель в своём окрасе и с опущенным ухом.</li>
+        <li><b>Стрелка</b> — та же модель в своём окрасе: коричневая маска на глазах и ушах, белая полоса по морде, как на архивном фото.</li>
+        <li><b>Появляется аккуратно:</b> из-под края иллюминатора сначала ушки, потом глаза, оглядывается — и поднимается целиком.</li>
       </ul>
       <div class="try"><span>Попробуйте</span><button class="btn" data-run="strelka">Позвать Стрелку</button><button class="btn" data-run="guide">Вернуть Белку</button></div>
     </section>
@@ -303,8 +304,8 @@ td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
     tour(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('tour'); }, tourpre(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('tour'); },
     nfc(w){ reset(w); tst(w, { started:true, i:4, done:[10, 12, 11, 14] }); w.showTab && w.showTab('tour'); setTimeout(() => w.nfcPlay && w.nfcPlay(24, null, { loop:true, badge:true, n:5, total:10 }), 400); },
     onboarding(w){ reset(w); w.openOnboarding && w.openOnboarding(); },
-    map(w){ reset(w); w.showTab && w.showTab('map'); },
-    find(w){ reset(w); w.showTab && w.showTab('map'); setTimeout(() => { w.m3floor && w.m3floor('all', true); w.m3select && w.m3select(22, true); }, 900); },
+    map(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('scheme'); }, map3d(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); },
+    find(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); setTimeout(() => { w.m3floor && w.m3floor('all', true); w.m3select && w.m3select(22, true); }, 900); },
     dossier(w){ reset(w); w.openEx && w.openEx(10); },
     ex10(w){ ACT.dossier(w); }, ex12(w){ reset(w); w.openEx && w.openEx(12); },
     player(w){ reset(w); if (w.PL){ w.PL.play(10, 'route'); w.PL.openFull(); } },
