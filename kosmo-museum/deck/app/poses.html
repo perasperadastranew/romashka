@@ -82,7 +82,7 @@ window.mountDog3D = (box, opt = {}) => {
   const rimO = new THREE.DirectionalLight(CLEAN ? 0xffd2b0 : 0xFF8A4A, CLEAN ? 1.1 : 2.6); rimO.position.set(50, 20, -40); sc.add(rimO); const rimB = new THREE.DirectionalLight(0x8FB0FF, CLEAN ? 1.2 : 1.6); rimB.position.set(-50, 30, -30); sc.add(rimB);
   sc.add(new THREE.HemisphereLight(0xdfe6f4, 0x3a2a30, CLEAN ? .7 : .12));
   const life = { g:1, gx:0, gy:0, x:0, y:0, e:2, ev:0, c:3, ct:0, tilt:0 };
-  let trick = null, snapCb = null; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
+  let trick = null, snapCb = null, clipUntil = 0, refreeze = false; const spr = {}; const ADD = ['Head_M', 'Neck1_M', 'Chest_M', 'Spine1_M', 'L_JNT_ear2', 'L_JNT_ear3', 'R_JNT_ear2', 'R_JNT_ear3', 'Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M']; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
   const mixBase = {}; const cur = {}, tgt = {}, sparks = [], lids = [], curtains = [], eyes = [], B = {}, rest = {}, wq = {};
   const NK = new THREE.Vector4();
   const grad = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; const g = c.getContext('2d'); (CLEAN ? ['#7d7484', '#b9b0b8', '#ece6e4', '#fbf7f4'] : ['#5a5070', '#9a8fa8', '#e8e0e2', '#fbf6f2']).forEach((col, i) => { g.fillStyle = col; g.fillRect(i, 0, 1, 1); }); const t = new THREE.CanvasTexture(c); t.minFilter = t.magFilter = CLEAN ? THREE.LinearFilter : THREE.NearestFilter; return t; })();
@@ -240,46 +240,71 @@ window.mountDog3D = (box, opt = {}) => {
     life.mo = (life.mo || 0) + ((life.mt || 0) - (life.mo || 0)) * (1 - Math.pow(.9, f60));
     const jaw = Math.min(1, cur.jaw + mouthV * 2.2 + life.mo) * .2 + Math.sin(t * 2.2) * .006;
     // поза: целевые углы → плавное смешивание
-    const dt = Math.min(.05, Math.max(0, t - lastT)); lastT = t; // микшер three.js пишет в кость только когда значение анимации изменилось; если сбрасывать голову в «покой» каждый кадр,
+    const dt = window.__tslow ? Math.max(0, t - lastT) / window.__tslow : Math.min(.05, Math.max(0, t - lastT)); lastT = t; // микшер three.js пишет в кость только когда значение анимации изменилось; если сбрасывать голову в «покой» каждый кадр,
     // в кадрах без записи голова прыгала в позу покоя и обратно — отсюда дрожь. Сбрасываем к прошлому выходу микшера.
-    for (const n of ['Head_M', 'Neck1_M']) if (B[n] && rest[n]) B[n].quaternion.copy(mixBase[n] || rest[n]); if (mixer && !opt.full){ // в иллюминаторе собака сидит: позу берём один раз из клипа и замораживаем — вся «жизнь» процедурная (голова, уши, морда)
+    for (const n of ADD) if (B[n] && rest[n]) B[n].quaternion.copy(mixBase[n] || rest[n]); if (refreeze && now > clipUntil){ loop.frozen = false; refreeze = false; } if (mixer && !opt.full && now > clipUntil){ // в иллюминаторе собака сидит: позу берём один раз из клипа и замораживаем — вся «жизнь» процедурная (голова, уши, морда)
       if (!loop.frozen && ACT.sit){ mixer.stopAllAction(); const a = ACT.sit; a.reset(); a.enabled = true; a.setEffectiveWeight(1); a.play(); a.time = 1.5; a.paused = true; mixer.update(0); loop.frozen = true; }
       else if (!ACT.sit) mixer.update(dt); }
     else if (mixer) mixer.update(window.DOG_SNAP ? .5 : dt);
     /* моргание: глаз сам плавно сплющивается в линию и раскрывается — через кость глазницы, без накладок (после анимации, чтобы клип не перезаписал) */
     { const blv = Math.max(M.blink || 0, blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0); for (const bn of ['Eye_L_socket', 'Eye_R_socket']){ const b = B[bn]; if (b){ if (!b.userData.upAx){ const q = b.getWorldQuaternion(new THREE.Quaternion()).invert(); const v = new THREE.Vector3(0, 1, 0).applyQuaternion(q); const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)]; b.userData.upAx = 'xyz'[a.indexOf(Math.max(...a))]; } const s = Math.max(.06, 1 - blv * .94); b.scale.set(1, 1, 1); b.scale[b.userData.upAx] = s; } } }
-    for (const n of ['Head_M', 'Neck1_M']) if (B[n]) (mixBase[n] = mixBase[n] || new THREE.Quaternion()).copy(B[n].quaternion);
+    for (const n of ADD) if (B[n]) (mixBase[n] = mixBase[n] || new THREE.Quaternion()).copy(B[n].quaternion);
     const rotP = (n, ...rs) => rotOn(n, ...rs);
     rot('jaw_JNT', ['x', jaw]); rot('tongue_JNT2', ['x', -jaw * .35]); rot('tongue_JNT4', ['x', -jaw * .5]);
     // появление: просто плавно высовывается снизу, без пауз, поворота и перелёта
     const ENT = 900, ea = enterAt ? Math.min(1, (now - enterAt) / ENT) : 1, HID = -36; const eLook = 0, ePerk = 0;
     const ey = ea < 1 ? HID * Math.pow(1 - ea, 3) : 0;
+    /* трюки (v91): подготовка → движение → дотяжка; голова ведёт, корпус догоняет и наклоняется в поворот */
+    let kx = 0, ky = 0, kz = 0, kr = 0, ks = 1, kOn = 0, tY = 0, tP = 0, tR = 0, cP = 0, cR = 0; const clipT = trick && trick.clip;
+    if (trick){ const u = Math.min(1, window.__trickU != null ? window.__trickU : (now - trick.t0) / (trick.dur * (window.__tslow || 1))), sd = trick.sd || 1; kOn = u < 1 ? 1 : 0;
+      const cl = x => Math.min(1, Math.max(0, x)), seg = (a, b) => cl((u - a) / (b - a)), eo = x => 1 - Math.pow(1 - x, 3), eio = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2,
+        back = x => { const c = 1.5; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); }, bump = x => Math.sin(cl(x) * Math.PI);
+      if (trick.n === 'spin'){ /* встала → пошла по кругу шагом → села */ const w = seg(.22, .74), s = seg(.74, 1);
+        kr = sd * Math.PI * 2 * eio(w); tY = sd * (.5 * bump(seg(.12, .45)) - .2 * bump(seg(.62, .8))); cR = -sd * .14 * bump(w); tP = .1 * bump(s); }
+      else if (trick.n === 'runIn'){ /* бежит сбоку, тормозит, поворачивается к нам, садится */ const m = seg(0, .5), tr = seg(.3, .58);
+        kx = sd * 52 * (1 - eo(m)); kr = sd * -Math.PI / 2 * (1 - eio(tr)); tY = -sd * .35 * bump(seg(.35, .6)); tP = -.08 * bump(seg(.5, .7)); }
+      else if (trick.n === 'runOut'){ /* встаёт, поворачивается боком и убегает */ const tr = seg(.25, .5), m = seg(.42, 1);
+        kr = sd * Math.PI / 2 * eio(tr); tY = sd * .45 * bump(seg(.15, .45)); kx = sd * 56 * m * m; }
+      else if (trick.n === 'back'){ const a = seg(0, .32), h = seg(.32, .6), r = seg(.6, 1);
+        kz = -26 * (u < .6 ? eo(a) : 1 - eio(r)); ks = 1 - .18 * (u < .6 ? eo(a) : 1 - eio(r)); ky = 1.6 * bump(a) + 1 * bump(r * 2);
+        tP = -.28 * bump(seg(0, .5)) + .14 * bump(h) * Math.sin(h * Math.PI * 4); cP = .12 * bump(r); }
+      else if (trick.n === 'dive'){ const a = seg(0, .14), d = seg(.12, .42), up = seg(.62, 1);
+        ky = 1.6 * bump(a) - 32 * (u < .62 ? Math.pow(d, 2.2) : 1 - back(up)); tP = -.18 * bump(a) + .12 * bump(up); }
+      if (u >= 1){ const done = trick.cb; trick = null; done && done(); } }
     const CALMK = window.DOG_CALM !== false ? P.k : 1; const yaw = cur.yaw + eLook + life.x * .36 * CALMK, pitch = cur.pitch + life.y * .18 * CALMK + Math.sin(t * .8) * .03 * CALMK, roll = cur.roll + life.tilt * P.tl * CALMK + Math.sin(t * .7) * .03 * CALMK;
-    rotP('Head_M', ['y', yaw * .65], ['x', pitch * .6], ['z', roll * .7]); rotP('Neck1_M', ['y', yaw * .35], ['x', pitch * .4], ['z', roll * .3]);
+    rotP('Head_M', ['y', yaw * .65 + tY * .6], ['x', pitch * .6 + tP * .6], ['z', roll * .7 + tR]); rotP('Neck1_M', ['y', yaw * .35 + tY * .4], ['x', pitch * .4 + tP * .4], ['z', roll * .3]);
+    /* корпус: дыхание и наклон в поворот/рывок */
+    rotP('Chest_M', ['x', Math.sin(t * 1.7) * .018 + cP], ['z', cR]); rotP('Spine1_M', ['x', cP * .5], ['z', cR * .5]);
     const eb = cur.earsBack - ePerk * .35, eo = cur.earsOut + ePerk * .25 + life.ev * P.ev + Math.sin(t * P.ef) * P.es;
     const fold = who === 'strelka' ? 1 : 0; const eL = eo + (life.side < 0 ? life.ev * .45 : 0), eR = eo + (life.side > 0 ? life.ev * .45 : 0) + Math.sin(t * P.ef + 1.3) * P.es; rot('L_JNT_ear1', ['x', -eb * .55 - fold * .35], ['z', -eL * .35 - fold * .75]); rot('L_JNT_ear2', ['z', -fold * .55]); rot('R_JNT_ear1', ['x', -eb * .55], ['z', eR * .35]);
-    /* трюки в иллюминаторе: прибегает сбоку, кружится, отходит назад, ныряет, служит, даёт лапу */
-    let kx = 0, ky = 0, kz = 0, kr = 0, ks = 1, kOn = 0;
-    if (trick){ const u = Math.min(1, (now - trick.t0) / trick.dur), ease = x => 1 - Math.pow(1 - x, 3), hop = (n, a) => Math.abs(Math.sin(u * Math.PI * n)) * a * (1 - u); kOn = u < 1 ? 1 : 0;
-      if (trick.n === 'runIn'){ const sd = trick.sd || 1; kx = sd * 46 * (1 - ease(u)); ky = hop(4, 3.2); kr = sd * -1.1 * (1 - ease(Math.min(1, u * 1.25))); }
-      else if (trick.n === 'runOut'){ const sd = trick.sd || 1; kx = sd * 46 * Math.pow(u, 2); ky = hop(4, 3.2) * 4 * u; kr = sd * 1.1 * Math.min(1, u * 3); }
-      else if (trick.n === 'spin'){ kr = Math.PI * 2 * (u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2); ky = Math.sin(u * Math.PI) * 2.6; }
-      else if (trick.n === 'back'){ const w = Math.sin(Math.min(1, u * 1.15) * Math.PI); kz = -26 * w; ks = 1 - .18 * w; ky = hop(3, 1.2); }
-      else if (trick.n === 'dive'){ ky = -30 * Math.sin(Math.min(1, u) * Math.PI) * (u < .5 ? 1 : 1); }
-      if (u >= 1){ const done = trick.cb; trick = null; done && done(); } }
+    /* уши и хвост на пружинах: запаздывают за головой и корпусом, болтаются и успокаиваются */
+    { const SP = spr, dts = Math.min(.05, fdt) || .016, pv = SP.p || { yaw, pitch, kr, ky, kx };
+      const vYaw = (yaw + tY - (pv.yaw ?? yaw)) / dts + (kr - (pv.kr ?? kr)) / dts, vPitch = (pitch + tP - (pv.pitch ?? pitch)) / dts, vY = (ky - (pv.ky ?? ky)) / dts, vX = (kx - (pv.kx ?? kx)) / dts;
+      const acc = (vY - (SP.vy || 0)) / dts; SP.vy = vY; SP.p = { yaw:yaw + tY, pitch:pitch + tP, kr, ky, kx };
+      const step = (s, target, k, d) => { s.v = (s.v || 0) + ((target - (s.x || 0)) * k - (s.v || 0) * d) * dts; s.x = (s.x || 0) + s.v * dts; s.x = Math.max(-.9, Math.min(.9, s.x)); return s.x; };
+      const fl = step(SP.f || (SP.f = {}), Math.max(-.7, Math.min(.7, -acc * .0016 - vPitch * .12)), 140, 9), sw = step(SP.s || (SP.s = {}), Math.max(-.6, Math.min(.6, -vYaw * .09 - vX * .004)), 120, 8);
+      rotP('L_JNT_ear2', ['x', fl * .6], ['z', -sw * .5]); rotP('L_JNT_ear3', ['x', fl * .5], ['z', -sw * .4]); rotP('R_JNT_ear2', ['x', fl * .6], ['z', sw * .5]); rotP('R_JNT_ear3', ['x', fl * .5], ['z', sw * .4]);
+      const joy = mood === 'joy' || mood === 'hello' ? 1 : 0, wag = Math.sin(t * (joy ? 13 : 5)) * (joy ? .45 : .12), tl = step(SP.t || (SP.t = {}), Math.max(-.8, Math.min(.8, -vYaw * .12 - vX * .006)), 60, 6);
+      ['Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M'].forEach((n, i) => rotP(n, ['y', (wag * Math.cos(i * .5 - t * .0) + tl) * (.3 + i * .12)])); }
     /* поворот — вокруг оси тела, а не вокруг точки между глаз */
     if (kr && dog.userData.bb && dog.userData.pz == null){ dog.userData.pz = dog.userData.bb.getCenter(new THREE.Vector3()).z; }
     const pz = dog.userData.pz || 0, ox = kr ? -pz * Math.sin(kr) : 0, oz = kr ? pz * (1 - Math.cos(kr)) : 0;
     dog.position.set(kx + ox, Math.sin(t * 1.6) * .18 + ey + ky, kz + oz); dog.rotation.z = 0; dog.rotation.y = kr; dog.scale.setScalar(ks);
-    if (!opt.full && dog.userData.np0 && !kOn){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); dog.position.sub(d); }
+    if (!opt.full && dog.userData.np0 && (!kOn || clipT)){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); if (kOn){ d.x = 0; d.z = 0; d.y *= .8; } dog.position.sub(d); }
     if (opt.full && ea >= 1){ dog.updateMatrixWorld(true); fitCam(window.DOG_SNAP ? 1 : .05); }
     if (window.DOG_PAINT !== false && !CLEAN){ r.setRenderTarget(rt); r.setClearColor(0, 0); r.clear(); r.render(sc, cam); r.setRenderTarget(null); r.clear(); r.render(pScene, pCam); cam.layers.set(1); r.autoClear = false; r.render(sc, cam); r.autoClear = true; cam.layers.set(0); } else { r.setRenderTarget(null); cam.layers.enableAll(); r.render(sc, cam); cam.layers.set(0); } if (snapCb){ const f = snapCb; snapCb = null; try { f(r.domElement.toDataURL('image/png')); } catch(_){ f(null); } } })(t0);
   function setWho(w){ who = w; if (!furMat) return; if (w === 'strelka'){ if (!texS){ if (TEXS) texS = TEXS; else { loadTexS().then(() => who === 'strelka' && setWho('strelka')); return; } } furMat.map = texS; shellMats.forEach(m => m.map = texS); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0x7A4A30); }
     else { furMat.map = texB; shellMats.forEach(m => m.map = texB); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0xE9DFDF); } furMat.needsUpdate = true; }
   /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
   function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (trick && !opt2.force) return false;
-    if (n === 'beg' || n === 'paw'){ const back = pose; play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
-    const dur = { runIn:1100, runOut:800, spin:1300, back:1700, dive:1200 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
+    if (n === 'beg' || n === 'paw'){ const back = pose; if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
+    const dur = { runIn:2600, runOut:2200, spin:3000, back:1800, dive:1400 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
+    if (n === 'spin' || n === 'runIn' || n === 'runOut'){ trick.clip = true; const TS = window.__tslow || 1; clipUntil = now + (dur + 900) * TS; refreeze = true; clearTimeout(trick.tm1); clearTimeout(trick.tm2); const tk = trick;
+      const go = (seq, f) => { if (trick !== tk && !(trick == null && tk.n === 'runIn')) return; run(seq.slice(), f); };
+      if (n === 'spin'){ go(['stand_up', 'walk'], .25); tk.tm1 = setTimeout(() => go(['sit_down', 'sit'], .3), dur * .74 * TS); }
+      if (n === 'runIn'){ dog.visible = true; go(['run'], 0); tk.tm1 = setTimeout(() => go(['stand'], .35), dur * .42 * TS); tk.tm2 = setTimeout(() => go(['sit_down', 'sit'], .3), dur * .6 * TS); }
+      if (n === 'runOut'){ go(['stand_up', 'run'], .25); }
+      curPose = 'sit'; }
     if (n === 'runIn') { enterAt = 0; dog.visible = true; } if (n === 'spin' || n === 'runIn'){ mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', dur + 900); } return true; }
   return { snap(){ return new Promise(res => { snapCb = res; setTimeout(() => { if (snapCb === res){ snapCb = null; res(null); } }, 1500); }); }, trick:doTrick, setPose(p){ if (p === pose) return; pose = p; play(p); const pm = POSE_MOOD[p]; if (pm){ mood = pm; clearTimeout(moodT); } else if (mood === 'sleep') mood = 'idle'; }, enter(){ const nw = performance.now(); if (!dog || (enterAt && nw - enterAt < 1200)) return; /* модель ещё грузится или уже появляется — второй раз не запускаем */ enterAt = nw; mood = 'idle'; clearTimeout(moodT); /* пока высовывается — спокойно, без наклона головы; привет — после */ moodT = setTimeout(() => { mood = 'hello'; moodT = setTimeout(() => mood = 'idle', 1800); }, 950); }, setMood(m, ms){ mood = m; clearTimeout(moodT); if (ms) moodT = setTimeout(() => mood = 'idle', ms); }, setWho, mouth(v){ mouthV = v; }, look(){}, destroy(){ vio && vio.disconnect(); alive = false; ro.disconnect(); r.dispose(); r.domElement.remove(); } };
 };
