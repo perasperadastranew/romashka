@@ -121,6 +121,8 @@ window.mountDog3D = (box, opt = {}) => {
       if (/^Tongue/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE96F7E, gradientMap:grad }); return; }
       const tm = o.name === 'Belka' ? paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), true) : paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), false); o.material = tm;
       if (o.name === 'Belka' && o.isSkinnedMesh){ furMat = tm; texB = tm.map; skinned.push(o); } });
+    /* подшёрсток: цельная оболочка под кусками модели — в щелях на сгибах видна шерсть, а не фон; тот же материал, окрас Стрелки подхватывается */
+    if (furMat) inner.traverse(o => { if (o.name === 'Under') o.material = furMat; });
     for (const o of []){ // пушистый край силуэта: оболочка цвета шерсти с «колючками»
       const ol = new THREE.SkinnedMesh(o.geometry, olMat = new THREE.MeshBasicMaterial({ color:0xe9e2e4, side:THREE.BackSide }));
       olMat.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n float sp = abs(sin(position.x * 4.7 + position.y * 3.3) * sin(position.z * 5.1 - position.y * 2.2)); transformed += normalize(objectNormal) * (.1 + pow(sp, 3.) * .6);'); };
