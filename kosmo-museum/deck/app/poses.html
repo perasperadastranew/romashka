@@ -82,7 +82,7 @@ window.mountDog3D = (box, opt = {}) => {
   const rimO = new THREE.DirectionalLight(CLEAN ? 0xffd2b0 : 0xFF8A4A, CLEAN ? 1.1 : 2.6); rimO.position.set(50, 20, -40); sc.add(rimO); const rimB = new THREE.DirectionalLight(0x8FB0FF, CLEAN ? 1.2 : 1.6); rimB.position.set(-50, 30, -30); sc.add(rimB);
   sc.add(new THREE.HemisphereLight(0xdfe6f4, 0x3a2a30, CLEAN ? .7 : .12));
   const life = { g:1, gx:0, gy:0, x:0, y:0, e:2, ev:0, c:3, ct:0, tilt:0 };
-  let trick = null, act = null, snapCb = null, clipUntil = 0, refreeze = false; const spr = {}; const EYE = { x:window.__eyeX ?? -.045, y:window.__eyeY ?? .03 }; const ADD = ['Head_M', 'Neck1_M', 'Chest_M', 'Spine1_M', 'L_JNT_ear2', 'L_JNT_ear3', 'R_JNT_ear2', 'R_JNT_ear3', 'Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M']; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
+  let trick = null, act = null, snapCb = null, clipUntil = 0, refreeze = false, begUntil = 0, camZ = 0, cam0 = null, tgt0 = null; const spr = {}; const EYE = { x:window.__eyeX ?? -.045, y:window.__eyeY ?? .03 }; const ADD = ['Head_M', 'Neck1_M', 'Chest_M', 'Spine1_M', 'L_JNT_ear2', 'L_JNT_ear3', 'R_JNT_ear2', 'R_JNT_ear3', 'Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M']; let pose = opt.pose || 'stand', mixer = null, ACT = {}, curAct = null, lastT = 0; let lidMat = null, shellMats = [], enterAt = 0; let dog = null, morphs = [], alive = true, mood = 'idle', moodT = 0, mouthV = 0, blinkT = 2 + Math.random() * 2, blinkV = 0, who = 'belka', texB = null, texS = null, furMat = null, olMat = null;
   const mixBase = {}; const cur = {}, tgt = {}, sparks = [], lids = [], curtains = [], eyes = [], B = {}, rest = {}, wq = {};
   const NK = new THREE.Vector4();
   const grad = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; const g = c.getContext('2d'); (CLEAN ? ['#7d7484', '#b9b0b8', '#ece6e4', '#fbf7f4'] : ['#5a5070', '#9a8fa8', '#e8e0e2', '#fbf6f2']).forEach((col, i) => { g.fillStyle = col; g.fillRect(i, 0, 1, 1); }); const t = new THREE.CanvasTexture(c); t.minFilter = t.magFilter = CLEAN ? THREE.LinearFilter : THREE.NearestFilter; return t; })();
@@ -118,9 +118,10 @@ window.mountDog3D = (box, opt = {}) => {
       if (/^Spec/.test(o.name)){ o.visible = false; return; }
       /* ошейник и жетон (v94): узкий кожаный ремешок и металлический жетон, как у собак-космонавтов на фото */
       if (/^Collar/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0x4A2E22, gradientMap:grad }); return; }
-      if (/^Tag/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE2B25A, gradientMap:grad, emissive:0x3A2A10 }); return; }
+      if (/^Tag/.test(o.name)){ o.visible = false; return; } /* медальон убран (v99) — только ошейник */
       if (/^Eye/.test(o.name)){ const mp = old.map ? old.map.clone() : null; if (mp){ mp.needsUpdate = true; mp.wrapS = mp.wrapT = THREE.ClampToEdgeWrapping; } o.material = new THREE.MeshBasicMaterial({ map:mp, color:0xc8a07a }); o.userData.mp = mp; eyes.push(o); return; }
       if (/^(T_|B_)/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xf4efe6, gradientMap:grad }); return; }
+      if (/^Mouth/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0x5A1E24, gradientMap:grad, side:THREE.DoubleSide }); return; } /* полость рта (v99) */
       if (/^Tongue/.test(o.name)){ o.material = new THREE.MeshToonMaterial({ color:0xE96F7E, gradientMap:grad }); return; }
       const tm = o.name === 'Belka' ? paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), true) : paint(new THREE.MeshToonMaterial({ color:old.color.clone(), map:old.map || null, gradientMap:grad }), false); o.material = tm;
       if (o.name === 'Belka' && o.isSkinnedMesh){ furMat = tm; texB = tm.map; skinned.push(o); } });
@@ -162,7 +163,7 @@ window.mountDog3D = (box, opt = {}) => {
     bb.min.add(dog.userData.pad[0]); bb.max.add(dog.userData.pad[1]); const ct = bb.getCenter(new THREE.Vector3()), L = bb.getSize(new THREE.Vector3()).length();
     if (!FC.ok || k >= 1){ FC.c.copy(ct); FC.L = L; FC.ok = true; } else { FC.c.lerp(ct, k); FC.L += (L - FC.L) * k; }
     const D3 = { side:[1, .12, .05], front:[.06, .12, 1], '34':[.75, .25, .7] }[opt.view || '34']; const dv = new THREE.Vector3(...D3).normalize(); cam.position.copy(FC.c).addScaledVector(dv, FC.L * 2.1); cam.lookAt(FC.c.x, FC.c.y + FC.L * .03, FC.c.z); }
-  function size(){ const w = box.clientWidth, h = box.clientHeight; if (!w) return; r.setSize(w, h, false); const pr = r.getPixelRatio(); rt && rt.setSize(w * pr, h * pr); pq && pq.material.uniforms.px.value.set(1 / (w * pr), 1 / (h * pr)); cam.aspect = w / h; cam.updateProjectionMatrix(); if (dog){ if (opt.full){ fitCam(1); } else { if (window.DOG_CALM !== false && CLEAN){ cam.position.set(36, 3, 76); cam.lookAt(3, -4, -1); } else { cam.position.set(3, 0, 82); cam.lookAt(0, -2, 0); } } } }
+  function size(){ const w = box.clientWidth, h = box.clientHeight; if (!w) return; r.setSize(w, h, false); const pr = r.getPixelRatio(); rt && rt.setSize(w * pr, h * pr); pq && pq.material.uniforms.px.value.set(1 / (w * pr), 1 / (h * pr)); cam.aspect = w / h; cam.updateProjectionMatrix(); if (dog){ if (opt.full){ fitCam(1); } else { if (window.DOG_CALM !== false && CLEAN){ cam.position.set(36, 3, 76); cam.lookAt(3, -4, -1); tgt0 = new THREE.Vector3(3, -4, -1); } else { cam.position.set(3, 0, 82); cam.lookAt(0, -2, 0); tgt0 = new THREE.Vector3(0, -2, 0); } cam0 = cam.position.clone(); } } }
   const ro = new ResizeObserver(size); ro.observe(box);
   // живописная постобработка: «масло» (фильтр Кувахары) + тушевой контур + белые штрихи по краю + зерно бумаги
   const rt = new THREE.WebGLRenderTarget(4, 4, { samples:4, type:THREE.HalfFloatType });
@@ -221,7 +222,9 @@ window.mountDog3D = (box, opt = {}) => {
   const t0 = performance.now();
   let inView = true; const vio = 'IntersectionObserver' in window ? new IntersectionObserver(es => { inView = es[0].isIntersecting; }) : null; vio && vio.observe(box);
   (function loop(now){ if (!alive) return; requestAnimationFrame(loop); if (!dog){ return; } if (!inView || document.hidden || !box.offsetParent || box.closest('.off')){ return; } const t = (now - t0) / 1000;
-    const fdt = Math.min(.1, Math.max(0, t - (loop.pt || t))); loop.pt = t; const kM = 1 - Math.exp(-fdt * 3.2), kL = 1 - Math.exp(-fdt * 1.6), f60 = fdt * 60;
+    const fdt = Math.min(.1, Math.max(0, t - (loop.pt || t))); loop.pt = t;
+    /* «служит» / «даёт лапу» в иллюминаторе (v99): камера плавно отъезжает, чтобы были видны поднятые лапы, потом возвращается */
+    if (!opt.full && cam0 && tgt0){ const w = now < begUntil ? 1 : 0; const pz = camZ; camZ += (w - camZ) * (1 - Math.exp(-fdt * 3.2)); if (camZ < .002) camZ = 0; if (camZ || pz){ const zf = window.__bz ?? .6, zy = window.__by ?? -2; cam.position.copy(tgt0).addScaledVector(cam0.clone().sub(tgt0), 1 + zf * camZ); cam.position.y += zy * camZ; cam.lookAt(tgt0.x, tgt0.y + zy * camZ, tgt0.z); } } const kM = 1 - Math.exp(-fdt * 3.2), kL = 1 - Math.exp(-fdt * 1.6), f60 = fdt * 60;
     const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; cur[n] = (cur[n] || 0) + (tgt[n] - (cur[n] || 0)) * kM; }
     blinkT -= fdt; if (blinkT < 0){ blinkV = .17; blinkT = Math.random() < .12 ? .32 : 2.6 + Math.random() * 3.4; } blinkV = Math.max(0, blinkV - fdt); /* моргание фиксированной длины — не зависит от частоты кадров */
     /* характер: Белка спокойнее и плавнее, Стрелка живее — чаще смотрит по сторонам и дёргает ушами */
@@ -318,7 +321,7 @@ window.mountDog3D = (box, opt = {}) => {
   /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
   function startAct(n){ act = { n, t0:performance.now(), dur:{ shake:1100, tilt:2200, yawn:3400, sniff:1800, look:2400 }[n] || 1500, sd:Math.random() < .5 ? -1 : 1 }; if (n === 'tilt'){ mood = 'listen'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 2200); } if (n === 'sniff'){ mood = 'think'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 1800); } return true; }
   function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (['shake', 'tilt', 'yawn', 'sniff', 'look'].includes(n)) return startAct(n); if (trick && !opt2.force) return false;
-    if (n === 'beg' || n === 'paw'){ const back = pose; if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
+    if (n === 'beg' || n === 'paw'){ const back = pose; if (!opt.full) begUntil = now + (n === 'beg' ? 2300 : 1900); if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
     const dur = { runIn:2600, runOut:2200, spin:3000, back:1800, dive:1400 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
     if (n === 'spin' || n === 'runIn' || n === 'runOut'){ trick.clip = true; const TS = window.__tslow || 1; clipUntil = now + (dur + 900) * TS; refreeze = true; clearTimeout(trick.tm1); clearTimeout(trick.tm2); const tk = trick;
       const go = (seq, f) => { if (trick !== tk && !(trick == null && tk.n === 'runIn')) return; run(seq.slice(), f); };
