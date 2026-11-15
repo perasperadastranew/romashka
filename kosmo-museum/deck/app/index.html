@@ -9764,11 +9764,11 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       $('#fpTx').innerHTML = m.lines.map((l, k) => `<p data-k="${k}">${l}</p>`).join('') + '<p style="font-size:12px;color:var(--mu)">Прототип: здесь будет запись диктора музея. Текст подсвечивается по ходу рассказа.</p>';
       $('#fpQ').innerHTML = S.q.map((id, k) => { const x = meta(id); return `<button data-k="${k}" class="${k === S.i ? 'on' : k < S.i ? 'dn' : ''}" style="--hc:${x.color}"><i></i><span>${k + 1}. ${x.title}</span></button>`; }).join('');
       const qb = $('#fpQ .on'), qq = $('#fpQ'); if (qb) qq.scrollLeft = qb.offsetLeft - qq.clientWidth / 2 + qb.offsetWidth / 2;
-      $('#fpK').textContent = S.q.length > 1 ? 'Аудиогид · маршрут' : 'Аудиогид · экспонат';
+      $('#fpK').textContent = S.q.length > 1 ? 'Аудиогид · маршрут' : 'Аудиогид · экспонат'; try { window.__fpExtra && __fpExtra({ m, S, meta, fmt }); } catch (e){}
       document.querySelectorAll('#fpMode button').forEach(b => b.classList.toggle('on', b.dataset.m === S.mode)); }
     $('#mpS').textContent = pos; tick(0); syncDossier(); }
   function tick(dt){ const m = cur(); if (S.playing) S.t += dt * S.spd; if (S.t >= m.dur){ S.t = m.dur; if (S.i < S.q.length - 1 && S.mode === 'route'){ S.i++; S.t = 0; render(true); return; } S.playing = false; render(false); }
-    const f = S.t / m.dur; $('#mpBar').style.width = (f * 100) + '%'; $('#fpBar').style.width = (f * 100) + '%'; $('#fpKn').style.left = (f * 100) + '%'; $('#fpC').textContent = fmt(S.t);
+    const f = S.t / m.dur; $('#mpBar').style.width = (f * 100) + '%'; $('#fpBar').style.width = (f * 100) + '%'; $('#fpKn').style.left = (f * 100) + '%'; $('#fpC').textContent = fmt(S.t); { const d = $('#fpD'); if (d) d.textContent = S.t > 0 ? '−' + fmt(Math.max(0, m.dur - S.t)) : fmt(m.dur); }
     const tot = m.lines.join(' ').length; let acc = 0, ck = 0; for (let k = 0; k < m.lines.length; k++){ acc += m.lines[k].length; if (f * tot <= acc){ ck = k; break; } }
     document.querySelectorAll('#fpTx p[data-k]').forEach((p, k) => { const was = p.classList.contains('on'); p.classList.toggle('on', k === ck && S.t > 0); p.classList.toggle('done', k < ck); if (!was && k === ck && S.t > 0 && $('#fp').classList.contains('on')) { const tx = $('#fpTx'); tx.scrollTo({ top:p.offsetTop - tx.offsetTop - tx.clientHeight * .35, behavior:'smooth' }); } });
     if (S.dos === m.id){ const box = document.getElementById('aud'); if (box && !box.hidden){ const b = box.querySelector('.aubar i'); b && (b.style.width = (f * 100) + '%'); const c = box.querySelector('#auC'); c && (c.textContent = fmt(S.t)); box.querySelectorAll('.aul p').forEach((p, k) => { p.classList.toggle('on', k === ck && S.t > 0); p.classList.toggle('done', k < ck); }); } } }
@@ -10589,6 +10589,127 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   /* номер билета — из того же «зерна», что и QR */
   new MutationObserver(() => { if (D.classList.contains('off')) return; const t = T(); if (!t) return; const d = new Date(t.date), n = t.n || 1, seed = 7 + d.getDate() * 31 + n;
     const no = document.getElementById('vtNo'); if (no) no.textContent = `KM-${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${String(seed * 7919 % 10000).padStart(4, '0')}`; D.scrollTop = 0; }).observe(D, { attributes:true, attributeFilter:['class'] });
+})();
+</script>
+<style>
+/* v103: плеер аудиогида по образцу Spotify / Яндекс Музыки / Литрес */
+#fp{background:radial-gradient(120% 60% at 50% 0%,color-mix(in srgb,var(--hc,#FF6A1F) 55%,#111) 0%,color-mix(in srgb,var(--hc,#FF6A1F) 18%,#0B0C0F) 48%,#0A0B0D 80%)!important}
+.fputil{display:flex;justify-content:space-between;gap:8px;margin:14px 20px 0}
+.fputil button{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:40px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#E8EBF0;font:500 13px var(--f,system-ui);cursor:pointer}
+.fputil button.on{background:#fff;color:#0A0B0D}
+.fpsec{margin:22px 20px 0}
+.fpsec h3{font:500 17px var(--f,system-ui);margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline}
+.fpsec h3 small{font:500 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.fpabout{display:flex;gap:14px;padding:14px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
+.fpabout img{width:74px;height:74px;border-radius:14px;object-fit:cover;flex:none;background:#1a1d22}
+.fpabout .k{font:500 10.5px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--hc,#FF8A4C)}
+.fpabout b{display:block;font:500 15px/1.25 var(--f,system-ui);margin-top:4px}
+.fpabout p{font-size:12.5px;color:rgba(255,255,255,.62);margin-top:4px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fpabout button{margin-top:8px;height:30px;padding:0 12px;border-radius:999px;border:0;background:#fff;color:#0A0B0D;font:500 12.5px var(--f,system-ui);cursor:pointer}
+.fpnext{display:flex;flex-direction:column;gap:2px}
+.fpnext button{display:flex;align-items:center;gap:12px;padding:9px 8px;border-radius:14px;border:0;background:none;color:#E8EBF0;text-align:left;cursor:pointer}
+.fpnext button.on{background:rgba(255,255,255,.08)}
+.fpnext img{width:44px;height:44px;border-radius:10px;object-fit:cover;flex:none;background:#1a1d22}
+.fpnext span{flex:1;min-width:0}.fpnext b{display:block;font:500 14px/1.25 var(--f,system-ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fpnext small{display:block;font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.fpnext em{font:500 12px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.5);font-style:normal}
+.fpnext button.on em{color:var(--hc,#FF8A4C)}
+.fpnext button.dn b{color:rgba(255,255,255,.55)}
+#fpQ{display:none!important}
+#fp > *{flex-shrink:0}
+.fpph{width:44px;height:44px;border-radius:10px;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--hc,#FF6A1F) 35%,#15171b);font:600 13px ui-monospace,Menlo,monospace;color:#fff}
+.fpabout .fpph{width:74px;height:74px;border-radius:14px;font-size:20px}
+</style>
+<script>
+(function(){
+  const $ = s => document.querySelector(s); const fp = $('#fp'); if (!fp) return;
+  /* строка быстрых действий под кнопками */
+  const util = document.createElement('div'); util.className = 'fputil';
+  util.innerHTML = '<button data-u="spd">1×</button><button data-u="tx"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Текст</button><button data-u="q"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="6" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="5" cy="18" r="1.5"/><path d="M10 6h10M10 12h10M10 18h10"/></svg>Маршрут</button>';
+  const mode = $('#fpMode'); mode && mode.after(util);
+  const about = document.createElement('div'); about.className = 'fpsec'; about.id = 'fpAbout';
+  const next = document.createElement('div'); next.className = 'fpsec'; next.id = 'fpNextSec';
+  const tx = $('#fpTx'); tx && tx.after(about); about.after(next);
+  const spd = $('#fpSpd');
+  util.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const u = b.dataset.u;
+    if (u === 'spd'){ spd && spd.click(); setTimeout(() => b.textContent = spd ? spd.textContent : '1×', 0); }
+    if (u === 'tx'){ const t = $('#fpTx'); t && fp.scrollTo({ top:t.offsetTop - 70, behavior:'smooth' }); }
+    if (u === 'q'){ const t = $('#fpNextSec'); t && fp.scrollTo({ top:t.offsetTop - 70, behavior:'smooth' }); } });
+  const thumb = id => `thumbs/${id}.webp`;
+  window.__fpExtra = ({ m, S, meta, fmt }) => {
+    /* об экспонате — как карточка исполнителя в Яндекс Музыке */
+    const canEx = typeof INFO !== 'undefined' && INFO[m.id] || (window.LANDING && window.LANDING[m.id]);
+    about.innerHTML = `<h3>Об экспонате<small>${m.inv || ''}</small></h3><div class="fpabout"><img src="${thumb(m.id)}" alt="" onerror="this.outerHTML='<i class=fpph>${(m.inv||'').replace(/[^0-9]/g,'')||'·'}</i>'"><div><div class="k">${m.hall || ''}</div><b>${m.full || m.title}</b><p>${(m.lines && m.lines[0]) || ''}</p>${canEx ? '<button data-ex>Открыть досье</button>' : ''}</div></div>`;
+    const bx = about.querySelector('[data-ex]'); bx && (bx.onclick = () => { $('#fpGo') && $('#fpGo').click(); });
+    /* дальше по маршруту — как главы в Spotify: номер, длительность, текущая подсвечена */
+    if (S.q.length > 1){ const tot = S.q.reduce((a, id) => a + (meta(id).dur || 0), 0);
+      next.innerHTML = `<h3>Маршрут<small>${S.i + 1} из ${S.q.length} · ${Math.round(tot / 60)} мин</small></h3><div class="fpnext">` + S.q.map((id, k) => { const x = meta(id); return `<button data-k="${k}" class="${k === S.i ? 'on' : k < S.i ? 'dn' : ''}" style="--hc:${x.color}"><img src="${thumb(id)}" alt="" onerror="this.outerHTML='<i class=fpph>${k + 1}</i>'"><span><b>${k + 1}. ${x.title}</b><small>${x.hall || ''}</small></span><em>${k === S.i ? (S.playing ? 'играет' : 'пауза') : fmt(x.dur || 0)}</em></button>`; }).join('') + '</div>';
+      next.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => { const q = document.querySelector(`#fpQ button[data-k="${b.dataset.k}"]`); q && q.click(); });
+      next.hidden = false; util.querySelector('[data-u=q]').hidden = false; }
+    else { next.hidden = true; util.querySelector('[data-u=q]').hidden = true; }
+    const ub = util.querySelector('[data-u=spd]'); if (ub && spd) ub.textContent = spd.textContent; };
+})();
+</script>
+<style>
+/* v104: паспорт — по образцу достижений Яндекс Карт, Duolingo, Яндекс Книг */
+.ppring{display:flex;align-items:center;gap:16px}
+.ppring svg.r{flex:none;width:86px;height:86px;transform:rotate(-90deg)}
+.ppring .rn{position:relative;flex:none;width:86px;height:86px}
+.ppring .rn b{position:absolute;inset:0;display:grid;place-items:center;font:500 26px/1 var(--f,system-ui);transform:none}
+.ppring .rn b small{display:block;font:500 10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;letter-spacing:.06em}
+.ppring .nx .k{font:500 10.5px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#FF8A4C}
+.ppring .nx b{display:block;font:500 18px/1.2 var(--f,system-ui);margin-top:5px}
+.ppring .nx span{display:block;font-size:12.5px;color:rgba(255,255,255,.6);margin-top:4px}
+#vPass .pst:not(.got) .sc{position:relative;overflow:hidden}
+#vPass .pst:not(.got) .sc img.sil{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.55) contrast(1.1);opacity:.55;border-radius:50%}
+#vPass .pst:not(.got) .sc b{position:relative;z-index:1;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+#vPass .pst{cursor:pointer}
+.pstsheet{position:absolute;inset:0;z-index:30;background:rgba(5,6,8,.55);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.pstsheet.on{opacity:1;pointer-events:auto}
+.pstsheet .psin{width:100%;padding:12px 18px calc(28px + env(safe-area-inset-bottom,0px));border-radius:28px 28px 0 0;background:#14161A;border-top:1px solid rgba(255,255,255,.1);transform:translateY(30px);transition:transform .35s cubic-bezier(.32,.72,0,1);text-align:center}
+.pstsheet.on .psin{transform:none}
+.pstsheet .psgr{width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.2);margin:0 auto 16px}
+.pstsheet .psbd{width:112px;height:112px;margin:0 auto;border-radius:50%;overflow:hidden;position:relative;display:grid;place-items:center;background:#1d2026;box-shadow:0 0 0 2px rgba(255,255,255,.1)}
+.pstsheet .psbd img{width:100%;height:100%;object-fit:cover}
+.pstsheet .psbd.lock img{filter:grayscale(1) brightness(.5)}
+.pstsheet .psbd.lock:after{content:"";position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(255,255,255,.3)}
+.pstsheet .psbd.got{box-shadow:0 0 0 3px #FF6A1F,0 0 30px rgba(255,106,31,.45)}
+.pstsheet h3{font:500 21px/1.2 var(--f,system-ui);margin-top:14px}
+.pstsheet .psst{display:inline-block;margin-top:8px;padding:5px 10px;border-radius:999px;font:500 11px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
+.pstsheet .psst.ok{background:rgba(255,106,31,.18);color:#FF8A4C}
+.pstsheet p{font-size:13.5px;color:rgba(255,255,255,.62);margin:12px auto 0;max-width:300px;line-height:1.4}
+.pstsheet .psbt{display:flex;gap:10px;margin-top:18px}
+.pstsheet .psbt button{flex:1;height:48px;border-radius:16px;border:0;font:600 14.5px var(--f,system-ui);cursor:pointer;background:rgba(255,255,255,.08);color:#fff}
+.pstsheet .psbt button.pr{background:#fff;color:#0A0B0D}
+</style>
+<script>
+(function(){
+  const orig = window.renderPass; if (!orig) return;
+  const LV = [[5, 'Курсант'], [15, 'Пилот'], [37, 'Главный конструктор']];
+  const sheet = document.createElement('div'); sheet.className = 'pstsheet'; sheet.innerHTML = '<div class="psin"></div>';
+  const host = () => document.getElementById('dev') || document.body;
+  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.classList.remove('on'); });
+  function openSheet(id, k, got, cur){ const x = window.tourEx ? tourEx(id) : { title:'Экспонат' }; if (!sheet.isConnected) host().appendChild(sheet);
+    const hall = (window.M_EX || []).find(e => e[0] === id), hn = hall && window.M_HALLS && M_HALLS[hall[3]] ? M_HALLS[hall[3]].name || '' : '';
+    sheet.querySelector('.psin').innerHTML = `<div class="psgr"></div><div class="psbd ${got ? 'got' : 'lock'}">${x.th ? `<img src="${x.th}" alt="">` : `<b style="font:500 34px var(--f)">${k + 1}</b>`}</div>
+      <h3>${x.title}</h3><div class="psst ${got ? 'ok' : ''}">${got ? 'Печать получена' : cur ? 'Следующая по маршруту' : 'Печать № ' + (k + 1)}</div>
+      <p>${got ? 'Печать уже в паспорте. Можно перечитать досье или послушать рассказ ещё раз.' : `Найди экспонат${hn ? ' в зале «' + hn + '»' : ''} и приложи телефон к NFC-метке на табличке — или нажми «Я у экспоната» в экскурсии.`}</p>
+      <div class="psbt"><button data-b="map">На карте</button><button class="pr" data-b="ex">${got ? 'Открыть досье' : 'Досье'}</button></div>`;
+    sheet.querySelector('[data-b=map]').onclick = () => { sheet.classList.remove('on'); typeof showTab === 'function' && showTab('map'); setTimeout(() => window.m3select && m3select(id, true), 800); };
+    sheet.querySelector('[data-b=ex]').onclick = () => { sheet.classList.remove('on'); window.openStop ? openStop(id) : typeof openEx === 'function' && openEx(id); };
+    requestAnimationFrame(() => sheet.classList.add('on')); }
+  window.renderPass = function(){ const out = orig.apply(this, arguments); try { enhance(); } catch (e){ console.warn(e); } return out; };
+  function enhance(){ const v = document.getElementById('vPass'); if (!v || !window.tourState) return; const r = tourState(); const RT = window.TOUR_ROUTES || {}; const ids = (RT[r.key] || {}).ids || []; const done = r.started ? r.done : []; const n = done.length;
+    /* кольцо прогресса и ближайшая награда */
+    const pp = v.querySelector('.pp'); if (pp){ const nx = LV.find(([k]) => n < k) || LV[LV.length - 1], left = Math.max(0, nx[0] - n), C = 2 * Math.PI * 38, f = Math.min(1, n / 37);
+      const row = pp.querySelector('.row1'); const ring = document.createElement('div'); ring.className = 'ppring';
+      ring.innerHTML = `<div class="rn"><svg class="r" viewBox="0 0 86 86"><circle cx="43" cy="43" r="38" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="7"/><circle cx="43" cy="43" r="38" fill="none" stroke="#FF6A1F" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - Math.max(.015, f))}"/></svg><b><span>${n}<small>из 37</small></span></b></div><div class="nx"><div class="k">${left ? 'Ближайшая награда' : 'Все печати собраны'}</div><b>${left ? '«' + nx[1] + '»' : 'Главный конструктор'}</b><span>${left ? `ещё ${left} ${left % 10 === 1 && left !== 11 ? 'печать' : left % 10 >= 2 && left % 10 <= 4 && (left < 10 || left > 20) ? 'печати' : 'печатей'}` : 'значок ждёт на кассе'}</span></div>`;
+      if (row) row.replaceWith(ring); const bar = pp.querySelector('.bar'); bar && bar.remove(); }
+    /* закрытые печати — силуэт экспоната; тап — лист «как получить» */
+    v.querySelectorAll('.stamps.v2:not(.collab-row)')[0]?.querySelectorAll('.pst').forEach((el, k) => { const id = ids[k]; if (id == null) return; const got = el.classList.contains('got'), cur = el.classList.contains('cur'); const x = window.tourEx ? tourEx(id) : {};
+      if (!got && x.th){ const sc = el.querySelector('.sc'); if (sc && !sc.querySelector('.sil')){ const im = document.createElement('img'); im.className = 'sil'; im.src = x.th; im.alt = ''; im.onerror = () => im.remove(); sc.prepend(im); } }
+      el.onclick = () => openSheet(id, k, got, cur); }); }
+  if (document.getElementById('vPass') && document.getElementById('vPass').innerHTML) { try { enhance(); } catch (e){} }
 })();
 </script>
 </body>
