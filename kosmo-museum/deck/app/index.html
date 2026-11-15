@@ -10945,6 +10945,33 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     return { update(cam, w, h, on){ box.classList.toggle('on', on); if (!on) return; o.getWorldPosition(c0); cam.getWorldPosition(cp); let bestK = -1, bestF = -2; const F = [];
         pts.forEach((q, k) => { q.a.getWorldPosition(wv); const nrm = wv.clone().sub(c0).normalize(), view = cp.clone().sub(wv).normalize(); const f = q.sph ? nrm.dot(view) : .6; F.push(f); const v = wv.clone().project(cam), sx = (v.x + 1) / 2 * w; q.el.style.transform = `translate(${sx}px, ${(1 - v.y) / 2 * h}px)`; q.el.classList.toggle('l', sx > w * .5); if (f > bestF){ bestF = f; bestK = k; } });
         const act = pin >= 0 && F[pin] > -.1 ? pin : bestK; pts.forEach((q, k) => { q.el.classList.toggle('back', F[k] < .12); q.el.classList.toggle('act', k === act); }); } }; }
+  /* v121: сторителлинг ПС-1 вокруг самого спутника — кадр с моделью прилипает к экрану, главы листаются поверх, вокруг шара рисуются схемы */
+  const PS1CH = [
+    ['01', 'Простейший спутник', 'Большой научный аппарат не успевали построить. Королёв предложил «ПС» — простейший: полированный шар Ø 58 см, 83,6 кг, два передатчика и четыре антенны.'],
+    ['02', 'В носу ракеты', 'Спутник летел под головным обтекателем ракеты Р-7 — той же «семёрки», что потом подняла Гагарина. Антенны были сложены вдоль корпуса.'],
+    ['03', 'Выход на орбиту', '4 октября 1957 года, 22:28 по Москве. Через пять минут после старта спутник отделился, обтекатель сбросили, антенны раскрылись пружинами.'],
+    ['04', 'Орбита', 'Орбита была вытянутой: от ≈ 230 до ≈ 950 км над Землёй. Один виток — 96 минут: у Земли спутник летел быстрее, вдали — медленнее.'],
+    ['05', 'Сигнал', 'Два передатчика на 20 и 40 МГц посылали короткие «бип-бип». Их ловили радиолюбители по всему миру — около трёх недель, пока не сели батареи.'],
+    ['06', 'Финал', 'Орбита понемногу снижалась. 4 января 1958 года, сделав около 1440 витков, спутник вошёл в атмосферу и сгорел. Началась космическая эра.'] ];
+  const PS1SC = [1, 1, .55, .62, .38, .75, .4];
+  function ps1Story(ex, hero){ const w = document.createElement('div'); w.className = 'psw'; hero.before(w); w.appendChild(hero); hero.classList.add('stk');
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
+    const st = document.createElement('div'); st.className = 'psteps'; st.innerHTML = '<div class="pst p0"></div>' + PS1CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn">${n}<i></i>${PS1CH.length < 10 ? '06' : ''}</div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st);
+    ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
+    const steps = [...st.querySelectorAll('.pst')]; let ch = 0, k = 1;
+    const L = 'stroke="rgba(238,241,245,.75)" stroke-width="1.1" fill="none" stroke-linecap="round"', F = 'stroke="rgba(238,241,245,.3)" stroke-width="1" fill="none" stroke-linecap="round"', A = 'stroke="#8CC4FF" stroke-width="1.3" fill="none" stroke-linecap="round"';
+    const tx = (x, y, t, c = '', a = 'start') => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="pt ${c}" text-anchor="${a}">${t}</text>`;
+    const dotp = (x, y, n) => `<circle cx="${x}" cy="${y}" r="3.2" fill="#8CC4FF"/>`;
+    function draw(cx, cy, r, W, H, t){ let o = '';
+      if (ch === 1){ const y = cy - r - 18; o += `<path d="M${cx - r},${y} L${cx + r},${y} M${cx - r},${y - 5} l0,10 M${cx + r},${y - 5} l0,10" ${A}/>` + tx(cx, y - 10, 'Ø 58 см', 'ac', 'middle') + `<path d="M${cx + r * .75},${cy + r * .75} L${cx + r + 26},${cy + r + 22} L${cx + r + 60},${cy + r + 22}" ${F}/>` + tx(cx + r + 30, cy + r + 18, '83,6 кг') + tx(cx + r + 30, cy + r + 34, '2 передатчика', 'dim'); }
+      if (ch === 2){ const bw = 1.35 * r, by = cy + 1.9 * r, tp = cy - 2.7 * r; o += `<path d="M${cx - bw},${H + 10} L${cx - bw},${by} C${cx - bw},${cy - .6 * r} ${cx - .5 * r},${tp + .5 * r} ${cx},${tp} C${cx + .5 * r},${tp + .5 * r} ${cx + bw},${cy - .6 * r} ${cx + bw},${by} L${cx + bw},${H + 10}" ${L}/><path d="M${cx - bw},${by} L${cx + bw},${by}" ${F} stroke-dasharray="3 4"/>`
+        + `<path d="M${cx + bw + 4},${cy - r} L${cx + bw + 30},${cy - r}" ${F}/>` + tx(Math.min(W - 12, cx + bw + 34), cy - r + 4, 'обтекатель', '', cx + bw + 120 > W ? 'end' : 'start') + tx(cx, by + 22, 'Р-7 «Спутник» · Байконур', 'ac', 'middle'); }
+      if (ch === 3){ const sx = W * .1, sy = H * .9; o += `<path d="M${sx},${sy} C${sx + W * .05},${cy + H * .1} ${cx - W * .25},${cy + 6} ${cx},${cy}" ${A}/><path d="M${cx},${cy} C${cx + W * .2},${cy - 8} ${cx + W * .4},${cy - 4} ${W + 20},${cy + 10}" ${F} stroke-dasharray="3 5"/>` + dotp(sx, sy) + tx(sx + 8, sy - 8, 'старт · 22:28 мск') + tx(cx, cy - r - 14, '≈ 5 мин · отделение', 'ac', 'middle'); }
+      if (ch === 4){ const a = (W - 36) / 2, b = a * .52, ex0 = cx, ey0 = cy + b, c = Math.sqrt(a * a - b * b), fx = ex0 - c, er = a * .2; /* спутник — в верхней точке эллипса, Земля в фокусе слева */ o += `<ellipse cx="${ex0}" cy="${ey0}" rx="${a}" ry="${b}" ${A}/><circle cx="${fx}" cy="${ey0}" r="${er}" stroke="rgba(140,196,255,.6)" stroke-width="1.1" fill="rgba(20,50,100,.55)"/>` + tx(fx, ey0 + 4, 'Земля', 'dim', 'middle') + `<circle cx="${ex0 - a}" cy="${ey0}" r="3" fill="#8CC4FF"/><circle cx="${ex0 + a}" cy="${ey0}" r="3" fill="#8CC4FF"/>` + tx(Math.max(12, ex0 - a + 2), ey0 + b * .55 + 26, 'перигей ≈ 230 км') + tx(Math.min(W - 10, ex0 + a), ey0 + 22, 'апогей ≈ 950 км', '', 'end') + tx(14, 120, '1 виток — 96 минут', 'ac'); }
+      if (ch === 5){ for (let i = 0; i < 4; i++){ const q = ((t / 1600) + i / 4) % 1; o += `<circle cx="${cx}" cy="${cy}" r="${r * (1.15 + q * 2.4)}" stroke="#8CC4FF" stroke-width="1.2" fill="none" opacity="${(1 - q) * .8}"/>`; } o += tx(cx, cy - r * 3.8, '«бип-бип»', 'ac big', 'middle') + tx(cx, cy - r * 3.8 + 18, '20,005 и 40,002 МГц', '', 'middle'); }
+      if (ch === 6){ o += `<defs><radialGradient id="psg"><stop offset="0" stop-color="#FFB27A" stop-opacity=".75"/><stop offset="1" stop-color="#FF6A1F" stop-opacity="0"/></radialGradient></defs><circle cx="${cx}" cy="${cy}" r="${r * 2.6}" fill="url(#psg)"/>` + [0, 1, 2, 3, 4].map(i => `<path d="M${cx + r * .6},${cy - r * .6 + i * 5 - 10} l${80 + i * 14},${-60 - i * 6}" stroke="rgba(255,178,122,${.5 - i * .08})" stroke-width="1.4" stroke-linecap="round"/>`).join('') + tx(cx, cy + r * 3, '4 января 1958 · ≈ 1440 витков', 'ac', 'middle'); }
+      svg.innerHTML = o; }
+    return { scale:() => k, ch:() => ch, update(cx, cy, r, W, H, t){ let c = 0; steps.forEach((s, i) => { const b = s.getBoundingClientRect(); if (i > 0 && b.top < innerHeight * .7) c = i; }); if (c !== ch || hero.dataset.ch === undefined){ ch = c; hero.dataset.ch = c; steps.forEach((s, i) => s.classList.toggle('on', i === c)); } k += (PS1SC[ch] - k) * .08; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); draw(cx, cy, r, W, H, t); } }; }
   function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
     const fm = n.userData.floatModel, obj = fm ? fm.children[0] : n, AX = !!(fm && fm.userData.axis);
     cur = { id, n, y0:n.position.y, r0:n.rotation.y, obj, z0:obj.rotation.z };
@@ -10970,7 +10997,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const from0 = scr(obj);
     ex.classList.add('full', 'fin'); openEx(id); window.__m3sel = id; ex.scrollTop = 0;
     requestAnimationFrame(() => requestAnimationFrame(() => ex.classList.remove('fin')));
-    const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">листай — повернётся</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : ''); ex.querySelector('.grab').after(hero);
+    const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">листай — повернётся</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : ''); ex.querySelector('.grab').after(hero); const story = id === 10 ? ps1Story(ex, hero) : null; me.story = story;
     const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.1;
     const cv = R.domElement; cv.className = 'exfly'; document.body.appendChild(cv);
     const sc = new T.Scene(); sc.environment = studioEnv(T, R);
@@ -10987,7 +11014,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const wAt = (sx, sy, W, H) => { const a = W / H; return new T.Vector3(((sx / W) * 2 - 1) * TAN * CZ * a, (1 - (sy / H) * 2) * TAN * CZ, 0); };
     const wSize = (px, H) => px / H * 2 * TAN * CZ;
     const BIG = id === 10 ? .8 : .72;
-    const slot = () => { const r = hero.getBoundingClientRect(); return { x:r.left + r.width / 2, y:r.top + r.height * .6, s:Math.min(r.width, r.height * .78) * BIG, r }; };
+    const YC = story ? .42 : .6, SZ = story ? .5 : .78; const slot = () => { const r = hero.getBoundingClientRect(); return { x:r.left + r.width / 2, y:r.top + r.height * YC, s:Math.min(r.width, r.height * SZ) * BIG, r }; };
     /* конечная поза: спутник — ось к нижнему левому углу, вращение вокруг оси; остальные — лёгкий наклон и поворот */
     const qAlign = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), new T.Vector3(...DV).normalize()), tilt = new T.Quaternion().setFromEuler(new T.Euler(.32, 0, 0));
     const zA = new T.Vector3(0, 0, 1), yA = new T.Vector3(0, 1, 0), qr = new T.Quaternion(), qb = new T.Quaternion(), qa = new T.Quaternion();
@@ -11001,8 +11028,9 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
         holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
         if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; } }
       if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
-        holder.position.set(0, -wSize(h * .1, h) + Math.sin(now / 1400) * wSize(3, h), 0); holder.scale.setScalar(wSize(Math.min(w, h * .78) * BIG, h)); holder.quaternion.copy(pose(rotNow)); }
-      if (hsU){ const r2 = hero.getBoundingClientRect(); hsU.update(cam, r2.width, r2.height, mode === 'dock'); }
+        holder.position.set(0, wSize(h * (.5 - YC), h) + Math.sin(now / 1400) * wSize(3, h), 0); holder.scale.setScalar(wSize(Math.min(w, h * SZ) * BIG, h) * (story ? story.scale() : 1)); holder.quaternion.copy(pose(rotNow)); }
+      if (story && mode === 'dock'){ const r2 = hero.getBoundingClientRect(); const o0 = spin.children[0] && spin.children[0].children[0]; if (o0){ const wp = o0.getWorldPosition(new T.Vector3()), pr = wp.clone().project(cam); const e1 = wp.clone().add(new T.Vector3(1, 0, 0).applyQuaternion(cam.quaternion).multiplyScalar(.995 * o0.getWorldScale(new T.Vector3()).x)).project(cam); const cx = (pr.x + 1) / 2 * r2.width, cy = (1 - pr.y) / 2 * r2.height, rr = Math.abs((e1.x - pr.x) / 2 * r2.width); story.update(cx, cy, rr, r2.width, r2.height, now); } }
+      if (hsU){ const r2 = hero.getBoundingClientRect(); hsU.update(cam, r2.width, r2.height, mode === 'dock' && (!story || story.ch() === 0)); }
       R.render(sc, cam); requestAnimationFrame(frame); };
     requestAnimationFrame(frame);
     hero.addEventListener('pointerdown', e => { drag = e.clientX; e.stopPropagation(); }); addEventListener('pointermove', me.pm = e => { if (drag == null) return; const dx = e.clientX - drag; drag = e.clientX; dragA += dx * .012; }); addEventListener('pointerup', me.pu = () => { drag = null; });
@@ -11053,6 +11081,28 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 #vEx.full .exhero .hh{z-index:2;left:0;right:0;text-align:center;bottom:22px;color:rgba(255,255,255,.34)}
 #vEx.full .exhero ~ .ph{display:none}
 canvas.exfly{display:block}
+/* v121: сторителлинг ПС-1 — кадр со спутником прилипает, главы листаются поверх */
+#vEx.full .psw{position:relative}
+#vEx.full .psw .exhero.stk{position:sticky;top:0;height:100vh;height:100svh;margin:0;z-index:1}
+#vEx.full .psw .exhero.stk:after{height:22%}
+#vEx.full .psw .exhero .hh{bottom:auto;top:calc(150px + env(safe-area-inset-top,0px));transition:opacity .4s}
+#vEx.full .psw .exhero .ht,#vEx.full .psw .exhero .hh{transition:opacity .5s}
+#vEx.full .psw .exhero:not([data-ch="0"]) .ht,#vEx.full .psw .exhero:not([data-ch="0"]) .hh{visibility:hidden;opacity:0;animation:none}
+#vEx.full .pst .pc{transition:opacity .35s,transform .35s}
+#vEx.full .pst:not(.on) .pc{opacity:0;transform:translateY(10px)}
+#vEx.full .psw .exhero .cr{bottom:auto;top:calc(56px + env(safe-area-inset-top,0px))}
+#vEx.full .psov{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
+#vEx.full .psov .pt{font:500 9.5px "JetBrains Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;fill:rgba(238,241,245,.85)}
+#vEx.full .psov .pt.dim{fill:rgba(238,241,245,.45)}#vEx.full .psov .pt.ac{fill:#8CC4FF}#vEx.full .psov .pt.big{font-size:13px}
+#vEx.full .psteps{position:relative;z-index:3;margin-top:-100vh;margin-top:-100svh;pointer-events:none}
+#vEx.full .pst{height:92vh;display:flex;align-items:flex-start;padding:0 12px}
+#vEx.full .pst.p0{height:82vh}
+#vEx.full .pst .pc{position:sticky;bottom:24px;margin-top:auto;pointer-events:auto;width:100%;padding:16px 18px 18px;border-radius:24px;background:rgba(9,13,22,.72);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1px solid rgba(140,196,255,.14)}
+#vEx.full .pst .pn{display:flex;align-items:center;gap:8px;font:500 10.5px "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;color:#8CC4FF}
+#vEx.full .pst .pn i{flex:none;width:28px;height:1px;background:rgba(140,196,255,.4)}
+#vEx.full .pst h3{margin:10px 0 0;font:300 26px/1.1 Inter,-apple-system,system-ui,sans-serif;letter-spacing:-.02em;color:#EEF1F5}
+#vEx.full .pst p{margin:8px 0 0;font-size:14.5px;line-height:1.5;color:#AEB6C2}
+
 /* v120: точки «куда смотреть» на экспонате */
 #vEx .exhero .hs{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity .5s .2s}
 #vEx .exhero .hs.on{opacity:1}
