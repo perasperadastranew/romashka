@@ -228,6 +228,19 @@
 .obduo .obdog .dog{border-radius:999px!important;position:absolute!important;inset:0!important;top:0!important;height:auto!important;bottom:0!important;margin:0!important;transform:none!important}
 .obduo .obsay{width:124px!important;font-size:11.5px!important}
 @keyframes obUp{from{opacity:0;translate:0 60px}to{opacity:1;translate:0 0}}
+/* v138: наушники, офлайн-маршрут */
+.hpsheet{position:absolute;inset:0;z-index:90;background:rgba(5,6,8,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .3s}
+.hpsheet.on{opacity:1;pointer-events:auto}
+.hpc{width:100%;padding:28px 22px calc(26px + env(safe-area-inset-bottom,0px));border-radius:28px 28px 0 0;background:#15161b;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:10px;justify-items:center;text-align:center;transform:translateY(40px);transition:transform .4s cubic-bezier(.2,.9,.3,1)}
+.hpsheet.on .hpc{transform:none}
+.hpi{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,rgba(255,138,74,.35),rgba(255,138,74,.08));color:#FF8A4A;margin-bottom:6px}.hpi svg{width:40px;height:40px}
+.hpc b{font:500 22px var(--f);color:#fff}.hpc p{margin:0 0 8px;font-size:14px;line-height:1.45;color:#A9ADB7;max-width:300px}
+.hpc button{width:100%;height:52px;text-align:center;justify-content:center;border-radius:26px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:600 15px var(--f)}
+.hpc button.pr{background:#FF8A4A;border:0;color:#1A0E06}
+.fpoff{--p:0%;display:flex;align-items:center;gap:12px;width:100%;margin:12px 0 4px;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(90deg,rgba(255,138,74,.22) var(--p),rgba(255,255,255,.04) var(--p));color:#fff;text-align:left;font:inherit}
+.fpoff i{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,138,74,.18);color:#FF8A4A;font-style:normal;font-weight:700}
+.fpoff span{display:grid;gap:2px}.fpoff b{font:600 14px var(--f)}.fpoff em{font-style:normal;font-size:12px;color:#A9ADB7}
+.fpoff.done{background:rgba(59,210,122,.08);border-color:rgba(59,210,122,.35)}.fpoff.done i{background:rgba(59,210,122,.2);color:#3BD27A}
 /* карта: два режима «3D · Схема» (v75) */
 #vHall .hd{position:relative}
 .mvseg{position:absolute;right:16px;bottom:4px;display:flex;padding:3px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
@@ -9768,7 +9781,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const DEFR = { short:{ name:'Главное', ids:[10, 12, 11, 14, 24, 36, 22, 15, 26, 35] }, kids:{ name:'С детьми', ids:[11, 10, 12, 13, 24, 22, 15, 35] }, full:{ name:'Весь музей', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
   function routeIds(){ const R = window.ROUTES || DEFR, k = (window.RT && window.RT.key) || 'short'; S.rk = k; return (R[k] && R[k].ids) || [10, 12, 11, 14, 24]; }
   function load(id, mode){ S.mode = mode || S.mode; const ids = routeIds(); if (S.mode === 'route' && ids.includes(id)){ S.q = ids.slice(); S.i = ids.indexOf(id); } else if (S.mode === 'route' && !id){ S.q = ids.slice(); S.i = 0; } else { S.q = [id]; S.i = 0; } S.t = 0; render(true); }
-  function render(full){ const m = cur(); const fp = $('#fp'), mp = $('#mp');
+  let render = function(full){ const m = cur(); const fp = $('#fp'), mp = $('#mp');
     [fp, mp].forEach(x => x.style.setProperty('--hc', m.color)); fp.classList.toggle('playing', S.playing); mp.classList.toggle('playing', S.playing);
     $('#mpPP').innerHTML = S.playing ? ico.pause : ico.play; $('#fpPP').innerHTML = S.playing ? ico.pause : ico.play;
     const R = (window.ROUTES || DEFR)[S.rk] || {}; const pos = S.q.length > 1 ? `${S.i + 1} из ${S.q.length} · ${R.name || 'маршрут'}` : m.hall;
@@ -9810,6 +9823,28 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   $('#fpSc').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); S.t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * cur().dur; tick(0); };
   let sy = null; $('#fp').addEventListener('touchstart', e => { if (e.target.closest('.fptx,.fpq,.fpsc')) return; sy = e.touches[0].clientY; }, { passive:true });
   $('#fp').addEventListener('touchend', e => { if (sy != null && e.changedTouches[0].clientY - sy > 90) $('#fp').classList.remove('on'); sy = null; });
+  /* v138: аудиогид — наушники, офлайн, продолжить с того же места, заблокированный экран */
+  const LS = { get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch(_){ return d; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){} } };
+  /* 1. «Наденьте наушники» — перед первым запуском */
+  const hp = document.createElement('div'); hp.className = 'hpsheet'; hp.innerHTML = '<div class="hpc"><div class="hpi"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 30v-6a16 16 0 0 1 32 0v6"/><rect x="6" y="28" width="9" height="13" rx="3"/><rect x="33" y="28" width="9" height="13" rx="3"/></svg></div><b>Наденьте наушники</b><p>В залах тихо — рассказ лучше слушать в наушниках. Или включите текст: он подсвечивается по ходу рассказа.</p><button class="pr" data-a="go">Наушники надел</button><button data-a="txt">Читать текстом</button></div>';
+  app.appendChild(hp); let hpCb = null;
+  hp.addEventListener('click', e => { const b = e.target.closest('button'); if (!b && e.target !== hp) return; hp.classList.remove('on'); LS.set('kosmoHP', 1); const cb = hpCb; hpCb = null; if (b && b.dataset.a === 'txt'){ S.spd = 1; $('#fp').classList.add('on'); render(true); } cb && cb(); });
+  const needHP = cb => { if (LS.get('kosmoHP', 0)) return false; hpCb = cb; hp.classList.add('on'); return true; };
+  ['toggle', 'play', 'openFull'].forEach(k => { const f = PL[k]; PL[k] = (...a) => { if (needHP(() => f(...a))) return; f(...a); }; });
+  const pp0 = $('#fpPP').onclick; $('#fpPP').onclick = () => { if (!S.playing && needHP(pp0)) return; pp0(); };
+  /* 2. Скачать маршрут для офлайна */
+  const off = document.createElement('button'); off.className = 'fpoff'; off.id = 'fpOff';
+  const offR = () => { const d = LS.get('kosmoOff', {})[S.rk]; const R = (window.ROUTES || DEFR)[S.rk] || {}; const n = (R.ids || []).length || S.q.length, mb = Math.round(n * 3.8);
+    off.classList.toggle('done', !!d); off.innerHTML = d ? `<i>✓</i><span><b>Маршрут скачан</b><em>${n} рассказов · ${mb} МБ · работает без интернета</em></span>` : `<i>↓</i><span><b>Скачать маршрут</b><em>${n} рассказов · ${mb} МБ · в залах бывает плохая связь</em></span>`; };
+  off.onclick = () => { if (off.classList.contains('done') || off.classList.contains('busy')) return; off.classList.add('busy'); let p = 0; const em = off.querySelector('em'); const iv = setInterval(() => { p += 7 + Math.random() * 9; if (p >= 100){ clearInterval(iv); const o = LS.get('kosmoOff', {}); o[S.rk] = 1; LS.set('kosmoOff', o); off.classList.remove('busy'); offR(); return; } em.textContent = `Скачиваем… ${Math.round(p)}%`; off.style.setProperty('--p', p + '%'); }, 160); };
+  $('#fpMode').after(off);
+  /* 3. Продолжить с того же места */
+  setInterval(() => { if (S.q.length) LS.set('kosmoPL', { q:S.q, i:S.i, t:Math.round(S.t), mode:S.mode, rk:S.rk }); }, 2000);
+  { const sv = LS.get('kosmoPL', null); if (sv && sv.q && sv.q.length && sv.t > 3){ S.q = sv.q; S.i = Math.min(sv.i, sv.q.length - 1); S.mode = sv.mode || 'route'; S.playing = false; setTimeout(() => { S.t = sv.t; show(); render(true); S.t = sv.t; tick(0); $('#mpS').textContent = `Продолжить с ${fmt(sv.t)}`; }, 1200); } }
+  /* 4. Заблокированный экран: название, обложка и кнопки (Media Session — сработает с настоящей записью диктора) */
+  const ms = () => { if (!('mediaSession' in navigator) || !S.q.length) return; const m = cur(); try { navigator.mediaSession.metadata = new MediaMetadata({ title:m.full, artist:'Музей космонавтики · аудиогид', album:m.hall, artwork:m.thumb ? [{ src:m.thumb, sizes:'512x512', type:'image/webp' }] : [] }); navigator.mediaSession.playbackState = S.playing ? 'playing' : 'paused'; } catch(_){} };
+  try { const M = navigator.mediaSession; M && [['play', () => { if (!S.playing) pp(); }], ['pause', () => { if (S.playing) pp(); }], ['previoustrack', () => go(-1)], ['nexttrack', () => go(1)], ['seekbackward', () => { S.t = Math.max(0, S.t - 15); tick(0); }], ['seekforward', () => { S.t = Math.min(cur().dur - .1, S.t + 15); tick(0); }]].forEach(([k, f]) => { try { M.setActionHandler(k, f); } catch(_){} }); } catch(_){}
+  const r0 = render; render = function(full){ r0(full); if (full) offR(); ms(); };
 })();
 </script>
 <script>
