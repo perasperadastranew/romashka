@@ -9482,7 +9482,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     function hallLabels(){
       for (const [k, b] of Object.entries(zones)){ const H = HALLS[k]; if (!H || k === 'kino') continue; const el = document.createElement('div'); el.className = 'm3lab';
         el.innerHTML = `<i style="background:${H.color}"></i>${SHORT[k] || H.name}`; el.addEventListener('click', () => flyBox(b, .1)); $('#m3pins').appendChild(el);
-        const p = b.getCenter(new THREE.Vector3()); p.y = b.max.y + .5; labels.push({ p, el, k }); }
+        const c = b.getCenter(new THREE.Vector3()); let p = null, best = 1e9; for (const x of [b.min.x, b.max.x]) for (const z of [b.min.z, b.max.z]){ const q = new THREE.Vector3(x, b.max.y + .5, z), y = q.clone().project(cam).y * -1; if (y < best){ best = y; p = q; } } p.lerp(new THREE.Vector3(c.x, b.max.y + .5, c.z), .22); labels.push({ p, el, k }); } /* v109: подпись — у дальнего угла зала */
     }
     // ---- маршрут: шаги по экспонатам, «вы здесь», хлебные крошки по полу
     const ROUTES = {
@@ -10869,7 +10869,19 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const anim = (dur, fn) => new Promise(res => { const t0 = performance.now(); const f = now => { const k = Math.min(1, (now - t0) / dur); fn(k); k < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); });
   let tapT = 0; document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('#m3')) tapT = Date.now(); }, true);
   let cur = null;
-  window.__m3lift = id => { if (Date.now() - tapT > 900 || !window.__m3k || typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
+  const FLOAT = { 10:'models/10.glb' };
+  const swapIn = () => { const K = window.__m3k; if (!K){ setTimeout(swapIn, 500); return; } const T = K.THREE;
+    for (const [id, url] of Object.entries(FLOAT)){ const n = K.nodes[id]; if (!n || n.userData.swapped) continue; n.userData.swapped = 1;
+      const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.load(url, g => { const b = new T.Box3().setFromObject(n), sz = b.getSize(new T.Vector3());
+        const m = g.scene, inv = new T.Matrix4().copy(n.matrixWorld).invert(); const box2 = new T.Box3().setFromObject(m), s2 = box2.getSize(new T.Vector3()), c2 = box2.getCenter(new T.Vector3()); m.position.sub(c2);
+        const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * 1.5);
+        const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .62, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
+        n.add(fl); fl.position.copy(wp.applyMatrix4(inv)); const ws = new T.Vector3(); n.getWorldScale(ws); fl.scale.divide(ws);
+        m.traverse(o => { if (o.isMesh){ o.castShadow = true; } });
+        const y = fl.position.y, t0 = performance.now(); fl.userData.float = 1; (function bob(now){ fl.position.y = y + Math.sin((now - t0) / 900) * .9 / ws.y * .3; fl.rotation.y += .004; requestAnimationFrame(bob); })(t0);
+        n.userData.floatModel = fl; }, undefined, () => {}); } };
+  swapIn();
+  window.__m3lift = id => { if (Date.now() - tapT > 900 || !window.__m3k) return false; if (id === 22 && window.openLuno){ goLanding(id, () => openLuno(), 'vl'); return true; } if (typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
   function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
     cur = { id, n, y0:n.position.y, alive:true };
     /* 1. на карте: экспонат подпрыгивает, карта сдвигается, чтобы он остался над листом */
@@ -10892,11 +10904,11 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const holder = new T.Group(); sc.add(holder);
     const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(2.6 / Math.max(sz.x, sz.y, sz.z)); return g; };
     const put = o => { while (holder.children.length) holder.remove(holder.children[0]); holder.add(fit(o)); };
-    const cl = n.clone(true); cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); cl.scale.set(1, 1, 1); put(cl);
-    if (GLB.has(id)){ const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.load(`models/${id}.glb`, g => { if (cur && cur.id === id) put(g.scene); }, undefined, () => {}); }
+    const src = n.userData.floatModel ? n.userData.floatModel.children[0] : n; const cl = src.clone(true); if (src === n){ cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); cl.scale.set(1, 1, 1); } put(cl); const fy = n.userData.floatModel ? n.userData.floatModel.rotation.y : 0;
+    if (GLB.has(id) && !n.userData.floatModel){ const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.load(`models/${id}.glb`, g => { if (cur && cur.id === id) put(g.scene); }, undefined, () => {}); }
     const size = () => { const w = hero.clientWidth, h = hero.clientHeight; if (!w) return; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }; size();
     const dir = K.cam.getWorldDirection(new T.Vector3()); const pitchMap = Math.asin(Math.min(1, -dir.y)), yawMap = Math.atan2(dir.x, dir.z) + Math.PI;
-    const pitchHero = Math.atan2(1.1, 7.4); const rx0 = pitchMap - pitchHero, ry0h = ry0 - yawMap;
+    const pitchHero = Math.atan2(1.1, 7.4); const rx0 = pitchMap - pitchHero, ry0h = ry0 + fy - yawMap;
     let rot = ry0h, vel = .006, drag = null, ty = -1.4; const t1 = performance.now();
     const loop = now => { if (!cur || cur.hero !== hero) return; size(); const k = Math.min(1, (now - t1) / 720), e = ez(k); holder.position.y = ty * (1 - e) + Math.sin(now / 900) * .04; holder.rotation.x = rx0 * (1 - e); if (k < 1 && !drag) holder.rotation.y = ry0h + TW * e, rot = holder.rotation.y; else { if (!drag){ rot += vel; } holder.rotation.y = rot; } R.render(sc, cam); requestAnimationFrame(loop); };
     cur.hero = hero; cur.R = R; requestAnimationFrame(loop);
@@ -10908,7 +10920,13 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     /* закрыли досье — экспонат опускается на место */
     cur.mo = new MutationObserver(() => { if (ex.classList.contains('off')) finish(); else cur && cur.unback(); }); cur.mo.observe(ex, { attributes:true, attributeFilter:['class'] });
   }
-  function finish(now){ if (!cur) return; const c = cur; cur = null; const ex = document.getElementById('vEx'); c.mo && c.mo.disconnect();
+  /* Луноход и др. с отдельной страницей: подворот на карте → страница выезжает; закрыли — опускается */
+  function goLanding(id, open, vid){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const pane = document.getElementById(vid);
+    const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .35), ry0 = n.rotation.y, y0 = n.position.y;
+    cur = { id, n, y0, r0:ry0, landing:true };
+    anim(620, k => { if (!cur || cur.n !== n) return; n.position.y = y0 + lift * back(Math.min(1, k * 1.25)); n.rotation.y = ry0 + 1.1 * ez(k); })
+      .then(() => { if (cur && cur.n === n){ open(); cur.mo = new MutationObserver(() => { if (pane.classList.contains('off')) finish(); }); cur.mo.observe(pane, { attributes:true, attributeFilter:['class'] }); } }); }
+  function finish(now){ if (!cur) return; if (cur.landing){ const c = cur; cur = null; c.mo && c.mo.disconnect(); const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 480, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); return; } const c = cur; cur = null; const ex = document.getElementById('vEx'); c.mo && c.mo.disconnect();
     ex.removeEventListener('scroll', c.onS); ex.removeEventListener('wheel', c.onW); ex.removeEventListener('touchstart', c.ts); ex.removeEventListener('touchmove', c.tm); removeEventListener('pointermove', c.pm); removeEventListener('pointerup', c.pu);
     try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){}
     setTimeout(() => ex.classList.remove('peek'), now ? 0 : 520);
