@@ -379,6 +379,14 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 /* механики возвращения */
 .chips{display:flex;flex-wrap:wrap;gap:10px;max-width:60ch;margin-top:8px}.chips span{padding:9px 16px;border-radius:999px;background:rgba(10,11,14,.55);border:1px solid rgba(255,255,255,.18);font-size:calc(1.05*var(--u));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
+.payw>.pay.pay figcaption b{font-size:calc(1.6*var(--u))!important}.payw>.pay.pay figcaption span{font-size:calc(1.05*var(--u))!important}
+
+.payw>.pay.pay{grid-template-columns:repeat(4,auto)!important;justify-content:space-between;align-items:start!important;align-content:end!important;gap:calc(1.6*var(--u))!important}
+.payw>.pay.pay figure{justify-content:flex-start!important}
+.payw>.pay.pay img{height:min(calc(100vh - 2*var(--M) - 13*var(--u)),calc((100vw - 2*var(--M) - 36*var(--u))/4*2.2))!important;max-height:none!important;width:auto!important;max-width:none!important;border-radius:calc(2.4*var(--u))!important;object-fit:fill!important}
+.payw>.pay.pay figcaption{max-width:calc(min(calc(100vh - 2*var(--M) - 13*var(--u)),calc((100vw - 2*var(--M) - 36*var(--u))/4*2.2))*.45)!important}
+.ch:has(.payw)::after{display:none}
+
 .ch:has(.r74)>h2{margin-bottom:0!important}
 .ch:has(.r74) .r74.r74{flex:1;min-height:0;margin-top:calc(2*var(--u));grid-template-rows:1fr 1fr}
 .ch:has(.r74) .rw.rw{min-height:0;height:100%;box-sizing:border-box}
