@@ -1193,6 +1193,13 @@ window.M_EX = [
 ];
 </script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+
+<style>
+/* v152: подписи лицензий моделей скрыты — пока это прототип */
+#vEx .exhero .cr,.exhero .cr{display:none!important}
+/* v152: один вид карты — объёмный с голограммами; переключатель видов скрыт */
+#mvSeg{display:none!important}
+</style>
 </head>
 <body>
 <aside class="notes" id="notes"></aside>
@@ -9417,7 +9424,8 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     function flyTo(t, z, dur = 1000){ flight = { from:ctl.target.clone(), to:t.clone(), z0:cam.zoom, z1:z, t0:performance.now(), dur }; }
     const flyBox = (b, pad) => flyTo(b.getCenter(new THREE.Vector3()), zoomFor(b, pad));
     // pins for exhibits that have a dossier in the app
-    const pinEl = (id, n) => { const el = document.createElement('button'); el.className = 'm3pin'; el.innerHTML = `<b>${n}</b>`; el.addEventListener('click', ev => { ev.stopPropagation(); select(id, true); }); $('#m3pins').appendChild(el); return el; };
+    const floorGate = id => { const f = floorOfId(id); if (f && f !== 'all' && f !== curFloor && !(curFloor === 'all' && f === 'upper')){ m3floor(f); return true; } return false; }; /* v152: сначала этаж, потом экспонат */
+    const pinEl = (id, n) => { const el = document.createElement('button'); el.className = 'm3pin'; el.innerHTML = `<b>${n}</b>`; el.addEventListener('click', ev => { ev.stopPropagation(); if (floorGate(id)) return; select(id, true); }); $('#m3pins').appendChild(el); return el; };
     let selected = null;
     const glow = (o, a) => o && o.traverse(m => { if (m.isMesh && m.material && m.material.emissive){ if (!m.userData.own){ m.material = m.material.clone(); m.userData.own = 1; m.userData.mat0 = m.material; } m.material.emissive.setRGB(a * .9, a * .42, a * .2); } });
     function select(id, fly){ if (window.__m3lift && window.__m3lift(id) === true){ window.__m3sel = id; return; } if (selected != null) glow(nodes[selected], 0); selected = id; window.__m3sel = id; const n = nodes[id]; if (!n) return; glow(n, .45);
@@ -9438,7 +9446,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     r.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; });
     r.domElement.addEventListener('pointerup', e => { if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return; const rc = r.domElement.getBoundingClientRect();
       ndc.set((e.clientX - rc.left) / rc.width * 2 - 1, -((e.clientY - rc.top) / rc.height) * 2 + 1); ray.setFromCamera(ndc, cam);
-      for (const h of ray.intersectObjects(Object.values(nodes), true)){ let o = h.object; while (o && o.userData.ex == null) o = o.parent; if (o){ select(o.userData.ex, false); return; } }
+      for (const h of ray.intersectObjects(Object.values(nodes), true)){ let o = h.object; while (o && o.userData.ex == null) o = o.parent; if (o){ if (floorGate(o.userData.ex)) return; select(o.userData.ex, false); return; } }
       card.hidden = true; if (selected != null) glow(nodes[selected], 0); selected = null; });
     // load the maquette (meshopt-compressed)
     const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
@@ -9479,7 +9487,10 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       n.traverse(o => { if (!o.isMesh || !o.visible || o.userData.cSkip) return; const bb = new THREE.Box3().setFromObject(o), z = bb.getSize(new THREE.Vector3());
         if (z.y < ns.y * .2 && bb.min.y < nb.min.y + ns.y * .08 && z.x * z.z > ns.x * ns.z * (id === 10 ? .02 : .3) && z.y < Math.max(z.x, z.z) * .35){ o.visible = false; o.userData.mapHide = 1; hit = 1; } });
       if (hit){ const b2 = vBox(n); if (!b2.isEmpty()){ n.position.y -= (b2.min.y - nb.min.y) / (n.parent ? n.parent.getWorldScale(new THREE.Vector3()).y : 1); n.updateMatrixWorld(true); } } }
-    function pad(n, root){ noBase(n); const b = vBox(n).isEmpty() ? new THREE.Box3().setFromObject(n) : vBox(n), c = b.getCenter(new THREE.Vector3()); let r0 = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) * .55 + .5; const d = MEX.get(+n.name.slice(3)) || {}; const nid = +n.name.slice(3);
+    /* v152: веранда Циолковского — в левый верхний угол «Творцов», тонкая ракета ГИРД-09 — на её прежнее место */
+    const MOVE = { 50:[15.9, 0.6], 17:[22.2, 12.2] };
+    function moveTo(n){ const m = MOVE[+n.name.slice(3)]; if (!m || n.userData.moved) return; n.userData.moved = 1; n.updateMatrixWorld(true); const c = new THREE.Box3().setFromObject(n).getCenter(new THREE.Vector3()); const w = n.getWorldPosition(new THREE.Vector3()); const tgt = new THREE.Vector3(w.x + m[0] - c.x, w.y, w.z + m[1] - c.z); n.position.copy(n.parent.worldToLocal(tgt)); n.updateMatrixWorld(true); }
+    function pad(n, root){ moveTo(n); noBase(n); const b = vBox(n).isEmpty() ? new THREE.Box3().setFromObject(n) : vBox(n), c = b.getCenter(new THREE.Vector3()); let r0 = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) * .55 + .5; const d = MEX.get(+n.name.slice(3)) || {}; const nid = +n.name.slice(3);
       { /* v143: у всех экспонатов — аккуратная низкая цилиндрическая подставка-«стекло» и тонкое кольцо вокруг */
         const w = Math.min(Math.max(b.max.x - b.min.x, b.max.z - b.min.z), nid === 10 ? 1.9 : 99), pr = Math.max(.45, w * .42), h = .12;
         const ped = new THREE.Mesh(new THREE.CylinderGeometry(pr, pr, h, 64), new THREE.MeshBasicMaterial({ color:0x9FB4D2, transparent:true, opacity:.38, depthWrite:false }));
@@ -11226,7 +11237,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 #vEx.full > *:not(.exhero):not(.top){animation:exRise .6s .12s cubic-bezier(.32,.72,0,1) both}
 @keyframes exRise{from{transform:translateY(28px);opacity:0}to{transform:none;opacity:1}}
 #vEx.full .grab{display:none}
-#vEx.full .top{position:fixed;left:0;right:0;top:0;z-index:6;background:linear-gradient(rgba(11,12,16,.85),rgba(11,12,16,0));padding-top:max(14px,env(safe-area-inset-top,0px))}
+#vEx.full .top{position:fixed;left:0;right:0;top:0;z-index:6;background:linear-gradient(rgba(11,12,16,.85),rgba(11,12,16,0));padding-top:max(52px,calc(env(safe-area-inset-top,0px) + 8px))} /* v152: крестик ниже — под статус-баром */
 #vEx.full .exhero{height:min(64vh,560px);margin:0 0 6px;border-radius:0;animation:none;overflow:hidden;background:#060607}
 #vEx.full .exhero .stf{display:none}
 #vEx.full .exhero{background:radial-gradient(120% 90% at 85% 8%,#123d78 0,#0a2246 34%,#06101f 66%,#04070d 100%)}
@@ -11785,7 +11796,7 @@ canvas.exfly{display:block}
 .m3exs .nm{min-width:0;max-width:62%;height:30px;padding:0 12px;border-radius:15px;background:rgba(10,11,13,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;font:500 12px var(--f);color:#fff;cursor:pointer}
 .m3exs .nm b{font:500 10px var(--m);color:#8B93A0;letter-spacing:.06em}
 .m3exs .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#m3.v118 #m3seg{display:none}
+#m3.v118 #m3seg{display:flex;top:auto;bottom:10px;left:50%;transform:translateX(-50%)} /* v152: этажи снова видны — внизу, где был переключатель видов */
 .m3wrap.scheme .m3halls,.m3wrap.scheme .m3exs{display:none}
 #vHall.mapfull #mvSeg{top:88px!important}
 </style>
@@ -12064,7 +12075,7 @@ canvas.exfly{display:block}
     sh.fragmentShader = 'varying vec3 vWp; uniform vec2 uC; uniform float uR0, uR1;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n gl_FragColor.rgb *= 1. - smoothstep(uR0, uR1, length(vWp.xz - uC)) * .8;'); }; m.needsUpdate = true; };
   /* v150: объём как на референсе — пол и стены освещены (тёмный ультрамарин), стены светлее по верху; голограмма экспонатов остаётся */
   const SM = (c, r) => { const m = new T.MeshStandardMaterial({ color:c, roughness:r, metalness:.15, envMapIntensity:.6 }); fog(m); return m; };
-  const mZone = SM(0x1a1e27, .8), mFloor = SM(0x12151c, .82), mSide = SM(0x08090d, .7), mWallTop = SM(0x464d5c, .55), mWall = SM(0x171a22, .6); /* графит с холодным оттенком — решает объём, не цвет */
+  const mZone = SM(0x18203a, .8), mFloor = SM(0x111628, .82), mSide = SM(0x08090d, .7), mWallTop = SM(0x434e68, .55), mWall = SM(0x161b28, .6); /* графит с холодным оттенком — решает объём, не цвет */
   K.root.traverse(o => { if (!o.isMesh || !o.material || !o.material.isMeshBasicMaterial) return; const n = o.name; let m = null;
     if (/^Zone_/.test(n)) m = mZone; else if (/^Floor_/.test(n)) m = /_2$/.test(n) ? mFloor : mSide; else if (/^Walls_/.test(n)) m = /_2$/.test(n) ? mWallTop : mWall;
     if (m){ o.material = m; o.userData.mat0 = m; o.receiveShadow = true; } });
