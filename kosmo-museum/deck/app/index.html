@@ -10978,7 +10978,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const BK = { th:70 * Math.PI / 180, S:[1, .33, .8, .3, .62, .5, .41],
     A:[null, [.838, 2.303], [1.333, 3.665], [3.848, 5.03], [2.648, 4.33], [1.317, 3.618], [0, 0]] };
   const STORYCFG = { 14:{ center:false, rad:.2, glb:'14r', /* Rust Space Suit (Homeless_Models, CC BY), шильдики убраны, текстура выбелена; риг Mixamo — позы по главам */
-    rig:[{"LeftArm":[-0.3,0,0.2],"RightArm":[-0.25,0,-0.15],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.3,0,0],"LeftUpLeg":[0.25,0,0],"LeftLeg":[-0.45,0,0],"RightUpLeg":[-0.05,0,0],"RightLeg":[-0.15,0,0]},{"LeftArm":[0.35,0,0],"RightArm":[0.35,0,0],"LeftForeArm":[0.35,0,0],"RightForeArm":[0.35,0,0]},{"LeftArm":[0.1,0,0.5],"RightArm":[0.1,0,-0.5],"LeftForeArm":[0.5,0,0],"RightForeArm":[0.5,0,0]},{"LeftArm":[-0.45,0,0],"RightArm":[-0.45,0,0],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.4,0,0],"LeftUpLeg":[0,0,0.15],"RightUpLeg":[0,0,-0.15],"LeftLeg":[-0.3,0,0],"RightLeg":[-0.2,0,0]},{"LeftArm":[-0.6,0,0,1.08],"RightArm":[-0.6,0,0,1.08],"LeftForeArm":[0.15,0,0],"RightForeArm":[0.15,0,0],"Spine1":[0,0,0,1.05],"Spine2":[0,0,0,1.08],"LeftUpLeg":[0,0,0.22,1.06],"RightUpLeg":[0,0,-0.22,1.06]},{"LeftArm":[-1.95,0,0.15],"RightArm":[-1.95,0,-0.15],"LeftForeArm":[0.1,0,0],"RightForeArm":[0.1,0,0]},{"LeftArm":[0.25,0,0],"RightArm":[0.25,0,0],"LeftForeArm":[0.25,0,0],"RightForeArm":[0.25,0,0]}],
+    rig:[{"LeftArm":[-0.3,0,0.2],"RightArm":[-0.25,0,-0.15],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.3,0,0],"LeftUpLeg":[0.25,0,0],"LeftLeg":[-0.45,0,0],"RightUpLeg":[-0.05,0,0],"RightLeg":[-0.15,0,0]},{"LeftArm":[0.35,0,0],"RightArm":[0.35,0,0],"LeftForeArm":[0.35,0,0],"RightForeArm":[0.35,0,0]},{"LeftArm":[0.1,0,0.5],"RightArm":[0.1,0,-0.5],"LeftForeArm":[0.5,0,0],"RightForeArm":[0.5,0,0]},{"LeftArm":[-0.45,0,0],"RightArm":[-0.45,0,0],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.4,0,0],"LeftUpLeg":[0,0,0.15],"RightUpLeg":[0,0,-0.15],"LeftLeg":[-0.3,0,0],"RightLeg":[-0.2,0,0]},{"LeftArm":[-0.6,0,0,1.08],"RightArm":[-0.6,0,0,1.08],"LeftForeArm":[0.15,0,0],"RightForeArm":[0.15,0,0],"Spine1":[0,0,0,1.05],"Spine2":[0,0,0,1.08],"LeftUpLeg":[0,0,0.22,1.06],"RightUpLeg":[0,0,-0.22,1.06]},{"LeftArm":[0.5,0,0.12],"RightArm":[0.5,0,-0.12],"LeftForeArm":[0.15,0,0],"RightForeArm":[0.15,0,0]},{"LeftArm":[0.25,0,0],"RightArm":[0.25,0,0],"LeftForeArm":[0.25,0,0],"RightForeArm":[0.25,0,0]}],
     CH:[
       ['01', '«Восход-2» и шлюз «Волга»', 'Кабину нельзя было разгерметизировать, поэтому к спускаемому аппарату пристроили надувной шлюз «Волга»: 2,5 м в длину, внутри — 1 м. Леонов перешёл в шлюз, люк за ним закрыли и стравили воздух.'],
       ['02', 'Выход', '18 марта 1965 года в 11:34 по Москве Алексей Леонов открыл внешний люк шлюза и первым в мире вышел в открытый космос.'],
@@ -11016,6 +11016,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
     const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn">${n} / ${String(CH.length).padStart(2, '0')}</div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st);
     ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
+    /* v132: реплика Белки — вступление на титульном экране истории, до глав */
+    const bel = () => { const d = ex.querySelector('.dfc'), p0 = st.querySelector('.p0'); if (d && p0 && d.parentNode !== p0){ p0.appendChild(d); d.classList.add('in0'); return true; } return false; }; if (!bel()) setTimeout(bel, 350);
     const steps = [...st.querySelectorAll('.pst')]; let ch = 0, k = 1;
     const L = 'stroke="rgba(238,241,245,.75)" stroke-width="1.1" fill="none" stroke-linecap="round"', F = 'stroke="rgba(238,241,245,.3)" stroke-width="1" fill="none" stroke-linecap="round"', A = 'stroke="#8CC4FF" stroke-width="1.3" fill="none" stroke-linecap="round"';
     const tx = (x, y, t, c = '', a = 'start') => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="pt ${c}" text-anchor="${a}">${t}</text>`;
@@ -11676,6 +11678,14 @@ canvas.exfly{display:block}
 .m3halls button{flex:none;display:flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 10px;border-radius:15px;border:1px solid rgba(255,255,255,.1);background:rgba(10,11,13,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#C9CED6;font:500 12px var(--f);white-space:nowrap;cursor:pointer}
 .m3halls button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
 .m3halls button.on{background:#fff;color:#0A0B0D;border-color:#fff}
+/* v132: верх карты — без наложений: подписи залов из сцены не нужны (есть ряд залов), карта обрезает всё по своим краям, статус не заходит под переключатель */
+#m3pins .m3lab{display:none!important}
+#vHall.mapfull #m3wrap{overflow:hidden}
+#vHall.mapfull .amchip{max-width:calc(100% - 200px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:inline-block;line-height:28px}
+#vHall.mapfull .amchip i{display:inline-block;vertical-align:middle;margin-right:6px}
+.m3exs .nm b em{font-style:normal;color:#5d6572;margin-right:5px;text-transform:uppercase;letter-spacing:.08em;font-size:9px}
+#vEx .pst.p0{display:flex;flex-direction:column;justify-content:flex-end;padding:0 14px 26px}
+#vEx .pst.p0 .dfc.in0{margin:0;background:rgba(16,22,36,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:14px 14px 14px 12px;position:relative;z-index:3}
 .m3exs{position:absolute;left:10px;right:10px;top:46px;z-index:7;display:flex;align-items:center;gap:6px;pointer-events:none;transition:opacity .3s}
 .m3exs.hid{opacity:0}
 .m3exs > *{pointer-events:auto}
@@ -11701,7 +11711,7 @@ canvas.exfly{display:block}
     const exOf = k => (window.M_EX || []).filter(d => d[3] === k && K.nodes[d[0]]).map(d => d[0]).sort((a, b) => { const ia = full.indexOf(a), ib = full.indexOf(b); return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib); });
     let hall = null, list = [], idx = -1;
     const title = id => { const d = (window.M_EX || []).find(x => x[0] === id); return d ? d[2] : ''; };
-    const showEx = () => { const on = hall && hall !== 'all' && list.length; ex.classList.toggle('hid', !on); if (!on) return; ex.querySelector('.nm b').textContent = idx < 0 ? `${list.length} экспонатов` : `${idx + 1}/${list.length}`; ex.querySelector('.nm span').textContent = idx < 0 ? 'листай стрелками' : title(list[idx]); };
+    const showEx = () => { const on = hall && hall !== 'all' && list.length; ex.classList.toggle('hid', !on); if (!on) return; ex.querySelector('.nm b').innerHTML = idx < 0 ? `${list.length} экспонатов` : `<em>экспонат</em>${idx + 1}/${list.length}`; ex.querySelector('.nm span').textContent = idx < 0 ? 'листай стрелками' : title(list[idx]); };
     const quiet = fn => { window.__m3noLift = true; window.__m3auto = true; try { fn(); } finally { setTimeout(() => { window.__m3noLift = false; window.__m3auto = false; }, 50); } };
     function goHall(k, nofly){ hall = k; idx = -1; list = k === 'all' ? [] : exOf(k); row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.h === k)); const on = row.querySelector(`[data-h="${k}"]`); on && on.scrollIntoView({ inline:'center', block:'nearest', behavior:'smooth' });
       if (k === 'all'){ window.m3floor && m3floor('all'); setTimeout(() => { const K = window.__m3k; if (K){ const z0 = K.cam.zoom, z1 = z0 * 1.45, t0 = performance.now(); (function zz(now){ const e = Math.min(1, (now - t0) / 500); K.cam.zoom = z0 + (z1 - z0) * (1 - Math.pow(1 - e, 3)); K.cam.updateProjectionMatrix(); if (e < 1) requestAnimationFrame(zz); })(t0); } }, 900); } else { window.m3floor && m3floor(H[k].floor, true); if (!nofly) window.m3hall && m3hall(k); } showEx(); }
