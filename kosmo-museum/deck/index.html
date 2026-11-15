@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<meta charset="utf-8"><script>/* телефон → лента слайдов */if(innerWidth<760&&!/desk=1/.test(location.search))location.replace("feed.html"+location.hash.replace("#s","#f"));</script>
+<meta charset="utf-8">
 <title>Музей в телефоне · Музей космонавтики</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -264,6 +264,9 @@ h2.sm{font-size:calc(2.4*min(1vw,1.78vh))!important;margin-bottom:auto!important
 .cr{padding:var(--M) 0}
 .cf img{height:calc(100vh - 2*var(--M) - 11*min(1vw,1.78vh))!important;max-height:calc(56.25vw - 2*var(--M) - 11*min(1vw,1.78vh))}
 
+canvas.warp{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;transition:opacity .6s}
+.wrap{position:relative;z-index:1}
+
 .flowimg{flex:1;min-height:0;overflow:visible!important;max-height:none!important;display:flex;justify-content:center}.flowimg img{max-height:100%!important;max-width:100%;width:auto!important;height:auto;object-fit:contain}
 
 /* v9: плашки-теги, разделители частей, веер карточек, финал */
@@ -294,7 +297,7 @@ h2.sm{font-size:calc(2.4*min(1vw,1.78vh))!important;margin-bottom:auto!important
   <main class="story" id="story">
     <nav class="dots" id="dots" aria-label="Слайды"></nav>
 <section class="ch" data-act="today" data-cap="Главный экран">
-<div class="kick">Музей космонавтики · 16 ноября 2026</div><h1>Музей <em>в телефоне</em></h1><p class="lead">Как сделать музей удобным с телефона: сайт, который приводит, и приложение, которое ведёт по залам и зовёт вернуться</p><div class="try"><button class="btn pri" data-go="1">Начать →</button></div><p class="copy">© Perasperadastra · 2026</p>
+<canvas class="warp" aria-hidden="true"></canvas><div class="kick">Музей космонавтики · 16 ноября 2026</div><h1>Музей <em>в телефоне</em></h1><p class="lead">Как сделать музей удобным с телефона: сайт, который приводит, и приложение, которое ведёт по залам и зовёт вернуться</p><div class="try"><button class="btn pri" data-go="1">Начать →</button></div><p class="copy">© Perasperadastra · 2026</p>
 </section>
 <section class="ch" data-cap="Привет" data-wide="1">
 <div class="hiw"><div class="hl"><h2>Саша Сучков<br><em>Perasperadastra</em></h2><div class="hb"><p class="lead">Основатель студии и школы дизайна. UX/UI, 3D, моушн и нейросети — 1500+ студентов из 25 стран, 200 тыс. подписчиков</p><div class="lg"><img src="img/logos/l1.png" alt=""><img src="img/logos/l2.png" alt=""><img src="img/logos/l3.png" alt=""><img src="img/logos/l4.png" alt=""><img src="img/logos/l5.png" alt=""><img src="img/logos/l6.png" alt=""><img src="img/logos/l7.png" alt=""><img src="img/logos/l8.png" alt=""><img src="img/logos/l9.png" alt=""><img src="img/logos/l10.png" alt=""><img src="img/logos/l11.png" alt=""><img src="img/logos/l12.png" alt=""></div></div></div><div class="hp"><img src="img/me.webp" alt="Саша Сучков"></div></div>
@@ -411,7 +414,7 @@ h2.sm{font-size:calc(2.4*min(1vw,1.78vh))!important;margin-bottom:auto!important
 <div class="kick">Вывод</div><h1 class="big2">Дизайн — это управление<br><em>поведением пользователя</em></h1><div class="qz"><span>Вопрос залу</span><b>Если бы у музея был один цифровой продукт на этот год — что бы вы выбрали: билет, карту или истории экспонатов?</b></div>
 </section>
 <section class="ch" data-cap="Спасибо" data-wide="1">
-<h1 class="giant">Спасибо!</h1><div class="thx"><p class="lead">Вопросы, идеи, нужен похожий проект — пишите в Telegram</p><div class="qr"><img src="img/qr_tg.svg" alt="QR Telegram"><span>t.me/perasperaschool</span></div></div>
+<h1 class="giant">Спасибо!</h1><div class="thx"><p class="lead">Вопросы, идеи, нужен похожий проект — пишите в Telegram</p><div class="qr"><img src="img/qr_tg.svg" alt="QR Telegram"><span>t.me/suchkowww</span></div></div>
 </section>
     <div class="bar"><button class="btn nb" id="prev" aria-label="Предыдущий слайд">←</button><button class="btn nb" id="next" aria-label="Следующий слайд">→</button><span class="cnt" id="cnt">1 / 1</span><div class="prog"><i id="prog"></i></div><span class="keys">← → или пробел</span></div>
   </main>
@@ -484,3 +487,22 @@ h2.sm{font-size:calc(2.4*min(1vw,1.78vh))!important;margin-bottom:auto!important
   document.getElementById('story').addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(cur + (dx < 0 ? 1 : -1)); sx = null; });
 })();
 </script>
+<script>/* звёзды «прыжок»: летят из центра на зрителя, на обложке */
+(function(){const sec=document.querySelector('section.ch');if(!sec)return;const cv=document.createElement('canvas');cv.className='warp';cv.setAttribute('aria-hidden','true');document.body.prepend(cv);const x=cv.getContext('2d');let W,H,S=[],sp=1,t0=performance.now();
+const N=420;function rs(){const r=sec.getBoundingClientRect();W=cv.width=Math.round(innerWidth*devicePixelRatio);H=cv.height=Math.round(innerHeight*devicePixelRatio);}
+function mk(){return{x:(Math.random()-.5)*2,y:(Math.random()-.5)*2,z:Math.random()*1+.05,pz:0}}
+for(let i=0;i<N;i++){const s=mk();s.pz=s.z;S.push(s)}
+rs();addEventListener('resize',rs);
+function fr(now){requestAnimationFrame(fr);const on=sec.classList.contains('on');cv.style.opacity=on?1:0;if(!on)return;
+const e=(now-t0)/1000;sp=e<2.2?.004+.05*Math.pow(1-e/2.2,2):.004;/* сначала рывок, потом спокойный дрейф */
+x.fillStyle='rgba(10,11,14,'+(e<2.2?.35:.6)+')';x.fillRect(0,0,W,H);
+const cx=W*.5,cy=H*.46,f=Math.min(W,H)*.6;
+for(const s of S){s.pz=s.z;s.z-=sp;if(s.z<=.02){Object.assign(s,mk());s.z=1;s.pz=1;continue}
+const sx=cx+s.x/s.z*f,sy=cy+s.y/s.z*f,px=cx+s.x/s.pz*f,py=cy+s.y/s.pz*f;
+if(sx<0||sx>W||sy<0||sy>H){Object.assign(s,mk());s.z=1;s.pz=1;continue}
+const a=Math.min(1,(1-s.z)*1.4),w=Math.max(.6,(1-s.z)*2.4)*devicePixelRatio;
+x.strokeStyle=s.x>.6&&s.y<-.2?'rgba(255,170,120,'+a+')':'rgba(230,235,245,'+a+')';x.lineWidth=w;x.beginPath();x.moveTo(px,py);x.lineTo(sx,sy);x.stroke();}}
+requestAnimationFrame(fr);
+/* повтор рывка при каждом заходе на обложку */
+new MutationObserver(()=>{if(sec.classList.contains('on'))t0=performance.now()}).observe(sec,{attributes:true,attributeFilter:['class']});
+})();</script>
