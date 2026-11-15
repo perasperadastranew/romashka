@@ -11100,7 +11100,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       /* v125: схема главы появляется, только когда спутник почти встал в её позу */
       const fv = f(), o2 = Math.min(CH.length, Math.floor(fv + .08)); if (o2 !== ch || hero.dataset.ch === undefined){ ch = o2; hero.dataset.ch = o2; svg.classList.remove('fi'); requestAnimationFrame(() => svg.classList.add('fi')); }
       ex.classList.toggle('instory', w.getBoundingClientRect().bottom > innerHeight * .9); k += (PS1SC[ch] - k) * .08; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); if (cfg.draw){ const dd = Math.abs(f() - ch), op = ch ? Math.max(0, Math.min(1, 1 - (dd - .03) / .08)) : 1; svg.innerHTML = op > .01 ? `<g opacity="${op.toFixed(2)}">` + cfg.draw({ L, F, A, tx, ch }, cx, cy, r, W, H, t) + '</g>' : ''; } /* v130: схема видна, только когда скафандр стоит в позе главы */ else { draw(cx, cy, r, W, H, t); /* v137: схема Спутника гаснет, пока модель переходит в следующую главу — не спорит со спутником */ const dd = Math.abs(f() - ch); svg.style.opacity = ch ? Math.max(0, Math.min(1, 1 - (dd - .03) / .1)).toFixed(2) : 1; } }, poses:cfg.pose || null, rig:cfg.rig || null, rad:cfg.rad || .995, center:cfg.center !== false }; }
-  function go(id){ if (window.__m3line && !window.__lnPass && window.lineTo && window.lineTo(id, () => { window.__lnPass = 1; go(id); window.__lnPass = 0; })) return; if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
+  function go(id){ if (window.__m3hl && window.__m3line && !window.__lnPass && window.lineTo && window.lineTo(id, () => { window.__lnPass = 1; go(id); window.__lnPass = 0; })) return; if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
     const fm = n.userData.floatModel, obj = fm ? fm.children[0] : n, AX = !!(fm && fm.userData.axis);
     cur = { id, n, y0:n.position.y, r0:n.rotation.y, obj, z0:obj.rotation.z };
     const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .3);
@@ -11849,7 +11849,8 @@ canvas.exfly{display:block}
   addEventListener('click', e => { const b = e.target.closest && e.target.closest('#mvSeg button[data-v]'); if (!b) return;
     if (b.dataset.v === 'line'){ e.stopPropagation(); e.preventDefault(); if (window.__mapView === 'scheme'){ const b3 = document.querySelector('#mvSeg button[data-v="3d"]'); b3 && b3.click(); setTimeout(() => m3contour(true), 900); } else m3contour(!window.__m3line); }
     else if (b.dataset.v === '3d' && window.__m3line){ m3contour(false); } }, true);
-  if (/[?&]contour/.test(location.search)) (function w(){ window.__m3k ? m3contour(true) : setTimeout(w, 400); })();
+  /* v141: контур — вид карты по умолчанию; экспонаты остаются объёмными и при нажатии сразу летят в 3D-историю */
+  if (!/[?&]no-contour/.test(location.search)) (function w(){ window.__m3k ? m3contour(true) : setTimeout(w, 300); })();
 })();
 </script>
 
