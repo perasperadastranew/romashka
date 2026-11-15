@@ -83,7 +83,7 @@
 .hmsec{display:flex;gap:8px;margin-top:8px}.hmsec button{flex:1;height:44px;border-radius:22px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:500 13.5px var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}.hmsec button svg{width:16px;height:16px}
 /* A — пульт */
 .hma{position:relative;overflow:hidden;border-radius:28px;padding:20px 16px 16px;background:radial-gradient(130% 90% at 100% 0%,#FF7A2E 0%,#B83E0B 30%,#3A1406 62%,#14100E 100%);border:1px solid rgba(255,138,74,.35)}
-.hma::after{content:"";position:absolute;right:-70px;top:-70px;width:220px;height:220px;border-radius:50%;border:1px solid rgba(255,255,255,.18);pointer-events:none}
+.hma::after{content:none} /* v120: без декоративного круга */
 .hma h2{font:500 30px/1.05 var(--f);letter-spacing:-.025em;margin-top:10px;color:#fff}
 .hma>p{font-size:14px;line-height:1.45;color:rgba(255,255,255,.78);margin-top:8px;max-width:270px}
 .hmopts{display:flex;flex-direction:column;gap:6px;margin-top:16px}
@@ -10930,6 +10930,21 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const HT = { 10:['Спутник-1','4 октября 1957 · Байконур'], 11:['Белка и Стрелка','19 августа 1960 · Корабль-спутник-2'], 12:['Восток','12 апреля 1961 · Юрий Гагарин'], 13:['СК-1','1961 · скафандр «Востоков»'], 16:['Венера-1','12 февраля 1961 · к Венере'], 14:['Беркут','18 марта 1965 · выход Леонова'], 24:['Луна-9','3 февраля 1966 · Океан Бурь'], 44:['Союз-4 · Союз-5','январь 1969 · первая стыковка'], 49:['Ястреб','1969 · переход между кораблями'], 36:['Мир','1986–2001 · орбитальная станция'], 45:['Шлюзовой отсек','станция «Мир»'], 19:['Орлан-Д','выходы в открытый космос'], 47:['Кречет','лунная программа'], 21:['Луна-16','1970 · грунт с Луны'], 23:['Венера-4','18 октября 1967 · атмосфера Венеры'], 15:['Марс-3','2 декабря 1971 · посадка на Марс'], 25:['АПАС-75','1975 · стыковочный агрегат'], 26:['Союз — Аполлон','июль 1975 · стыковка на орбите'], 27:['Союз-37','1980 · «Интеркосмос»'], 29:['МКС','с 1998 года · 16 стран'], 30:['КОСПАС-САРСАТ','поиск и спасение'], 56:['Глонасс-М','навигационный спутник'], 31:['Байконур','стартовый комплекс · «Союз»'], 38:['Спейс шаттл','стартовый комплекс 39 · Флорида'], 900:['Сатурн-5','программа «Аполлон»'], 33:['Протон','тяжёлая ракета-носитель'], 41:['Великий поход-2F','15 октября 2003 · «Шэньчжоу-5»'], 32:['РД-107','двигатель первой ступени'], 37:['Эксплорер-1','31 января 1958 · США'], 34:['Морской старт','старт с плавучей платформы'], 35:['Энергия — Буран','15 ноября 1988 · единственный полёт'], 20:['Союз','корабль · «Союз ТМА-4»'] };
   window.__HT = HT;
   const FOV = 26, CZ = 12, TAN = Math.tan(FOV * Math.PI / 360);
+  /* v120: «куда смотреть» — точки на самом экспонате; крутишь его — точки едут вместе с ним, задние гаснут, ближайшая к зрителю подписана */
+  const HS = { 10:[
+    { p:[0, .42, .9], n:'Корпус', t:'Полированный шар Ø 58 см: блестит, чтобы отражать солнце и не перегреваться' },
+    { p:[.7, .7, 0], n:'Шов и болты', t:'Две полусферы стянуты 36 болтами, внутри — азот под давлением' },
+    { p:[0, .58, .67], n:'Крепление антенны', t:'Антенны крепятся к передней полусфере и раскрываются пружиной' },
+    { p:'tip', n:'Антенна 2,9 м', t:'Две пары антенн — 2,4 и 2,9 м: на них шли сигналы 20 и 40 МГц' } ] };
+  function addHS(T, o, id, hero){ const L = HS[id]; if (!L) return null; hero.querySelector('.hs')?.remove(); const box = document.createElement('div'); box.className = 'hs'; hero.appendChild(box);
+    let tip = null; if (L.some(h => h.p === 'tip')){ let best = 0; o.updateMatrixWorld(true); const inv = new T.Matrix4().copy(o.matrixWorld).invert(), v = new T.Vector3(); o.traverse(m => { if (!m.isMesh) return; const a = m.geometry.attributes.position; for (let i = 0; i < a.count; i += 3){ v.fromBufferAttribute(a, i).applyMatrix4(m.matrixWorld).applyMatrix4(inv); if (v.y > 0 && Math.abs(v.x) < .35 && v.z < 0){ const d = v.length(); if (d > best){ best = d; tip = v.clone(); } } } }); }
+    const pts = L.map((h, k) => { const a = new T.Object3D(); let pos; if (h.p === 'tip'){ if (!tip) return null; pos = new T.Vector3(0, .58, .67).lerp(tip, .62); } else pos = new T.Vector3(...h.p); a.position.copy(pos); o.add(a);
+      const el = document.createElement('button'); el.className = 'hsd'; el.innerHTML = `<i>${k + 1}</i><span><b>${h.n}</b>${h.t}</span>`; box.appendChild(el); return { a, el, h, sph:h.p !== 'tip' }; }).filter(Boolean);
+    let pin = -1; pts.forEach((q, k) => q.el.addEventListener('pointerdown', e => { e.stopPropagation(); pin = pin === k ? -1 : k; }));
+    const wv = new T.Vector3(), c0 = new T.Vector3(), cp = new T.Vector3();
+    return { update(cam, w, h, on){ box.classList.toggle('on', on); if (!on) return; o.getWorldPosition(c0); cam.getWorldPosition(cp); let bestK = -1, bestF = -2; const F = [];
+        pts.forEach((q, k) => { q.a.getWorldPosition(wv); const nrm = wv.clone().sub(c0).normalize(), view = cp.clone().sub(wv).normalize(); const f = q.sph ? nrm.dot(view) : .6; F.push(f); const v = wv.clone().project(cam), sx = (v.x + 1) / 2 * w; q.el.style.transform = `translate(${sx}px, ${(1 - v.y) / 2 * h}px)`; q.el.classList.toggle('l', sx > w * .5); if (f > bestF){ bestF = f; bestK = k; } });
+        const act = pin >= 0 && F[pin] > -.1 ? pin : bestK; pts.forEach((q, k) => { q.el.classList.toggle('back', F[k] < .12); q.el.classList.toggle('act', k === act); }); } }; }
   function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
     const fm = n.userData.floatModel, obj = fm ? fm.children[0] : n, AX = !!(fm && fm.userData.axis);
     cur = { id, n, y0:n.position.y, r0:n.rotation.y, obj, z0:obj.rotation.z };
@@ -10965,7 +10980,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const cam = new T.PerspectiveCamera(FOV, 1, .1, 200); cam.position.set(0, 0, CZ);
     const holder = new T.Group(), spin = new T.Group(); holder.add(spin); sc.add(holder);
     const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(1 / Math.max(sz.x, sz.y, sz.z)); return g; };
-    const put = o => { while (spin.children.length) spin.remove(spin.children[0]); o.traverse(m => { if (m.isMesh && m.material){ m.material = m.material.clone(); m.material.envMap = null; m.material.envMapIntensity = 1.3; if (m.material.metalness > .9){ m.material.color.setRGB(.95, .95, .96); m.material.roughness = Math.min(m.material.roughness, .12); } } }); spin.add(fit(o)); };
+    let hsU = null; const put = o => { while (spin.children.length) spin.remove(spin.children[0]); hsU = addHS(T, o, id, hero); o.traverse(m => { if (m.isMesh && m.material){ m.material = m.material.clone(); m.material.envMap = null; m.material.envMapIntensity = 1.3; if (m.material.metalness > .9){ m.material.color.setRGB(.95, .95, .96); m.material.roughness = Math.min(m.material.roughness, .12); } } }); spin.add(fit(o)); };
     const cl = obj.clone(true); cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); if (obj === n) cl.scale.set(1, 1, 1); cl.traverse(o => { if (o.isMesh && o.material && o.material.isMeshMatcapMaterial) o.material = new T.MeshStandardMaterial({ color:0xf2f4f7, metalness:1, roughness:.12 }); }); put(cl);
     if (GLB.has(id) && !fm){ __ldJ(K, `models/${id}.json`, g => { if (id === 11) g.scene.traverse(o => { if (o.isMesh && /K_(white|tan|cream|brown)/.test(o.material && o.material.name || '')) o.visible = false; }); /* v119: без собак у контейнера */ if (cur === me) put(g.scene); }); }
     obj.updateMatrixWorld(true); const qCam = K.cam.getWorldQuaternion(new T.Quaternion()); const q0 = qCam.clone().invert().multiply(obj.getWorldQuaternion(new T.Quaternion()));
@@ -10987,6 +11002,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
         if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; } }
       if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
         holder.position.set(0, -wSize(h * .1, h) + Math.sin(now / 1400) * wSize(3, h), 0); holder.scale.setScalar(wSize(Math.min(w, h * .78) * BIG, h)); holder.quaternion.copy(pose(rotNow)); }
+      if (hsU){ const r2 = hero.getBoundingClientRect(); hsU.update(cam, r2.width, r2.height, mode === 'dock'); }
       R.render(sc, cam); requestAnimationFrame(frame); };
     requestAnimationFrame(frame);
     hero.addEventListener('pointerdown', e => { drag = e.clientX; e.stopPropagation(); }); addEventListener('pointermove', me.pm = e => { if (drag == null) return; const dx = e.clientX - drag; drag = e.clientX; dragA += dx * .012; }); addEventListener('pointerup', me.pu = () => { drag = null; });
@@ -11037,6 +11053,19 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 #vEx.full .exhero .hh{z-index:2;left:0;right:0;text-align:center;bottom:22px;color:rgba(255,255,255,.34)}
 #vEx.full .exhero ~ .ph{display:none}
 canvas.exfly{display:block}
+/* v120: точки «куда смотреть» на экспонате */
+#vEx .exhero .hs{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity .5s .2s}
+#vEx .exhero .hs.on{opacity:1}
+#vEx .exhero .hsd{position:absolute;left:0;top:0;width:0;height:0;padding:0;border:0;background:none;pointer-events:auto;cursor:pointer}
+#vEx .exhero .hsd i{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 10px "JetBrains Mono",ui-monospace,monospace;font-style:normal;color:#0b0c10;background:#EEF1F5;box-shadow:0 0 0 4px rgba(140,196,255,.25),0 0 16px rgba(140,196,255,.6);transition:transform .3s,opacity .3s}
+#vEx .exhero .hsd.act i{background:#8CC4FF;animation:hsP 1.6s ease-out infinite}
+@keyframes hsP{0%{box-shadow:0 0 0 0 rgba(140,196,255,.55),0 0 16px rgba(140,196,255,.6)}100%{box-shadow:0 0 0 14px rgba(140,196,255,0),0 0 16px rgba(140,196,255,.6)}}
+#vEx .exhero .hsd.back i{opacity:.18;transform:scale(.7)}
+#vEx .exhero .hsd span{position:absolute;left:18px;top:-10px;width:176px;padding:8px 10px;border-radius:12px;background:rgba(10,14,22,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(140,196,255,.18);font:400 11.5px/1.35 Inter,-apple-system,system-ui,sans-serif;color:#AEB6C2;opacity:0;transform:translateX(-6px);transition:opacity .3s,transform .3s;pointer-events:none}
+#vEx .exhero .hsd span b{display:block;margin-bottom:2px;font:500 10px "JetBrains Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:#EEF1F5}
+#vEx .exhero .hsd.act:not(.back) span{opacity:1;transform:none}
+#vEx .exhero .hsd.l span{left:auto;right:18px;transform:translateX(6px);text-align:right}
+
 #vEx.full .exhero .ht{position:absolute;left:0;right:0;top:calc(66px + env(safe-area-inset-top,0px));z-index:3;text-align:center;padding:0 24px;pointer-events:none;animation:htIn .8s .45s cubic-bezier(.32,.72,0,1) both}
 #vEx.full .exhero .ht .k{font:500 10.5px "JetBrains Mono",ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#8B93A0}
 #vEx.full .exhero .ht h1{margin:10px 0 0;font:200 54px/.95 Inter,-apple-system,system-ui,sans-serif;letter-spacing:-.045em;color:#EEF1F5}
@@ -11537,7 +11566,7 @@ canvas.exfly{display:block}
     const showEx = () => { const on = hall && hall !== 'all' && list.length; ex.classList.toggle('hid', !on); if (!on) return; ex.querySelector('.nm b').textContent = idx < 0 ? `${list.length} экспонатов` : `${idx + 1}/${list.length}`; ex.querySelector('.nm span').textContent = idx < 0 ? 'листай стрелками' : title(list[idx]); };
     const quiet = fn => { window.__m3noLift = true; window.__m3auto = true; try { fn(); } finally { setTimeout(() => { window.__m3noLift = false; window.__m3auto = false; }, 50); } };
     function goHall(k, nofly){ hall = k; idx = -1; list = k === 'all' ? [] : exOf(k); row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.h === k)); const on = row.querySelector(`[data-h="${k}"]`); on && on.scrollIntoView({ inline:'center', block:'nearest', behavior:'smooth' });
-      if (k === 'all') window.m3floor && m3floor('all'); else { window.m3floor && m3floor(H[k].floor, true); if (!nofly) window.m3hall && m3hall(k); } showEx(); }
+      if (k === 'all'){ window.m3floor && m3floor('all'); setTimeout(() => { const K = window.__m3k; if (K){ const z0 = K.cam.zoom, z1 = z0 * 1.45, t0 = performance.now(); (function zz(now){ const e = Math.min(1, (now - t0) / 500); K.cam.zoom = z0 + (z1 - z0) * (1 - Math.pow(1 - e, 3)); K.cam.updateProjectionMatrix(); if (e < 1) requestAnimationFrame(zz); })(t0); } }, 900); } else { window.m3floor && m3floor(H[k].floor, true); if (!nofly) window.m3hall && m3hall(k); } showEx(); }
     window.__m3goHall = goHall;
     row.addEventListener('click', e => { const b = e.target.closest('button'); if (b) goHall(b.dataset.h); });
     ex.addEventListener('click', e => { const a = e.target.closest('.ar'); if (a){ if (!list.length) return; idx = (idx + +a.dataset.d + list.length) % list.length; showEx(); window.__m3noLift = true; window.m3select && m3select(list[idx], true); setTimeout(() => window.__m3noLift = false, 50); return; }
@@ -11549,6 +11578,41 @@ canvas.exfly{display:block}
     const st = window.showTab; if (st) window.showTab = function(t){ const r = st.apply(this, arguments); if (t === 'map' && !hall) setTimeout(start, 400); return r; };
     /* выбрали экспонат на карте вручную — листалка подхватывает его зал */
     setInterval(() => { const id = window.__m3sel; if (id == null || !hall || hall === 'all') return; const d = (window.M_EX || []).find(x => x[0] === id); if (!d) return; if (d[3] !== hall){ hall = d[3]; list = exOf(hall); row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.h === hall)); } const i = list.indexOf(id); if (i >= 0 && i !== idx){ idx = i; showEx(); } }, 500);
+  }
+})();
+</script>
+<style>
+/* v120: облик 3D-карты — спокойный «стол» вместо звёзд, экспонаты в единой палитре, выбранный — в цвете */
+#vHall.mapfull #m3wrap .m3{border-top:0;border-bottom:0}
+#m3::after{display:none!important} /* без цветной рамки зала по краям карты */
+</style>
+<script>
+(function(){
+  const CLAY = 0xC9CDD4;
+  const wait = () => { const K = window.__m3k; if (!K || !K.root){ setTimeout(wait, 600); return; } init(K); }; wait();
+  function init(K){ const T = K.THREE, sc = K.scene;
+    /* 1. фон: без звёзд и туманностей, ровный тёмно-синий */
+    sc.children.forEach(o => { if (o.isPoints) o.visible = false; if (o.isMesh && o.material && o.material.blending === T.AdditiveBlending && o.position.y < -50) o.visible = false; });
+    sc.background = new T.Color(0x0B0E14);
+    /* 2. «стол» под зданием: точечная сетка, к краям растворяется; мягкая тень под зданием */
+    const bb = new T.Box3().setFromObject(K.root), c = bb.getCenter(new T.Vector3()), R0 = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z);
+    const dot = document.createElement('canvas'); dot.width = dot.height = 64; { const g = dot.getContext('2d'); g.fillStyle = '#0E121A'; g.fillRect(0, 0, 64, 64); g.fillStyle = 'rgba(160,180,215,.55)'; g.beginPath(); g.arc(32, 32, 1.6, 0, 7); g.fill(); }
+    const dt = new T.CanvasTexture(dot); dt.wrapS = dt.wrapT = T.RepeatWrapping; dt.repeat.set(R0 * 2.2 / 3, R0 * 2.2 / 3); dt.colorSpace = T.SRGBColorSpace; dt.anisotropy = 4;
+    const fade = document.createElement('canvas'); fade.width = fade.height = 256; { const g = fade.getContext('2d'), gr = g.createRadialGradient(128, 128, 20, 128, 128, 128); gr.addColorStop(0, '#fff'); gr.addColorStop(.55, '#bbb'); gr.addColorStop(1, '#000'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); }
+    const ground = new T.Mesh(new T.PlaneGeometry(R0 * 2.2, R0 * 2.2).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ map:dt, alphaMap:new T.CanvasTexture(fade), transparent:true, depthWrite:false }));
+    ground.position.set(c.x, bb.min.y - .6, c.z); ground.renderOrder = -2; ground.raycast = () => {}; sc.add(ground);
+    const sh = document.createElement('canvas'); sh.width = sh.height = 128; { const g = sh.getContext('2d'), gr = g.createRadialGradient(64, 64, 10, 64, 64, 64); gr.addColorStop(0, 'rgba(0,0,0,.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }
+    const shadow = new T.Mesh(new T.PlaneGeometry(R0 * 1.25, R0 * 1.0).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ map:new T.CanvasTexture(sh), transparent:true, depthWrite:false })); shadow.position.set(c.x, bb.min.y - .55, c.z); shadow.renderOrder = -1; shadow.raycast = () => {}; sc.add(shadow);
+    /* 3. экспонаты — в единой палитре (светлый матовый «макет»), выбранный — в своих цветах */
+    const clayC = new T.Color(CLAY), tmp = new T.Color();
+    const mats = n => { const out = []; n.traverse(m => { if (m.isMesh && m.material && m.visible !== false) (Array.isArray(m.material) ? m.material : [m.material]).forEach(x => x && x.color && !x.isMeshMatcapMaterial && !x.isMeshBasicMaterial && out.push(x)); }); return out; };
+    const TEX = new Map(); const MAP0 = { get:x => TEX.get(x.userData.mapKey) || null }; const prep = x => { if (x.userData.c0 !== undefined) return; if (x.map && x.map.isTexture){ x.userData.mapKey = x.map.uuid; TEX.set(x.map.uuid, x.map); } x.userData.c0 = x.color.getHex(); x.userData.mr0 = [x.metalness ?? 0, x.roughness ?? 1]; const l = x.color.r * .3 + x.color.g * .59 + x.color.b * .11; x.userData.cl = clayC.clone().multiplyScalar(.82 + .3 * Math.min(1, l)).getHex(); };
+    const setK = (x, k) => { prep(x); tmp.setHex(x.userData.cl).lerp(new T.Color(x.userData.c0), k); x.color.copy(tmp); { const m0 = MAP0.get(x); const want = k > .5 ? m0 : null; if ((x.map || null) !== (want || null)){ x.map = want; x.needsUpdate = true; } } if ('metalness' in x){ x.metalness = x.userData.mr0[0] * k; x.roughness = .78 + (x.userData.mr0[1] - .78) * k; } };
+    const st = {}; /* id -> текущая «цветность» 0…1 */
+    const ids = Object.keys(K.nodes).map(Number);
+    ids.forEach(id => { if (K.nodes[id].userData.floatModel) return; mats(K.nodes[id]).forEach(x => setK(x, 0)); st[id] = 0; });
+    window.__clay = true;
+    (function loop(){ requestAnimationFrame(loop); const sel = window.__m3sel; for (const id of ids){ if (!(id in st)) continue; const want = id === sel ? 1 : 0, v = st[id]; if (Math.abs(want - v) < .01) continue; const nv = v + (want - v) * .14; st[id] = Math.abs(want - nv) < .01 ? want : nv; mats(K.nodes[id]).forEach(x => setK(x, st[id])); } })();
   }
 })();
 </script>
