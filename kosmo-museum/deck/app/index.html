@@ -11951,5 +11951,24 @@ canvas.exfly{display:block}
   })();
 })();
 </script>
+
+<script>
+/* v145: детали со старой Blender-карты — кинозал с кольцом, вход с рамками и гардеробом, кафе «Взлёт», метеорит */
+(() => {
+  const OLD = [
+    { f:'cinema', am:'AM_kino001', k:3.2, ry:0 },
+    { f:'cafe', am:'AM_cafe001', k:2.6, ry:0 },
+    { f:'entrance', at:[-9, 1.33, 56.5], k:2.6, ry:Math.PI / 2 },
+    { f:'meteor', at:[-16.5, .3, -33], k:3, ry:0, pad:true } ];
+  (function w(){ const K = window.__m3k; if (!K || !window.__ldJ || !K.GLTFLoader){ setTimeout(w, 500); return; } const T = K.THREE;
+    OLD.forEach(o => { __ldJ(K, 'models/old_' + o.f + '.json', g => { const m = g.scene; m.rotation.y = o.ry; m.scale.setScalar(o.k); m.updateMatrixWorld(true);
+      let b = new T.Box3().setFromObject(m), c = b.getCenter(new T.Vector3()); let tx, ty, tz;
+      if (o.am){ const a = K.scene.getObjectByName(o.am); if (!a) return; const ab = new T.Box3().setFromObject(a), ac = ab.getCenter(new T.Vector3()); tx = ac.x; tz = ac.z; ty = ab.min.y; a.visible = false; a.traverse(x => x.visible = false); }
+      else [tx, ty, tz] = o.at;
+      m.position.set(tx - c.x, ty - b.min.y, tz - c.z);
+      m.traverse(x => { if (x.isMesh){ x.castShadow = x.receiveShadow = true; x.userData.cSkip = 1; x.raycast = () => {}; if (x.material && x.material.envMapIntensity !== undefined) x.material.envMapIntensity = 1.2; } });
+      m.userData.floor = ty > 1 ? 'upper' : 'lower'; m.name = 'OLD_' + o.f; K.root.add(m); }); }); })();
+})();
+</script>
 </body>
 </html>
