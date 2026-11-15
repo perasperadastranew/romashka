@@ -10874,58 +10874,93 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     root.traverse(o => { if (!o.isMesh || !o.geometry) return; const b = new T.Box3().setFromObject(o), sz = b.getSize(new T.Vector3()), mx = Math.max(sz.x, sz.y, sz.z), mn = Math.min(sz.x, sz.y, sz.z); if (mx / Math.max(mn, 1e-4) < 8) return;
       const g = o.geometry = o.geometry.clone(), pos = g.attributes.position, inv = new T.Matrix4().copy(o.matrixWorld).invert(), cl = c.clone().applyMatrix4(inv); let best = 0, bd = 1e9; const v = new T.Vector3(); for (let i = 0; i < pos.count; i++){ v.fromBufferAttribute(pos, i); const d = v.distanceToSquared(cl); if (d < bd){ bd = d; best = i; } } const a0 = new T.Vector3().fromBufferAttribute(pos, best);
       for (let i = 0; i < pos.count; i++){ v.fromBufferAttribute(pos, i).sub(a0).multiplyScalar(k).add(a0); pos.setXYZ(i, v.x, v.y, v.z); } pos.needsUpdate = true; g.computeBoundingBox(); g.computeBoundingSphere(); }); };
-  const FLOAT = { 10:'models/10.glb' };
+  /* артефакт не отдаёт .glb — модели лежат как models/<id>.json {glb: base64} */
+  window.__ldJ = (K, url, ok) => fetch(url).then(r => r.json()).then(j => { const b = Uint8Array.from(atob(j.glb), c => c.charCodeAt(0)); const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.parse(b.buffer, '', ok, () => {}); }).catch(() => {});
+  const FLOAT = { 10:'models/10s.json' };
   const swapIn = () => { const K = window.__m3k; if (!K){ setTimeout(swapIn, 500); return; } const T = K.THREE;
     for (const [id, url] of Object.entries(FLOAT)){ const n = K.nodes[id]; if (!n || n.userData.swapped) continue; n.userData.swapped = 1;
-      const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.load(url, g => { const b = new T.Box3().setFromObject(n), sz = b.getSize(new T.Vector3());
-        const m = g.scene; window.__shortAnt && __shortAnt(m, T); const inv = new T.Matrix4().copy(n.matrixWorld).invert(); const box2 = new T.Box3().setFromObject(m), s2 = box2.getSize(new T.Vector3()), c2 = box2.getCenter(new T.Vector3()); m.position.sub(c2);
+      __ldJ(K, url, g => { const b = new T.Box3().setFromObject(n), sz = b.getSize(new T.Vector3());
+        const m = g.scene; const inv = new T.Matrix4().copy(n.matrixWorld).invert(); const box2 = new T.Box3().setFromObject(m), s2 = box2.getSize(new T.Vector3()), c2 = box2.getCenter(new T.Vector3()); m.position.sub(c2);
         const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * 1.5);
         const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .62, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
         n.add(fl); fl.position.copy(wp.applyMatrix4(inv)); const ws = new T.Vector3(); n.getWorldScale(ws); fl.scale.divide(ws);
-        m.traverse(o => { if (o.isMesh){ o.castShadow = true; } });
+        m.traverse(o => { if (o.isMesh){ o.castShadow = true; if (o.material && o.material.metalness > .5){ o.material = o.material.clone(); o.material.metalness = .55; o.material.roughness = .28; } } }); /* на макете нет студийного окружения — полуметалл, чтобы шар читался серебряным */
         const y = fl.position.y, t0 = performance.now(); fl.userData.float = 1; (function bob(now){ fl.position.y = y + Math.sin((now - t0) / 900) * .9 / ws.y * .3; fl.rotation.y += .004; requestAnimationFrame(bob); })(t0);
-        n.userData.floatModel = fl; }, undefined, () => {}); } };
+        n.userData.floatModel = fl; }); } };
   swapIn();
   window.__m3lift = id => { if (Date.now() - tapT > 900 || !window.__m3k) return false; if (id === 22 && window.openLuno){ goLanding(id, () => openLuno(), 'vl'); return true; } if (typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
+  /* v113: тап по экспонату → на макете он взмывает и доворачивается, досье открывается на весь экран,
+     и тот же экспонат «перелетает» с карты в студийный кадр наверху — поворот продолжается в том же ритме */
+  let ENV = null;
+  const studioEnv = (T, R) => { if (ENV) return ENV; const s = new T.Scene(); const box = new T.Mesh(new T.SphereGeometry(30, 32, 16), new T.MeshBasicMaterial({ color:0x050506, side:T.BackSide })); s.add(box);
+    const panel = (w, h, col, x, y, z, ry, rz) => { const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color:col, side:T.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); m.rotateZ(rz || 0); s.add(m); };
+    /* свет как на рендере сайта (render/hero.py, mood blue): мягкий ключ сверху-слева, узкие контровые полосы сзади, подсвет снизу, кикер сверху */
+    panel(9, 6, 0xf2efe9, -11, 13, 10, 0, 0);
+    panel(1.6, 18, 0xbfe0ff, 15, 2, -13, 0, 0);
+    panel(1.6, 15, 0xe9e4dc, -15, 5, -12, 0, 0);
+    panel(14, 3, 0x5fa8ff, 2, -16, -4, 0, 0);   /* снизу — отсвет Земли */
+    panel(10, 1.6, 0xe9e4dc, 0, 18, -6, 0, 0);
+    panel(44, 20, 0x0c2c5c, 6, 6, -26, 0, 0);   /* синий фон — отражается в шаре */
+    const pm = new T.PMREMGenerator(R); ENV = pm.fromScene(s, .025).texture; pm.dispose(); return ENV; };
+  /* v113: подпись в кадре — как у «Лунохода»: моно-строка с датой и местом, крупное тонкое имя */
+  const HT = { 10:['Спутник-1','4 октября 1957 · Байконур'], 11:['Белка и Стрелка','19 августа 1960 · Корабль-спутник-2'], 12:['Восток','12 апреля 1961 · Юрий Гагарин'], 13:['СК-1','1961 · скафандр «Востоков»'], 16:['Венера-1','12 февраля 1961 · к Венере'], 14:['Беркут','18 марта 1965 · выход Леонова'], 24:['Луна-9','3 февраля 1966 · Океан Бурь'], 44:['Союз-4 · Союз-5','январь 1969 · первая стыковка'], 49:['Ястреб','1969 · переход между кораблями'], 36:['Мир','1986–2001 · орбитальная станция'], 45:['Шлюзовой отсек','станция «Мир»'], 19:['Орлан-Д','выходы в открытый космос'], 47:['Кречет','лунная программа'], 21:['Луна-16','1970 · грунт с Луны'], 23:['Венера-4','18 октября 1967 · атмосфера Венеры'], 15:['Марс-3','2 декабря 1971 · посадка на Марс'], 25:['АПАС-75','1975 · стыковочный агрегат'], 26:['Союз — Аполлон','июль 1975 · стыковка на орбите'], 27:['Союз-37','1980 · «Интеркосмос»'], 29:['МКС','с 1998 года · 16 стран'], 30:['КОСПАС-САРСАТ','поиск и спасение'], 56:['Глонасс-М','навигационный спутник'], 31:['Байконур','стартовый комплекс · «Союз»'], 38:['Спейс шаттл','стартовый комплекс 39 · Флорида'], 900:['Сатурн-5','программа «Аполлон»'], 33:['Протон','тяжёлая ракета-носитель'], 41:['Великий поход-2F','15 октября 2003 · «Шэньчжоу-5»'], 32:['РД-107','двигатель первой ступени'], 37:['Эксплорер-1','31 января 1958 · США'], 34:['Морской старт','старт с плавучей платформы'], 35:['Энергия — Буран','15 ноября 1988 · единственный полёт'], 20:['Союз','корабль · «Союз ТМА-4»'] };
+  window.__HT = HT;
+  const FOV = 26, CZ = 12, TAN = Math.tan(FOV * Math.PI / 360);
   function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
     cur = { id, n, y0:n.position.y, alive:true };
-    /* 1. на карте: экспонат подпрыгивает, карта сдвигается, чтобы он остался над листом */
-    const b = new T.Box3().setFromObject(n), c = b.getCenter(new T.Vector3()), hgt = b.getSize(new T.Vector3()).y || 4;
-    const v = c.clone().project(K.cam), want = new T.Vector3(v.x * .4, .52, v.z);
-    const d = want.clone().unproject(K.cam).sub(c.clone().project(K.cam).unproject(K.cam)); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone();
-    const lift = Math.max(1.2, hgt * .35);
-    const TW = 1.1, ry0 = n.rotation.y; /* подворот: на подъёме экспонат доворачивается к зрителю */
-    anim(720, k => { const e = ez(k); K.ctl.target.copy(t0).addScaledVector(d, -e); K.cam.position.copy(p0).addScaledVector(d, -e); if (cur && cur.n === n){ n.position.y = cur.y0 + lift * back(Math.min(1, k * 1.25)); n.rotation.y = ry0 + TW * ez(k); } })
+    /* 1. на карте: экспонат взмывает и доворачивается */
+    const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .35);
+    const TW = 1.1, ry0 = n.rotation.y; cur.r0 = ry0;
+    const fm = n.userData.floatModel; const obj = fm ? fm.children[0] : n;
+    /* где экспонат на экране и какого он размера — отсюда начнётся перелёт */
+    const scr = o => { const bb = new T.Box3().setFromObject(o), W = innerWidth, H = innerHeight; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]){ const q = new T.Vector3(x, y, z).project(K.cam); const sx = (q.x + 1) / 2 * W, sy = (1 - q.y) / 2 * H; x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); } return { x:(x0 + x1) / 2, y:(y0 + y1) / 2, s:Math.max(x1 - x0, y1 - y0) }; };
+    const from0 = scr(obj);
+    anim(560, k => { if (cur && cur.n === n){ n.position.y = cur.y0 + lift * back(Math.min(1, k * 1.25)); n.rotation.y = ry0 + TW * ez(k); } })
       .then(() => { const bob = now => { if (!cur || cur.n !== n) return; n.position.y = cur.y0 + lift + Math.sin(now / 520) * lift * .08; n.rotation.y += .006; requestAnimationFrame(bob); }; requestAnimationFrame(bob); });
-    cur.r0 = ry0;
-    /* 2. досье-лист выезжает наполовину */
-    ex.classList.add('peek'); openEx(id); window.__m3sel = id;
-    const unback = () => document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.toggle('back', !ex.classList.contains('peek') && !ex.classList.contains('off'))); unback(); cur.unback = unback;
-    /* 3. наверху листа — тот же экспонат, поднимается в кадр */
-    const hero = document.createElement('div'); hero.className = 'exhero'; hero.innerHTML = '<span class="hh">потяни · покрути</span>'; const top = ex.querySelector('.top'); top ? top.after(hero) : ex.prepend(hero);
-    const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; hero.prepend(R.domElement);
-    const sc = new T.Scene(); sc.environment = K.scene.environment || null; sc.add(new T.HemisphereLight(0xffffff, 0x2a2f3a, 1.4)); const dl = new T.DirectionalLight(0xffffff, 2.4); dl.position.set(3, 5, 4); sc.add(dl); const rim = new T.DirectionalLight(0xFFB27A, 1.2); rim.position.set(-4, 2, -3); sc.add(rim);
-    const cam = new T.PerspectiveCamera(26, 2, .1, 200); cam.position.set(0, 1.1, 7.4); cam.lookAt(0, 0, 0); const ZOOM = id === 10 ? 1.5 : 1; /* у спутника антенны длинные — показываем корпус крупно, антенны уходят за край */
-    { const sf = document.createElement('canvas'); sf.className = 'stf'; hero.prepend(sf); const sg = sf.getContext('2d'); const draw = () => { const w = sf.clientWidth, h = sf.clientHeight; if (!w) return; sf.width = w * 2; sf.height = h * 2; sg.scale(2, 2); for (let k = 0; k < 120; k++){ const r = Math.sin(k * 78.2) * 43758.5, x = (r - Math.floor(r)) * w, r2 = Math.sin(k * 11.3) * 9183.1, y = (r2 - Math.floor(r2)) * h; sg.globalAlpha = .25 + (k % 7) / 10; sg.fillStyle = '#fff'; sg.fillRect(x, y, k % 9 ? 1 : 1.6, k % 9 ? 1 : 1.6); } }; requestAnimationFrame(draw); }
-    const holder = new T.Group(); sc.add(holder);
-    const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()); let cc = bb.getCenter(new T.Vector3());
-      if (ZOOM > 1){ let best = null, bm = 0; o.updateMatrixWorld(true); o.traverse(m => { if (!m.isMesh) return; const b2 = new T.Box3().setFromObject(m), s2 = b2.getSize(new T.Vector3()), mn = Math.min(s2.x, s2.y, s2.z); if (mn > bm){ bm = mn; best = b2; } }); if (best) cc = best.getCenter(new T.Vector3()); } /* центр — корпус, а не антенны */ o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(2.6 * ZOOM / Math.max(sz.x, sz.y, sz.z)); return g; };
-    const put = o => { while (holder.children.length) holder.remove(holder.children[0]); holder.add(fit(o)); };
-    const src = n.userData.floatModel ? n.userData.floatModel.children[0] : n; const cl = src.clone(true); if (src === n){ cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); cl.scale.set(1, 1, 1); } put(cl); const fy = n.userData.floatModel ? n.userData.floatModel.rotation.y : 0;
-    if (GLB.has(id) && !n.userData.floatModel){ const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.load(`models/${id}.glb`, g => { if (cur && cur.id === id){ id === 10 && __shortAnt(g.scene, T); put(g.scene); } }, undefined, () => {}); }
-    const size = () => { const w = hero.clientWidth, h = hero.clientHeight; if (!w) return; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }; size();
-    const dir = K.cam.getWorldDirection(new T.Vector3()); const pitchMap = Math.asin(Math.min(1, -dir.y)), yawMap = Math.atan2(dir.x, dir.z) + Math.PI;
-    const pitchHero = Math.atan2(1.1, 7.4); const rx0 = pitchMap - pitchHero, ry0h = ry0 + fy - yawMap;
-    let rot = ry0h, vel = .006, drag = null, ty = -1.4; const t1 = performance.now();
-    const loop = now => { if (!cur || cur.hero !== hero) return; size(); const k = Math.min(1, (now - t1) / 720), e = ez(k); holder.position.y = ty * (1 - e) + Math.sin(now / 900) * .04; holder.rotation.x = rx0 * (1 - e); if (k < 1 && !drag) holder.rotation.y = ry0h + TW * e, rot = holder.rotation.y; else { if (!drag){ rot += vel; } holder.rotation.y = rot; } R.render(sc, cam); requestAnimationFrame(loop); };
-    cur.hero = hero; cur.R = R; requestAnimationFrame(loop);
+    /* 2. досье на весь экран: проявляется, пока экспонат летит */
+    ex.classList.add('full', 'fin'); openEx(id); window.__m3sel = id; ex.scrollTop = 0;
+    requestAnimationFrame(() => requestAnimationFrame(() => ex.classList.remove('fin')));
+    const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">потяни · покрути</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : ''); ex.querySelector('.grab').after(hero);
+    /* 3. один рендерер: на время перелёта — поверх всего экрана, потом переезжает в кадр досье без скачка */
+    const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+    const cv = R.domElement; cv.className = 'exfly'; document.body.appendChild(cv);
+    const sc = new T.Scene(); sc.environment = studioEnv(T, R);
+    const key = new T.DirectionalLight(0xfff4e8, .9); key.position.set(-4, 6, 5); sc.add(key);
+    const rim = new T.DirectionalLight(0xa9d2ff, 3); rim.position.set(5, 2.5, -6); sc.add(rim);
+    const fill = new T.DirectionalLight(0x4f8cff, .7); fill.position.set(3, -4, 4); sc.add(fill);
+    const cam = new T.PerspectiveCamera(FOV, 1, .1, 200); cam.position.set(0, 0, CZ);
+    const holder = new T.Group(), spin = new T.Group(); holder.add(spin); sc.add(holder);
+    const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(1 / Math.max(sz.x, sz.y, sz.z)); return g; }; /* модель — в единичном кубе */
+    const put = o => { while (spin.children.length) spin.remove(spin.children[0]); o.traverse(m => { if (m.isMesh && m.material){ m.material = m.material.clone(); m.material.envMapIntensity = 1.6; if (m.material.metalness > .9){ m.material.color.setRGB(.9, .89, .87); m.material.roughness = Math.min(m.material.roughness, .14); } } }); spin.add(fit(o)); };
+    const cl = obj.clone(true); if (obj === n){ cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); cl.scale.set(1, 1, 1); } else { cl.position.set(0, 0, 0); } put(cl);
+    if (GLB.has(id) && !fm){ __ldJ(K, `models/${id}.json`, g => { if (cur && cur.id === id) put(g.scene); }); }
+    /* стартовая ориентация = как экспонат видно на карте (относительно камеры карты) */
+    obj.updateMatrixWorld(true); const qObj = obj.getWorldQuaternion(new T.Quaternion()); const qCam = K.cam.getWorldQuaternion(new T.Quaternion());
+    const q0 = qCam.clone().invert().multiply(qObj); const yawObj = 0;
+    const wAt = (sx, sy, W, H) => { const a = W / H; return new T.Vector3(((sx / W) * 2 - 1) * TAN * CZ * a, (1 - (sy / H) * 2) * TAN * CZ, 0); };
+    const wSize = (px, H) => px / H * 2 * TAN * CZ;
+    const slot = () => { const r = hero.getBoundingClientRect(); const big = id === 10 ? .86 : .72; return { x:r.left + r.width / 2, y:r.top + r.height * .6, s:Math.min(r.width, r.height * .78) * big, r }; };
+    let mode = 'fly', rot = 0, vel = .006, drag = null; const t1 = performance.now(), DUR = 760; cur.hero = hero; cur.R = R; cur.cv = cv;
+    const tilt = new T.Quaternion().setFromEuler(new T.Euler(.32, 0, 0)); const qa = new T.Quaternion(), qb = new T.Quaternion(), yq = new T.Quaternion(), up = new T.Vector3(0, 1, 0);
+    const frame = now => { if (!cur || cur.cv !== cv) return; const W = innerWidth, H = innerHeight;
+      const k = Math.min(1, (now - t1) / DUR), e = ez(k); if (!drag) rot += vel, vel += (.006 - vel) * .03;
+      yq.setFromAxisAngle(up, rot); qb.copy(tilt).multiply(yq);
+      if (mode === 'fly'){ cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; R.setSize(W, H, false); cam.aspect = W / H; cam.clearViewOffset(); cam.updateProjectionMatrix();
+        const to = slot(); const x = from0.x + (to.x - from0.x) * e, y = from0.y + (to.y - from0.y) * e - Math.sin(Math.PI * e) * H * .06, s = from0.s + (to.s - from0.s) * e;
+        holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); qa.copy(q0).slerp(qb, e); holder.quaternion.copy(qa); spin.rotation.set(0, 0, 0);
+        if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; cur.dockS = to.s; } }
+      if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.clearViewOffset(); cam.updateProjectionMatrix();
+        holder.position.set(0, -wSize(h * .1, h) + Math.sin(now / 900) * .015 * wSize(h, h) * 3, 0); holder.scale.setScalar(wSize(Math.min(w, h * .78) * (id === 10 ? .86 : .72), h)); holder.quaternion.copy(qb); }
+      R.render(sc, cam); requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
     hero.addEventListener('pointerdown', e => { drag = e.clientX; e.stopPropagation(); }); addEventListener('pointermove', cur.pm = e => { if (drag == null) return; const dx = e.clientX - drag; drag = e.clientX; rot += dx * .012; vel = dx * .012; }); addEventListener('pointerup', cur.pu = () => { drag = null; });
-    /* 4. листаешь вверх — лист раскрывается целиком */
-    const onS = () => { if (ex.scrollTop > 6) ex.classList.remove('peek'); }; ex.addEventListener('scroll', onS, { passive:true }); cur.onS = onS;
-    const onW = e => { if (e.deltaY > 0) ex.classList.remove('peek'); }; ex.addEventListener('wheel', onW, { passive:true }); cur.onW = onW;
-    let ty0 = null; const ts = e => ty0 = e.touches[0].clientY, tm = e => { if (ty0 != null && ty0 - e.touches[0].clientY > 24) ex.classList.remove('peek'); }; ex.addEventListener('touchstart', ts, { passive:true }); ex.addEventListener('touchmove', tm, { passive:true }); cur.ts = ts; cur.tm = tm;
-    /* закрыли досье — экспонат опускается на место */
-    cur.mo = new MutationObserver(() => { if (ex.classList.contains('off')) finish(); else cur && cur.unback(); }); cur.mo.observe(ex, { attributes:true, attributeFilter:['class'] });
+    cur.back = () => { /* обратный перелёт в точку на карте */ const r = hero.getBoundingClientRect(); if (r.bottom < 60 || mode !== 'dock') return false; const W = innerWidth, H = innerHeight;
+      mode = 'home'; document.body.appendChild(cv); cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; const sx = r.left + r.width / 2, sy = r.top + r.height * .6, ss = Math.min(r.width, r.height * .78) * (id === 10 ? .86 : .72);
+      const qs = holder.quaternion.clone(); const t2 = performance.now(); const go2 = now => { if (!cur || cur.cv !== cv) { if (!cv.isConnected) return; } const k = Math.min(1, (now - t2) / 520), e = ez(k); const to = scr(obj);
+        R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix(); obj.updateMatrixWorld(true); const qe = K.cam.getWorldQuaternion(new T.Quaternion()).invert().multiply(obj.getWorldQuaternion(new T.Quaternion()));
+        holder.position.copy(wAt(sx + (to.x - sx) * e, sy + (to.y - sy) * e, W, H)); holder.scale.setScalar(wSize(ss + (to.s - ss) * e, H)); holder.quaternion.copy(qs).slerp(qe, e); cv.style.opacity = String(1 - Math.max(0, (k - .75) / .25));
+        R.render(sc, cam); if (k < 1) requestAnimationFrame(go2); else { try { R.dispose(); R.forceContextLoss(); } catch (er){} cv.remove(); } }; requestAnimationFrame(go2); return true; };
+    cur.mo = new MutationObserver(() => { if (ex.classList.contains('off')) finish(); else document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.add('back')); }); cur.mo.observe(ex, { attributes:true, attributeFilter:['class'] });
   }
   /* Луноход и др. с отдельной страницей: подворот на карте → страница выезжает; закрыли — опускается */
   function goLanding(id, open, vid){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const pane = document.getElementById(vid);
@@ -10933,13 +10968,42 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     cur = { id, n, y0, r0:ry0, landing:true };
     anim(620, k => { if (!cur || cur.n !== n) return; n.position.y = y0 + lift * back(Math.min(1, k * 1.25)); n.rotation.y = ry0 + 1.1 * ez(k); })
       .then(() => { if (cur && cur.n === n){ open(); cur.mo = new MutationObserver(() => { if (pane.classList.contains('off')) finish(); }); cur.mo.observe(pane, { attributes:true, attributeFilter:['class'] }); } }); }
-  function finish(now){ if (!cur) return; if (cur.landing){ const c = cur; cur = null; c.mo && c.mo.disconnect(); const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 480, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); return; } const c = cur; cur = null; const ex = document.getElementById('vEx'); c.mo && c.mo.disconnect();
-    ex.removeEventListener('scroll', c.onS); ex.removeEventListener('wheel', c.onW); ex.removeEventListener('touchstart', c.ts); ex.removeEventListener('touchmove', c.tm); removeEventListener('pointermove', c.pm); removeEventListener('pointerup', c.pu);
-    try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){}
-    setTimeout(() => ex.classList.remove('peek'), now ? 0 : 520);
-    const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 480, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); }
+  function finish(now){ if (!cur) return; if (cur.landing){ const c = cur; cur = null; c.mo && c.mo.disconnect(); const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 480, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); return; } const c = cur; const ex = document.getElementById('vEx'); c.mo && c.mo.disconnect();
+    removeEventListener('pointermove', c.pm); removeEventListener('pointerup', c.pu);
+    const flew = !now && c.back && c.back(); cur = null;
+    if (!flew){ try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){} c.cv && c.cv.remove(); }
+    setTimeout(() => { ex.classList.add('nt'); ex.classList.remove('full'); void ex.offsetWidth; requestAnimationFrame(() => ex.classList.remove('nt')); }, now ? 0 : 460);
+    const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 520, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); }
 })();
 </script>
+<style>
+/* v113: досье с карты — на весь экран; студийный кадр экспоната с оранжевым контровым, как на рендерах сайта */
+#vEx.full{z-index:30;top:0;border-radius:0;border-top:0;box-shadow:none;background:#0b0c10;transition:opacity .42s ease,transform 0s}
+#vEx.full.fin{opacity:0}
+#vEx.full.off{transform:none;opacity:0;pointer-events:none;transition:opacity .4s ease}
+#vEx.full > *:not(.exhero):not(.top){animation:exRise .6s .12s cubic-bezier(.32,.72,0,1) both}
+@keyframes exRise{from{transform:translateY(28px);opacity:0}to{transform:none;opacity:1}}
+#vEx.full .grab{display:none}
+#vEx.full .top{position:fixed;left:0;right:0;top:0;z-index:6;background:linear-gradient(rgba(11,12,16,.85),rgba(11,12,16,0));padding-top:max(14px,env(safe-area-inset-top,0px))}
+#vEx.full .exhero{height:min(64vh,560px);margin:0 0 6px;border-radius:0;animation:none;overflow:hidden;background:#060607}
+#vEx.full .exhero .stf{display:none}
+#vEx.full .exhero{background:radial-gradient(120% 90% at 85% 8%,#123d78 0,#0a2246 34%,#06101f 66%,#04070d 100%)}
+#vEx.full .exhero .sl{position:absolute;left:-60%;right:-60%;top:84%;height:140%;border-radius:50%;background:radial-gradient(closest-side,#0b2a55 0,#071a36 80%,rgba(7,26,54,0) 100%);box-shadow:0 -2px 0 rgba(170,215,255,.55),0 -14px 40px rgba(90,160,255,.45),0 -50px 120px rgba(60,130,255,.28);pointer-events:none;animation:slIn 1.2s .15s ease both} /* край Земли снизу */
+#vEx.full .exhero:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(90% 70% at 50% 50%,transparent 40%,rgba(0,0,0,.65) 100%)}
+@keyframes slIn{from{opacity:0;transform:translateY(18%)}to{opacity:1;transform:none}}
+#vEx.full .exhero:after{display:block;content:"";position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(transparent,#0b0c10);pointer-events:none;width:auto;transform:none;border-radius:0}
+#vEx.full .exhero canvas{position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1}
+#vEx.full .exhero .hh{z-index:2;left:0;right:0;text-align:center;bottom:22px;color:rgba(255,255,255,.34)}
+#vEx.full .exhero ~ .ph{display:none}
+canvas.exfly{display:block}
+#vEx.full .exhero .ht{position:absolute;left:0;right:0;top:calc(66px + env(safe-area-inset-top,0px));z-index:3;text-align:center;padding:0 24px;pointer-events:none;animation:htIn .8s .45s cubic-bezier(.32,.72,0,1) both}
+#vEx.full .exhero .ht .k{font:500 10.5px "JetBrains Mono",ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#8B93A0}
+#vEx.full .exhero .ht h1{margin:10px 0 0;font:200 54px/.95 Inter,-apple-system,system-ui,sans-serif;letter-spacing:-.045em;color:#EEF1F5}
+#vEx.full .exhero .ht h1.lg{font-size:40px}
+@keyframes htIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#vEx.full .exhero .cr{position:absolute;right:12px;bottom:6px;z-index:2;font:500 9px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.22)}
+#vEx.nt{transition:none!important}
+</style>
 <script>
 /* «Как это было» — истории экспонатов в анимированных схемах (v110). Канвас 2D, тонкие линии, оранжевый акцент.
    mountStory(host, id) — вставляет блок; openStory(id) — открывает на весь экран. */
