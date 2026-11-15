@@ -10063,7 +10063,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const s = document.createElement('div'); s.className = 'm3s'; s.id = 'm3s'; wrap.appendChild(s);
   const oldSec = chips.previousElementSibling, card = hl.parentElement;
   s.append(chips, hl, go); if (oldSec && oldSec.classList.contains('sec')) oldSec.remove(); if (card && card.classList.contains('hlcard') && !card.children.length) card.remove();
-  const hd = $('#vHall .hd'), seg = document.createElement('div'); seg.className = 'mvseg'; seg.id = 'mvSeg'; seg.innerHTML = '<button data-v="3d">3D</button><button data-v="scheme">Схема</button>'; hd.appendChild(seg);
+  const hd = $('#vHall .hd'), seg = document.createElement('div'); seg.className = 'mvseg'; seg.id = 'mvSeg'; seg.innerHTML = '<button data-v="3d">3D</button><button data-v="line">Контур</button><button data-v="scheme">Схема</button>'; hd.appendChild(seg);
   const FLOAT = ['#m3seg', '#m3find', '#m3srch'].map(q => $(q)).filter(Boolean);
   const SCH = ['utro', 'tvortsy', 'dom', 'luna'], UP = ['utro', 'tvortsy', 'dom'], hallOf = id => { const e = (window.M_EX || []).find(x => x[0] === id); return e ? e[3] : null; };
   let view = null, curHall = 'utro', lastUpper = 'utro';
@@ -11833,6 +11833,23 @@ canvas.exfly{display:block}
     window.__clay = true; window.__claySt = st;
     (function loop(){ requestAnimationFrame(loop); const sel = window.__m3sel; for (const id of ids){ if (!(id in st)) continue; const want = id === sel ? 1 : 0, v = st[id]; if (Math.abs(want - v) < .01) continue; const nv = v + (want - v) * .14; st[id] = Math.abs(want - nv) < .01 ? want : nv; mats(K.nodes[id]).forEach(x => setK(x, st[id])); } })();
   }
+})();
+</script>
+
+<script>
+/* v139: контурный режим 3D-карты — стены, полы и подиумы тонкими линиями, экспонаты остаются объёмными */
+(() => {
+  function inEx(o){ for (let p = o; p; p = p.parent) if (/^EX_\d+$/.test(p.name || '')) return true; return false; }
+  window.m3contour = on => { const K = window.__m3k; if (!K) return; const T = K.THREE; window.__m3line = !!on;
+    K.root.traverse(o => { if (!o.isMesh || inEx(o) || o.userData.cSkip) return;
+      if (!o.userData.cMat){ o.userData.oMat = o.material; o.userData.cMat = new T.MeshBasicMaterial({ color:0x0B0D12 });
+        const e = new T.LineSegments(new T.EdgesGeometry(o.geometry, 20), new T.LineBasicMaterial({ color:0xBFC9D9, transparent:true, opacity:.5 })); e.raycast = () => {}; e.visible = false; e.userData.cSkip = 1; o.add(e); o.userData.cEdge = e; }
+      o.material = on ? o.userData.cMat : o.userData.oMat; o.userData.cEdge.visible = !!on; });
+    document.querySelectorAll('#mvSeg button[data-v]').forEach(b => b.classList.toggle('on', on ? b.dataset.v === 'line' : b.dataset.v === (window.__mapView || '3d'))); };
+  addEventListener('click', e => { const b = e.target.closest && e.target.closest('#mvSeg button[data-v]'); if (!b) return;
+    if (b.dataset.v === 'line'){ e.stopPropagation(); e.preventDefault(); if (window.__mapView === 'scheme'){ const b3 = document.querySelector('#mvSeg button[data-v="3d"]'); b3 && b3.click(); setTimeout(() => m3contour(true), 900); } else m3contour(!window.__m3line); }
+    else if (b.dataset.v === '3d' && window.__m3line){ m3contour(false); } }, true);
+  if (/[?&]contour/.test(location.search)) (function w(){ window.__m3k ? m3contour(true) : setTimeout(w, 400); })();
 })();
 </script>
 </body>
