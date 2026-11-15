@@ -263,6 +263,11 @@ td.v { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 24px;
 .pair .desc { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
 .pair .desc + .phone { margin-left: 32px; }
 
+/* compare slide with the desktop screen */
+.pair .deskcol { flex: none; width: 820px; margin-left: 32px; display: flex; flex-direction: column; gap: 20px; }
+.pair .desk { width: 820px; height: 513px; object-fit: cover; object-position: top; border-radius: 16px; box-shadow: 0 0 0 2px var(--ac), 0 40px 80px rgba(0,0,0,0.6); }
+.pair .deskcol .desc { padding-top: 0; }
+
 </style></head><body>
 <div id="deck">
 <section id="cover" data-transition="fade">
@@ -363,8 +368,8 @@ td.v { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 24px;
 <div class="pair">
 <img class="phone" src="img/m_exhibits.jpg" alt="Текущая страница «Экспонаты»: статья «Топ-15 экспонатов»">
 <div class="desc"><h3>Статья на 15 экранов</h3><p>«Экспонаты» — одна статья «Топ-15». Нет поиска, фильтров и&nbsp;страниц экспонатов.</p></div>
-<img class="phone new" src="img/p2_halls.jpg" alt="Прототип: залы по этажам и лента главных экспонатов">
-<div class="desc"><h3>Залы и главные экспонаты</h3><p>Залы по&nbsp;этажам и&nbsp;лента экспонатов. У&nbsp;каждого — своя карточка и&nbsp;место на&nbsp;карте.</p></div>
+<img class="phone new" src="img/p2_exhibit.jpg" alt="Страница экспоната «Восток» в прототипе: зал, номер, текст, кнопки «Показать на схеме» и «Слушать в гиде»">
+<div class="desc"><h3>Своя страница у&nbsp;экспоната</h3><p>Зал, этаж, инвентарный номер и&nbsp;текст. «Показать на&nbsp;схеме», «Слушать в&nbsp;гиде» и&nbsp;экспонаты рядом в&nbsp;зале.</p></div>
 </div>
 
 </section>
@@ -374,8 +379,7 @@ td.v { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 24px;
 <div class="pair">
 <img class="phone" src="img/m_menu_old.jpg" alt="Меню текущей мобильной версии: девять пунктов, нет пункта «Билеты»">
 <div class="desc"><h3>Отдельный m.kosmo-museum.ru</h3><p>Телефон перебрасывает на&nbsp;отдельный сайт с&nbsp;меню из&nbsp;9&nbsp;пунктов: «Пресс-служба», «Мы в&nbsp;эфире». «Билетов» нет.</p></div>
-<img class="phone new" src="img/p2_home.jpg" alt="Прототип: кнопка «Билеты» в шапке, слайдер экспонатов и статус часов">
-<div class="desc"><h3>«Билеты» всегда в шапке</h3><p>Один адаптивный сайт. Разделы названы по&nbsp;вопросам посетителя: «Как добраться», «Залы и&nbsp;карта».</p></div>
+<div class="deskcol"><img class="desk" src="img/p2_desktop.jpg" alt="Главная прототипа на компьютере: слайдер экспонатов, статус часов, кнопки «Купить билет» и «Как добраться»"><div class="desc"><h3>Та же главная на&nbsp;компьютере</h3><p>Один адаптивный сайт: слайдер экспонатов, «Сейчас в&nbsp;музее», залы и&nbsp;гид по&nbsp;QR-коду.</p></div></div>
 </div>
 
 </section>
@@ -464,11 +468,12 @@ td.v { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 24px;
 <section id="app">
 <div class="head">
 <p class="eyebrow">САЙТ И ПРИЛОЖЕНИЕ</p>
-<h2 style="width:1400px">Сайт продаёт билет. Приложение ведёт по залам. Связь — в <em>двух точках</em></h2>
+<h2 style="width:1400px">Сайт продаёт билет. Приложение ведёт по залам. Связь — в <em>трёх точках</em></h2>
 </div>
 <div class="cards" style="margin-top:auto">
-<div class="card"><div class="top"><p class="num">01 · НА САЙТЕ</p><h3>Одна ссылка «Открыть гид»</h3></div><p>Блок «Музей в кармане» на главной, без экранов приложения на сайте.</p></div>
-<div class="card"><div class="top"><p class="num">02 · НА БИЛЕТЕ</p><h3>Кнопка «В приложение»</h3></div><p>Рядом с QR-кодом билета: билет и маршрут по залам в одном месте.</p></div>
+<div class="card"><div class="top"><p class="num">01 · НА ГЛАВНОЙ</p><h3>«Скачай гид до&nbsp;визита»</h3></div><p>Один блок с&nbsp;кнопкой «Открыть гид». На&nbsp;компьютере — QR-код, гид откроется на&nbsp;телефоне.</p></div>
+<div class="card"><div class="top"><p class="num">02 · НА СТРАНИЦЕ ЭКСПОНАТА</p><h3>«Слушать в&nbsp;гиде»</h3></div><p>Аудиогид и&nbsp;печать в&nbsp;паспорт у&nbsp;таблички — в&nbsp;приложении, не&nbsp;на&nbsp;сайте.</p></div>
+<div class="card"><div class="top"><p class="num">03 · НА БИЛЕТЕ</p><h3>Кнопка «В&nbsp;приложение»</h3></div><p>Рядом с&nbsp;QR-кодом билета: билет и&nbsp;маршрут по&nbsp;залам в&nbsp;одном месте.</p></div>
 </div>
 <p class="note">Само приложение «Музей в кармане» — в отдельной презентации.</p>
 
