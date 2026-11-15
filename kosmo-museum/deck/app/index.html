@@ -11687,6 +11687,11 @@ canvas.exfly{display:block}
 .m3exs .nm b em{font-style:normal;color:#5d6572;margin-right:5px;text-transform:uppercase;letter-spacing:.08em;font-size:9px}
 #vEx .pst.p0{display:flex;flex-direction:column;justify-content:flex-end;padding:0 14px 26px}
 #vEx .pst.p0 .dfc.in0{margin:0;background:rgba(16,22,36,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:14px 14px 14px 12px;position:relative;z-index:3}
+/* v135: верх карты проще — только «Карта / Список»; ряд залов, «экспонат N/M» и статус убраны (экскурсия уже ведёт по экспонатам); 3D / Схема — внизу над плеером */
+#vHall.mapfull #amChip{display:none!important}
+#vHall.mapfull .m3halls,#vHall.mapfull .m3exs{display:none!important}
+#vHall.mapfull #m3wrap #mvSeg{top:auto!important;bottom:136px!important;right:12px;height:auto}
+#vHall.mapfull .hd .mvtog{position:static;display:inline-flex;margin-top:14px}
 .m3exs{position:absolute;left:10px;right:10px;top:46px;z-index:7;display:flex;align-items:center;gap:6px;pointer-events:none;transition:opacity .3s}
 .m3exs.hid{opacity:0}
 .m3exs > *{pointer-events:auto}
