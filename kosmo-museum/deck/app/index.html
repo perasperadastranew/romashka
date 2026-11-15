@@ -9398,7 +9398,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     // pins for exhibits that have a dossier in the app
     const pinEl = (id, n) => { const el = document.createElement('button'); el.className = 'm3pin'; el.innerHTML = `<b>${n}</b>`; el.addEventListener('click', ev => { ev.stopPropagation(); select(id, true); }); $('#m3pins').appendChild(el); return el; };
     let selected = null;
-    const glow = (o, a) => o && o.traverse(m => { if (m.isMesh){ if (!m.userData.own){ m.material = m.material.clone(); m.userData.own = 1; m.userData.mat0 = m.material; } m.material.emissive.setRGB(a * .9, a * .42, a * .2); } });
+    const glow = (o, a) => o && o.traverse(m => { if (m.isMesh && m.material && m.material.emissive){ if (!m.userData.own){ m.material = m.material.clone(); m.userData.own = 1; m.userData.mat0 = m.material; } m.material.emissive.setRGB(a * .9, a * .42, a * .2); } });
     function select(id, fly){ if (window.__m3lift && window.__m3lift(id) === true){ window.__m3sel = id; return; } if (selected != null) glow(nodes[selected], 0); selected = id; window.__m3sel = id; const n = nodes[id]; if (!n) return; glow(n, .45);
       if (fly && curFloor !== 'all' && floorOfId(id) !== curFloor) m3floor(floorOfId(id), true);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {}; if (H.color) box.style.setProperty('--hc', H.color);
@@ -10897,9 +10897,9 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     for (const [id, url] of Object.entries(FLOAT)){ const n = K.nodes[id]; if (!n || n.userData.swapped) continue; n.userData.swapped = 1;
       __ldJ(K, url, g => { const b = new T.Box3().setFromObject(n), sz = b.getSize(new T.Vector3());
         const m = g.scene; const inv = new T.Matrix4().copy(n.matrixWorld).invert(); const box2 = new T.Box3().setFromObject(m), s2 = box2.getSize(new T.Vector3()), c2 = box2.getCenter(new T.Vector3()); m.position.sub(c2);
-        const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * .78);
+        const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * .56);
         m.position.set(0, 0, 0); /* центр — сам шар: вокруг его оси потом вращаемся */
-        const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .86, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
+        const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .9, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
         n.add(fl); fl.position.copy(wp.applyMatrix4(inv)); const ws = new T.Vector3(); n.getWorldScale(ws); fl.scale.divide(ws);
         const mc = chromeMatcap(K); m.traverse(o => { if (o.isMesh){ o.castShadow = true; o.material = new T.MeshMatcapMaterial({ matcap:mc, color:o.material.metalness > .9 ? 0xffffff : 0xd8dce2 }); } });
         /* подиум как у соседних экспонатов: белый диск и тонкое светящееся кольцо — спутник парит над ним */
@@ -10910,7 +10910,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
         const y = fl.position.y, t0 = performance.now(); fl.userData.float = 1; (function bob(now){ fl.position.y = y + Math.sin((now - t0) / 1100) * .9 / ws.y * .18; requestAnimationFrame(bob); })(t0);
         n.userData.floatModel = fl; }); } };
   swapIn();
-  window.__m3lift = id => { if (Date.now() - tapT > 900 || !window.__m3k) return false; if (id === 22 && window.openLuno){ goLanding(id, () => openLuno(), 'vl'); return true; } if (typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
+  window.__m3lift = id => { if (window.__m3noLift || Date.now() - tapT > 900 || !window.__m3k) return false; if (id === 22 && window.openLuno){ goLanding(id, () => openLuno(), 'vl'); return true; } if (typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
   /* v113: тап по экспонату → на макете он взмывает и доворачивается, досье открывается на весь экран,
      и тот же экспонат «перелетает» с карты в студийный кадр наверху — поворот продолжается в том же ритме */
   /* v114: студийное окружение строим под каждый рендерер (PMREM-текстура живёт в своём контексте — общая давала «тухлый» металл со второго открытия); софтбоксы ярче 1 — чёткие блики */
@@ -10935,16 +10935,18 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const scr = o => { const bb = new T.Box3().setFromObject(o), br = K.box.getBoundingClientRect(); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]){ const q = new T.Vector3(x, y, z).project(K.cam); const sx = br.left + (q.x + 1) / 2 * br.width, sy = br.top + (1 - q.y) / 2 * br.height; /* v117: экранные координаты с учётом положения окна карты */ x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); } return { x:(x0 + x1) / 2, y:(y0 + y1) / 2, s:Math.max(x1 - x0, y1 - y0) }; };
     /* 1. камера подлетает к экспонату */
     const c = new T.Box3().setFromObject(obj).getCenter(new T.Vector3()); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone(), z0 = K.cam.zoom, z1 = Math.min(3.2, z0 * 1.7);
-    /* v117: экспонат — ровно в центр экрана (а не в центр окна карты) */
-    { const br = K.box.getBoundingClientRect(), hh = br.height, upp = (K.cam.top - K.cam.bottom) / z1 / hh; const q = K.cam.getWorldQuaternion(new T.Quaternion()); const rt = new T.Vector3(1, 0, 0).applyQuaternion(q), up = new T.Vector3(0, 1, 0).applyQuaternion(q);
-      const px = innerWidth / 2 - br.left - br.width / 2, py = innerHeight * .46 - br.top - hh / 2; c.addScaledVector(rt, -px * upp).addScaledVector(up, py * upp); }
-    const dc = c.clone().sub(t0); cur.cam = { t0, p0, z0 }; /* карта ортографическая — подлетаем зумом */
+    /* v118: экспонат приезжает ровно в центр экрана — каждый кадр меряем, где он на экране, и доводим камеру (не зависит от инерции жестов) */
+    const q0c = K.cam.getWorldQuaternion(new T.Quaternion()), RT = new T.Vector3(1, 0, 0).applyQuaternion(q0c), UP = new T.Vector3(0, 1, 0).applyQuaternion(q0c);
+    const px = p => { const br = K.box.getBoundingClientRect(), v = p.clone().project(K.cam); return [br.left + (v.x + 1) / 2 * br.width, br.top + (1 - v.y) / 2 * br.height]; };
+    const s0 = px(c), goal = [innerWidth / 2, innerHeight / 2];
+    const steer = e => { K.cam.updateMatrixWorld(); const cur = px(c), want = [s0[0] + (goal[0] - s0[0]) * e, s0[1] + (goal[1] - s0[1]) * e]; const br = K.box.getBoundingClientRect(), upp = (K.cam.top - K.cam.bottom) / K.cam.zoom / br.height;
+      const sh = RT.clone().multiplyScalar((cur[0] - want[0]) * upp).addScaledVector(UP, -(cur[1] - want[1]) * upp); K.ctl.target.add(sh); K.cam.position.add(sh); }; cur.cam = { t0, p0, z0 }; /* карта ортографическая — подлетаем зумом */
     const me = cur;
-    anim(700, k => { if (cur !== me) return; const e = ez(k); K.ctl.target.copy(t0).addScaledVector(dc, e); K.cam.position.copy(p0).addScaledVector(dc, e); K.cam.zoom = z0 + (z1 - z0) * e; K.cam.updateProjectionMatrix(); });
+    anim(700, k => { if (cur !== me) return; const e = ez(k); K.cam.zoom = z0 + (z1 - z0) * e; K.cam.updateProjectionMatrix(); steer(e); }).then(() => { const hold = () => { if (cur !== me || me.hero) return; steer(1); requestAnimationFrame(hold); }; hold(); });
     /* 2. он взмывает и начинает вращаться — вокруг своей оси (спутник) или доворачивается (остальные) */
-    setTimeout(() => { if (cur !== me) return; anim(700, k => { if (cur !== me) return; const e = ez(k); n.position.y = me.y0 + lift * back(Math.min(1, k * 1.2)); if (AX) obj.rotation.z = me.z0 + 1.6 * e * e; else n.rotation.y = me.r0 + 1.1 * e; }); }, 420);
+    setTimeout(() => { if (cur !== me) return; anim(900, k => { if (cur !== me) return; const e = ez(k); n.position.y = me.y0 + lift * back(Math.min(1, k * 1.2)); if (AX) obj.rotation.z = me.z0 + 3.2 * k * k; else n.rotation.y = me.r0 + 1.1 * e; }); }, 300); /* v118: разгон вращения; досье появляется на пике */
     /* 3. досье на весь экран, экспонат перелетает в кадр */
-    setTimeout(() => { if (cur === me) card(); }, 900);
+    setTimeout(() => { if (cur === me) card(); }, 820);
     function card(){
     const from0 = scr(obj);
     ex.classList.add('full', 'fin'); openEx(id); window.__m3sel = id; ex.scrollTop = 0;
@@ -10974,7 +10976,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const pose = (r) => { if (AX){ qr.setFromAxisAngle(zA, r); qb.copy(qAlign).multiply(qr); } else { qr.setFromAxisAngle(yA, r); qb.copy(tilt).multiply(qr); } return qb; };
     const frame = now => { if (cur !== me) return; const W = innerWidth, H = innerHeight;
       const k = Math.min(1, (now - t1) / DUR), e = ez(k);
-      const rotNow = rot0 + 1.4 * e + ex.scrollTop * .009 + dragA; /* докручивается в полёте, дальше — только от скролла и пальца */
+      const rotNow = rot0 + 1.6 * e + ex.scrollTop * .0035 + dragA; /* v118: скролл крутит медленнее */ /* докручивается в полёте, дальше — только от скролла и пальца */
       if (mode === 'fly'){ cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix();
         const to = slot(); const x = from0.x + (to.x - from0.x) * e, y = from0.y + (to.y - from0.y) * e - Math.sin(Math.PI * e) * H * .05, s = from0.s + (to.s - from0.s) * e;
         holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
@@ -11207,11 +11209,13 @@ canvas.exfly{display:block}
 </script>
 <style>
 /* v115: иллюминатор Белки — вытянутая капсула, как раньше в «Спроси Белку»; в досье без подложки: иллюминатор слева, рассказ справа */
-.dfc{background:none!important;border:0!important;box-shadow:none!important;padding:6px 6px 6px 132px!important;min-height:200px!important;margin:22px 12px 0!important}
-.dfc .po{left:6px!important;top:6px!important;width:108px!important;height:184px!important;border-radius:999px!important}
+.dfc{background:none!important;border:0!important;box-shadow:none!important;padding:6px 6px 6px 116px!important;min-height:166px!important;margin:22px 12px 0!important}
+.dfc .po{left:6px!important;top:6px!important;width:92px!important;height:152px!important;border-radius:999px!important}
 .vg .vport{width:196px!important;height:300px!important;border-radius:999px!important}
 .askcard .po{width:86px!important;height:140px!important;border-radius:999px!important}
 .dfc .dfrow{display:none!important} /* v117: без кнопок «Спросить Белку / Ещё раз» */
+/* v118: «Кто создавал» — портреты в таких же иллюминаторах-капсулах */
+.cm{width:112px!important}.cmp{width:112px!important;height:176px!important;border-radius:999px!important}
 /* v115: номера глав — кружки, как у выносок на схемах */
 #vEx .ps1t{align-items:center}
 #vEx .ps1t span{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid rgba(140,196,255,.6);display:grid;place-items:center;font-size:10px;letter-spacing:0}
@@ -11491,6 +11495,56 @@ canvas.exfly{display:block}
     (function loop(now){ requestAnimationFrame(loop); if (!wrap.offsetParent) return; if (crumbsO) crumbsO.visible = false; /* v117: путь — только текущий шаг */ if (youO && window.RT && !RT.on) youO.visible = false; const w = K.box.clientWidth, h = K.box.clientHeight; const show = K.cam.zoom > 1.3 && !document.querySelector('#m3wrap.scheme');
       echoRings.forEach(r => { const t = ((now / 1600) + r.userData.k * .25) % 1; r.material.opacity = .55 * (1 - t); r.scale.setScalar(.7 + t * .6); });
       const placed = []; for (const L of els){ v.copy(L.v).project(K.cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; L.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = show && x > 10 && x < w - 10 && y > 60 && y < h - 20; const bb = [x - 34, y - 9, x + 34, y + 9]; if (vis && placed.some(q => bb[0] < q[2] && bb[2] > q[0] && bb[1] < q[3] && bb[3] > q[1])) vis = false; if (vis) placed.push(bb); L.el.classList.toggle('hid', !vis); } })(0);
+  }
+})();
+</script>
+<style>
+/* v118: карта открывается сразу на зале; сверху — переключатель залов, под ним — листалка экспонатов зала */
+.m3halls{position:absolute;left:0;right:0;top:8px;z-index:7;display:flex;gap:6px;overflow-x:auto;padding:2px 96px 2px 10px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent 96%)}
+.m3halls::-webkit-scrollbar{display:none}
+.m3halls button{flex:none;display:flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 10px;border-radius:15px;border:1px solid rgba(255,255,255,.1);background:rgba(10,11,13,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#C9CED6;font:500 12px var(--f);white-space:nowrap;cursor:pointer}
+.m3halls button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.m3halls button.on{background:#fff;color:#0A0B0D;border-color:#fff}
+.m3exs{position:absolute;left:10px;right:10px;top:46px;z-index:7;display:flex;align-items:center;gap:6px;pointer-events:none;transition:opacity .3s}
+.m3exs.hid{opacity:0}
+.m3exs > *{pointer-events:auto}
+.m3exs button.ar{flex:none;width:30px;height:30px;border-radius:15px;border:1px solid rgba(255,255,255,.1);background:rgba(10,11,13,.78);backdrop-filter:blur(8px);color:#fff;display:grid;place-items:center;cursor:pointer}
+.m3exs .nm{min-width:0;max-width:62%;height:30px;padding:0 12px;border-radius:15px;background:rgba(10,11,13,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;font:500 12px var(--f);color:#fff;cursor:pointer}
+.m3exs .nm b{font:500 10px var(--m);color:#8B93A0;letter-spacing:.06em}
+.m3exs .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#m3.v118 #m3seg{display:none}
+.m3wrap.scheme .m3halls,.m3wrap.scheme .m3exs{display:none}
+#vHall.mapfull #mvSeg{top:88px!important}
+</style>
+<script>
+(function(){
+  const SH = { vest:'Вход', utro:'Утро эры', tvortsy:'Творцы', dom:'Дом на орбите', luna:'Луна и планеты', mezhdu:'Сотрудничество', chelovechestvu:'Человечеству', park:'Космопарк' };
+  const ORDER = ['all', 'vest', 'utro', 'tvortsy', 'dom', 'luna', 'mezhdu', 'chelovechestvu', 'park'];
+  const wait = () => { const K = window.__m3k, m3 = document.getElementById('m3'); if (!K || !m3 || !window.M_HALLS){ setTimeout(wait, 600); return; } init(K, m3); }; wait();
+  function init(K, m3){ const H = window.M_HALLS; m3.classList.add('v118');
+    const row = document.createElement('div'); row.className = 'm3halls';
+    row.innerHTML = ORDER.filter(k => k === 'all' || (H[k] && K.zones[k])).map(k => `<button data-h="${k}" style="--c:${k === 'all' ? '#8B93A0' : H[k].color}"><i></i>${k === 'all' ? 'Весь музей' : SH[k] || H[k].name}</button>`).join('');
+    const ex = document.createElement('div'); ex.className = 'm3exs hid'; ex.innerHTML = '<button class="ar" data-d="-1" aria-label="Предыдущий"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="nm"><b></b><span></span></div><button class="ar" data-d="1" aria-label="Следующий"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>';
+    m3.appendChild(row); m3.appendChild(ex);
+    const full = (window.ROUTES && ROUTES.full && ROUTES.full.ids) || [];
+    const exOf = k => (window.M_EX || []).filter(d => d[3] === k && K.nodes[d[0]]).map(d => d[0]).sort((a, b) => { const ia = full.indexOf(a), ib = full.indexOf(b); return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib); });
+    let hall = null, list = [], idx = -1;
+    const title = id => { const d = (window.M_EX || []).find(x => x[0] === id); return d ? d[2] : ''; };
+    const showEx = () => { const on = hall && hall !== 'all' && list.length; ex.classList.toggle('hid', !on); if (!on) return; ex.querySelector('.nm b').textContent = idx < 0 ? `${list.length} экспонатов` : `${idx + 1}/${list.length}`; ex.querySelector('.nm span').textContent = idx < 0 ? 'листай стрелками' : title(list[idx]); };
+    const quiet = fn => { window.__m3noLift = true; window.__m3auto = true; try { fn(); } finally { setTimeout(() => { window.__m3noLift = false; window.__m3auto = false; }, 50); } };
+    function goHall(k, nofly){ hall = k; idx = -1; list = k === 'all' ? [] : exOf(k); row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.h === k)); const on = row.querySelector(`[data-h="${k}"]`); on && on.scrollIntoView({ inline:'center', block:'nearest', behavior:'smooth' });
+      if (k === 'all') window.m3floor && m3floor('all'); else { window.m3floor && m3floor(H[k].floor, true); if (!nofly) window.m3hall && m3hall(k); } showEx(); }
+    window.__m3goHall = goHall;
+    row.addEventListener('click', e => { const b = e.target.closest('button'); if (b) goHall(b.dataset.h); });
+    ex.addEventListener('click', e => { const a = e.target.closest('.ar'); if (a){ if (!list.length) return; idx = (idx + +a.dataset.d + list.length) % list.length; showEx(); window.__m3noLift = true; window.m3select && m3select(list[idx], true); setTimeout(() => window.__m3noLift = false, 50); return; }
+      if (e.target.closest('.nm') && idx >= 0 && window.openEx) openEx(list[idx]); });
+    /* какой зал показать сразу: текущий шаг экскурсии, иначе «Утро эры» */
+    const start = () => { let k = 'utro'; try { const r = window.tourState && tourState(); const R = window.TOUR_ROUTES || {}; if (r && r.started){ const id = ((R[r.key] || {}).ids || [])[r.i || 0]; const d = (window.M_EX || []).find(x => x[0] === id); if (d && H[d[3]]) k = d[3]; } } catch (er){} goHall(k); };
+    const unsel = () => { const x = document.querySelector('#m3 .exc .exx'), cc = document.querySelector('#m3 .exc'); if (cc && cc.offsetParent && +getComputedStyle(cc).opacity > .3 && x) x.click(); };
+    setTimeout(() => { start(); [500, 1200].forEach(t => setTimeout(unsel, t)); }, 300); /* сразу после открытия — без всплывшей карточки */
+    const st = window.showTab; if (st) window.showTab = function(t){ const r = st.apply(this, arguments); if (t === 'map' && !hall) setTimeout(start, 400); return r; };
+    /* выбрали экспонат на карте вручную — листалка подхватывает его зал */
+    setInterval(() => { const id = window.__m3sel; if (id == null || !hall || hall === 'all') return; const d = (window.M_EX || []).find(x => x[0] === id); if (!d) return; if (d[3] !== hall){ hall = d[3]; list = exOf(hall); row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.h === hall)); } const i = list.indexOf(id); if (i >= 0 && i !== idx){ idx = i; showEx(); } }, 500);
   }
 })();
 </script>
