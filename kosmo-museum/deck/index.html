@@ -379,6 +379,12 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 /* механики возвращения */
 .chips{display:flex;flex-wrap:wrap;gap:10px;max-width:60ch;margin-top:8px}.chips span{padding:9px 16px;border-radius:999px;background:rgba(10,11,14,.55);border:1px solid rgba(255,255,255,.18);font-size:calc(1.05*var(--u));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
+.ch:has(.mvv)>h2{margin-bottom:0!important}.ch:has(.mvv)::after{display:none}
+.mvv{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(1.6*var(--u));margin-top:calc(2*var(--u));width:100%}
+.mvv figure{margin:0;display:flex;flex-direction:column;min-height:0;align-items:flex-start}
+.mvv img{flex:1;min-height:0;max-width:100%;object-fit:contain;object-position:left top;border-radius:calc(2*var(--u));border:calc(.35*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.12)}
+.mvv figcaption{margin-top:calc(1*var(--u));display:grid;gap:4px}.mvv b{font:400 calc(1.6*var(--u)) var(--f)}.mvv span{font-size:calc(1.05*var(--u));color:#B8B5AF}
+
 .ch:has(.nfcw){padding:0!important}.ch:has(.nfcw)::after{display:none}
 .nfcw{position:absolute;inset:0;overflow:hidden}
 .nfcbg{position:absolute;left:0;right:0;top:0;width:100%;height:86%;object-fit:cover;object-position:50% 12%;-webkit-mask:linear-gradient(180deg,#000 75%,transparent);mask:linear-gradient(180deg,#000 75%,transparent)}
@@ -523,6 +529,9 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 </section>
 <section class="ch" data-act="map3d" data-cap="Карта">
 <div class="kick">Навигация</div><h2>Мы оцифровали <em>весь музей</em></h2><ul class="pts"><li><b>3D-карта двух этажей:</b> все залы и экспонаты, касса, вход, гардероб</li><li><b>Путь до экспоната</b> от того места, где ты стоишь</li><li><b>Готовое решение:</b> тот же подход подходит любому музею — от макета до маршрута</li></ul><div class="try"><button class="btn" data-run="map3d">3D</button><button class="btn" data-run="map">Схема</button><button class="btn" data-run="echo">Точка эха у входа</button></div>
+</section>
+<section class="ch" data-cap="Карта" data-wide="1">
+<div class="kick">Версии карты</div><h2>Одна карта —<br><em>несколько видов</em></h2><div class="mvv"><figure><img src="img/scr/mv_3d.webp" alt=""><figcaption><b>3D-макет</b><span>объём и свет — для первого знакомства</span></figcaption></figure><figure><img src="img/scr/mv_line.webp" alt=""><figcaption><b>Контур</b><span>лёгкая и читаемая, экспонаты в объёме</span></figcaption></figure><figure><img src="img/scr/mv_holo.webp" alt=""><figcaption><b>Контур · голограмма</b><span>весь музей как чертёж</span></figcaption></figure><figure><img src="img/scr/mv_scheme.webp" alt=""><figcaption><b>Схема зала</b><span>маршрут и подиумы линиями</span></figcaption></figure></div>
 </section>
 <section class="ch" data-cap="Зачем" data-wide="1">
 <div class="kick">Зачем</div><h2>740 тысяч посетителей —<br><em>у каждого свой маршрут</em></h2><div class="split"><div class="nums v"><div class="num"><b>740+ тыс.</b><span>посетителей за 2023 год</span></div><div class="num"><b>×3</b><span>рост потока с 2013 года</span></div><div class="num"><b>2 · 8</b><span>этажа · зала</span></div></div><div class="fan"><figure class="" style="--w:210px"><img src="img/scr/map.webp" alt="Карта" decoding="async"><figcaption>Карта</figcaption></figure><figure class="mid" style="--w:230px"><img src="img/scr/tour.webp" alt="Экскурсия" decoding="async"><figcaption>Экскурсия</figcaption></figure><figure class="mid" style="--w:230px"><img src="img/scr/st10m_2.webp" alt="История" decoding="async"><figcaption>История</figcaption></figure><figure class="" style="--w:210px"><img src="img/scr/pass.webp" alt="Паспорт" decoding="async"><figcaption>Паспорт</figcaption></figure></div></div><p class="note">⚠ Цифры уточняем у музея · Цифры посещаемости: <a href="https://www.mos.ru/news/item/138734073/" target="_blank" rel="noopener">mos.ru, май 2024</a></p>
