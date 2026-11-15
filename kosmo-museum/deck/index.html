@@ -198,18 +198,26 @@ h2{font-size:clamp(36px,3.1vw,60px);max-width:20ch}
 .qr{display:flex;align-items:center;gap:24px;margin-top:28px}.qr img{width:150px;height:150px;background:#fff;border-radius:16px;padding:10px}.qr span{font-size:20px;color:#C9C7C2}
 .logos{display:flex;flex-wrap:wrap;gap:12px;align-content:end;justify-content:flex-end}.logos span{padding:16px 24px;border:1px solid var(--line);border-radius:999px;font-size:clamp(17px,1.3vw,22px);color:#E3E0DA}
 
+.ch:has(.cmp3){top:0!important;bottom:0!important}
+.cl{padding-top:calc(4*var(--u))!important}
+
+.hi{display:grid;grid-template-columns:minmax(300px,.8fr) 1.4fr;gap:72px;align-items:end;width:100%;margin-top:auto}
+.lg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.lg img{width:100%;display:block;border-radius:14px;filter:grayscale(1) invert(1) brightness(1.15) contrast(1.05)}
+.gq{display:grid;grid-template-columns:1fr auto;gap:56px;align-items:end;width:100%}
+.qr.big{flex-direction:column;align-items:flex-start;gap:18px;margin:0}.qr.big img{width:220px;height:220px}
+
 /* без левой навигации: только стрелки слева внизу, слайд на всю ширину */
 .dots,.prog,.keys{display:none!important}
 .ch{left:0!important}
 
 /* v7: было/стало без подложек — крупные экраны справа, описание под каждым */
-.ch:has(.cmp3){--u:min(1vw,1.78vh);padding:calc(1*var(--u)) 0 calc(4.6*var(--u))!important;gap:0}
+.ch:has(.cmp3){--u:min(1vw,1.78vh);padding:0!important;gap:0}
 .cmp3{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.5fr);gap:calc(3*var(--u));width:100%;max-width:none}
 .cl{padding-top:calc(1.2*var(--u))}
 .cph{margin:calc(1.2*var(--u)) 0 0!important;font-size:calc(3.1*var(--u))!important;line-height:1.08!important;max-width:13ch!important}
-.cr{display:grid;grid-template-columns:1fr 1fr;gap:calc(2.4*var(--u));min-height:0}
-.cf{margin:0;display:flex;flex-direction:column;min-height:0}
-.cf img{flex:1 1 0;min-height:0;width:auto;max-width:100%;align-self:flex-start;object-fit:cover;object-position:top;display:block;border-radius:calc(2.4*var(--u));border:calc(.42*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.14);outline-offset:0;box-shadow:0 30px 60px rgba(0,0,0,.55)}
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:calc(2.4*var(--u));min-height:0;align-items:center;align-content:center}
+.cf{margin:0;display:flex;flex-direction:column;min-height:0;justify-content:center}
+.cf img{flex:none;height:calc(min(100vh,56.25vw)*.64);min-height:0;width:auto;max-width:100%;align-self:flex-start;object-fit:cover;object-position:top;display:block;border-radius:calc(2.4*var(--u));border:calc(.42*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.14);outline-offset:0;box-shadow:0 30px 60px rgba(0,0,0,.55)}
 .cf:not(.ac) img{filter:saturate(.8) brightness(.9)}
 .cf figcaption{margin-top:calc(1.4*var(--u));display:grid;gap:calc(.5*var(--u))}
 .cf .tag{font:500 calc(.7*var(--u)) var(--m);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}.cf .tag.ac{color:var(--ac)}
@@ -222,6 +230,9 @@ h2{font-size:clamp(36px,3.1vw,60px);max-width:20ch}
     <nav class="dots" id="dots" aria-label="Слайды"></nav>
 <section class="ch" data-act="today" data-cap="Главный экран">
 <div class="kick">Музей космонавтики · 16 ноября 2026</div><h1>Музей <em>в телефоне</em></h1><p class="lead">Приложение, которое ведёт по залам, рассказывает историю каждого экспоната и зовёт вернуться. И сайт, который приводит в музей.</p><div class="try"><button class="btn pri" data-go="1">Начать →</button></div><p class="note">Независимый концепт студии Perasperadastra</p>
+</section>
+<section class="ch" data-cap="Привет" data-wide="1">
+<div class="kick">Знакомство</div><h2>Саша Сучков<br><em>Perasperadastra</em></h2><div class="hi"><div class="ba"><div><b>Студия и школа дизайна</b><p>UX/UI, 3D, моушн и нейросети. 1500+ студентов из 25 стран, 200 тыс. подписчиков</p></div><div><b>Делаем продукты и спецпроекты</b><p>для больших брендов — и учим этому дизайнеров</p></div></div><div class="lg"><img src="img/logos/l1.png" alt=""><img src="img/logos/l2.png" alt=""><img src="img/logos/l3.png" alt=""><img src="img/logos/l4.png" alt=""><img src="img/logos/l5.png" alt=""><img src="img/logos/l6.png" alt=""><img src="img/logos/l7.png" alt=""><img src="img/logos/l8.png" alt=""><img src="img/logos/l9.png" alt=""><img src="img/logos/l10.png" alt=""><img src="img/logos/l11.png" alt=""><img src="img/logos/l12.png" alt=""></div></div>
 </section>
 <section class="ch" data-cap="План" data-wide="1">
 <div class="kick">План</div><h2>Две части и <em>общие</em> механики</h2><div class="tech"><div class="tcol"><i>01</i><span class="tl">Часть 1</span><b>Сайт</b><p>Что мешает купить билет с телефона и что поправить первым</p></div><div class="tcol"><i>02</i><span class="tl">Часть 2</span><b>Приложение</b><p>Карта, истории экспонатов, экскурсия с Белкой, печати и сезоны</p></div><div class="tcol"><i>03</i><span class="tl">Связка</span><b>Вместе</b><p>Механики приложения работают на сайте и в спецпроектах</p></div></div>
@@ -344,10 +355,10 @@ h2{font-size:clamp(36px,3.1vw,60px);max-width:20ch}
 <div class="kick">Деньги музея</div><h2>Билет и магазин<br>в <em>двух касаниях</em></h2><ul class="pts"><li><b>Сценарий оплаты:</b> сеанс → кто идёт → СБП, карта или Пушкинская → QR</li><li><b>Билет сразу</b> в Wallet и в приложении</li><li><b>Магазин и кафе</b> в «Ещё»: сувениры, бронь столика</li></ul><div class="try"><button class="btn" data-run="tickets">Купить билет</button></div>
 </section>
 <section class="ch" data-cap="Все экраны" data-wide="1">
-<div class="kick">Объём работы</div><h2>Рабочий прототип, а не <em>картинки</em></h2><div class="cards c6 num"><div class="card"><b>32</b><span>досье экспонатов</span></div><div class="card"><b>2 × 6</b><span>глав историй с 3D</span></div><div class="card"><b>10</b><span>3D-моделей</span></div><div class="card"><b>39</b><span>иллюстраций-схем</span></div><div class="card"><b>9 · 3</b><span>залов · маршрутов</span></div><div class="card"><b>37</b><span>печатей</span></div></div><div class="qr"><img src="img/qr_app.svg" alt="QR на прототип"><span>Наведите камеру —<br>прототип откроется на телефоне</span></div>
+<div class="kick">Объём работы</div><h2>Рабочий прототип, а не <em>картинки</em></h2><div class="cards c6 num"><div class="card"><b>32</b><span>досье экспонатов</span></div><div class="card"><b>2 × 6</b><span>глав историй с 3D</span></div><div class="card"><b>10</b><span>3D-моделей</span></div><div class="card"><b>39</b><span>иллюстраций-схем</span></div><div class="card"><b>9 · 3</b><span>залов · маршрутов</span></div><div class="card"><b>37</b><span>печатей</span></div></div>
 </section>
 <section class="ch" data-cap="Все экраны" data-wide="1">
-<div class="kick">Все экраны</div><h2>Каждый экран <em>можно потрогать</em></h2><div class="phs grid"><figure class="" style="--w:150px"><img src="img/scr/onboarding.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/today.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/tour.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/map.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/st10m_2.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/st14m_2.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/ex12.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/guide.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/mir.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/timeline.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/pass.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/quest.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/tickets.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/more.webp" alt="" decoding="async"></figure></div>
+<div class="kick">Все экраны</div><h2>Каждый экран<br><em>можно потрогать</em></h2><div class="gq"><div class="phs grid"><figure class="" style="--w:150px"><img src="img/scr/onboarding.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/today.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/tour.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/map.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/st10m_2.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/st14m_2.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/ex12.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/guide.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/mir.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/timeline.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/pass.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/quest.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/tickets.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/more.webp" alt="" decoding="async"></figure></div><div class="qr big"><img src="img/qr_app.svg" alt="QR на прототип"><span>Наведите камеру —<br>прототип откроется<br>на вашем телефоне</span></div></div>
 </section>
 <section class="ch" data-act="today" data-cap="Главный экран">
 <div class="kick">Эффект за год</div><h2>Что это даст <em>музею</em></h2><div class="tbl"><table><thead><tr><th></th><th>Осторожно</th><th>База</th><th>Амбициозно</th></tr></thead><tbody><tr><td>Ставят приложение</td><td>8%</td><td class="base">15%</td><td>25%</td></tr><tr><td>Пользователей</td><td>≈59 тыс.</td><td class="base">≈111 тыс.</td><td>≈185 тыс.</td></tr><tr><td>Повторных визитов</td><td>≈1,8 тыс.</td><td class="base">≈6,7 тыс.</td><td>≈18,5 тыс.</td></tr><tr><td>Новых посетителей</td><td>≈7 тыс.</td><td class="base">≈18,5 тыс.</td><td>≈37 тыс.</td></tr></tbody></table></div><p class="note">От 740 тыс. посетителей в год; доли — гипотезы для пилота</p>
