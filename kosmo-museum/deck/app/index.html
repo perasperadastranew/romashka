@@ -11016,8 +11016,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
     const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn">${n} / ${String(CH.length).padStart(2, '0')}</div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st);
     ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
-    /* v132: реплика Белки — вступление на титульном экране истории, до глав */
-    const bel = () => { const d = ex.querySelector('.dfc'), p0 = st.querySelector('.p0'); if (d && p0 && d.parentNode !== p0){ p0.appendChild(d); d.classList.add('in0'); return true; } return false; }; if (!bel()) setTimeout(bel, 350);
+    /* v133: реплика Белки — внизу досье, перед «Следующий экспонат» */
+    const bel = () => { const d = ex.querySelector('.dfc'); if (!d) return false; const nx = ex.querySelector('#nextEx'); const at = nx ? (nx.closest('.exbody > *, section > *') || nx) : null; if (at && at.parentNode) at.parentNode.insertBefore(d, at); else d.parentNode.appendChild(d); return true; }; if (!bel()) setTimeout(bel, 350);
     const steps = [...st.querySelectorAll('.pst')]; let ch = 0, k = 1;
     const L = 'stroke="rgba(238,241,245,.75)" stroke-width="1.1" fill="none" stroke-linecap="round"', F = 'stroke="rgba(238,241,245,.3)" stroke-width="1" fill="none" stroke-linecap="round"', A = 'stroke="#8CC4FF" stroke-width="1.3" fill="none" stroke-linecap="round"';
     const tx = (x, y, t, c = '', a = 'start') => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="pt ${c}" text-anchor="${a}">${t}</text>`;
