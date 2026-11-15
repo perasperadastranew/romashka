@@ -10712,5 +10712,28 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   if (document.getElementById('vPass') && document.getElementById('vPass').innerHTML) { try { enhance(); } catch (e){} }
 })();
 </script>
+<style>
+/* v105: переход 3D ⇄ схема — наезд камеры на зал и перетекание (оба вида изометрические) */
+#m3wrap #m3, #m3wrap #m3s{transition:opacity .34s ease, transform .5s cubic-bezier(.32,.72,0,1), filter .34s ease}
+#m3wrap.mvx #m3, #m3wrap.mvx #m3s{opacity:0;transform:scale(1.04);filter:blur(3px)}
+#m3wrap.mvin #m3, #m3wrap.mvin #m3s{opacity:0;transform:scale(.97)}
+</style>
+<script>
+(function(){
+  const seg = document.getElementById('mvSeg'), wrap = document.getElementById('m3wrap'); if (!seg || !wrap || !window.mapView) return;
+  const hallOf = id => { const e = (window.M_EX || []).find(x => x[0] === id); return e ? e[3] : null; };
+  let busy = false;
+  seg.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; const v = b.dataset.v; if (v === window.__mapView || busy) return;
+    e.stopPropagation(); e.preventDefault(); busy = true;
+    if (v === 'scheme'){ /* 3D → схема: камера подлетает к залу, затем макет растворяется в контур */
+      const on = document.querySelector('#hlChips .chip.on'), id = window.__m3sel; const h = (id != null && hallOf(id)) || (on && on.dataset.h) || 'utro';
+      window.m3hall && m3hall(h);
+      setTimeout(() => wrap.classList.add('mvx'), 420);
+      setTimeout(() => { mapView('scheme'); wrap.classList.remove('mvx'); wrap.classList.add('mvin'); requestAnimationFrame(() => requestAnimationFrame(() => { wrap.classList.remove('mvin'); busy = false; })); }, 780); }
+    else { /* схема → 3D: контур гаснет, макет проступает */
+      wrap.classList.add('mvx');
+      setTimeout(() => { mapView('3d'); wrap.classList.remove('mvx'); wrap.classList.add('mvin'); setTimeout(() => { wrap.classList.remove('mvin'); busy = false; }, 120); }, 300); } }, true);
+})();
+</script>
 </body>
 </html>
