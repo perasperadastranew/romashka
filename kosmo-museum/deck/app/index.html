@@ -8941,9 +8941,11 @@ function drawScheme(g, run, t, L){ const O = orbData();
   // PS-1: a ball and its four antennas — two pairs (2.4 and 2.9 m), swept back along the flight
   const back = P(a0 - .05), dx = back[0] - sp[0], dy = back[1] - sp[1], dl = Math.hypot(dx, dy) || 1, k = L.labels ? 1 : .7;
   g.strokeStyle = 'rgba(235,240,246,.85)'; g.lineWidth = .9;
-  for (const [s, len] of [[-.30, 14], [-.15, 17], [.15, 17], [.30, 14]]){ const c = Math.cos(s), si = Math.sin(s), vx = (dx * c - dy * si) / dl, vy = (dx * si + dy * c) / dl; g.beginPath(); g.moveTo(sp[0] + vx * 3, sp[1] + vy * 3); g.lineTo(sp[0] + vx * (3 + len * k), sp[1] + vy * (3 + len * k)); g.stroke(); }
+  /* v115: антенны крепятся к передней полусфере (≈0,68 R вперёд по ходу, ±0,6 R вбок) и уходят назад; шар рисуем раньше, антенны — поверх */
   g.beginPath(); g.arc(sp[0], sp[1], 8 * k, 0, 7); g.fillStyle = 'rgba(255,138,74,.22)'; g.fill();
-  g.beginPath(); g.arc(sp[0], sp[1], 4 * k, 0, 7); const gr = g.createRadialGradient(sp[0] - 1.5, sp[1] - 1.5, .5, sp[0], sp[1], 4 * k); gr.addColorStop(0, '#fff'); gr.addColorStop(1, '#9aa3ae'); g.fillStyle = gr; g.fill();
+  const rb = 4 * k; g.beginPath(); g.arc(sp[0], sp[1], rb, 0, 7); const gr = g.createRadialGradient(sp[0] - 1.5, sp[1] - 1.5, .5, sp[0], sp[1], rb); gr.addColorStop(0, '#fff'); gr.addColorStop(1, '#9aa3ae'); g.fillStyle = gr; g.fill();
+  { const ux = dx / dl, uy = dy / dl, nx = -uy, ny = ux; g.strokeStyle = 'rgba(235,240,246,.9)'; g.lineWidth = .9;
+    for (const [o, s, len] of [[-.6, -.5, 18], [-.15, -.12, 15], [.15, .12, 15], [.6, .5, 18]]){ const bx = sp[0] - ux * rb * .68 + nx * rb * o, by = sp[1] - uy * rb * .68 + ny * rb * o; const c = Math.cos(s), si = Math.sin(s), vx = ux * c - uy * si, vy = ux * si + uy * c; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + vx * len * k, by + vy * len * k); g.stroke(); } }
   if (L.labels){ g.font = mono(fs); g.fillStyle = '#FFB27A'; g.textAlign = 'left'; g.fillText('ПС-1', sp[0] + 10, sp[1] - 8); }
   // map
   const { x:mx, y:my, w:mw, h:mh } = L.map;
@@ -9304,7 +9306,9 @@ window.mountMiniOrbit = (el) => { const cv = document.createElement('canvas'); e
   const loop = (now) => { if (!alive || !el.isConnected) return; requestAnimationFrame(loop); if (document.hidden || !el.offsetParent || el.closest('.off')) return; const w = el.clientWidth, h = el.clientHeight, d = Math.min(devicePixelRatio, 2);
     if (cv.width !== w * d){ cv.width = w * d; cv.height = h * d; cv.style.width = w + 'px'; cv.style.height = h + 'px'; }
     if (w < 120 || h < 120) return; g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h); let L;
-    if (el.classList.contains('obo')){ const mw = w - 28, mmh = mw / 2, oh = h - 40 - mmh - 16; L = { orbit:{ cx:w / 2, cy:34 + oh / 2, R:oh * .27 }, map:{ x:14, y:h - 14 - mmh, w:mw, h:mmh }, labels:false }; }
+    if (el.classList.contains('oc-orb')) L = { orbit:{ cx:w / 2, cy:h / 2 + 10, R:Math.min(w, h) * .19 }, map:{ x:-9999, y:0, w:20, h:10 }, labels:true };
+    else if (el.classList.contains('oc-map')){ const mw = w - 28; L = { orbit:{ cx:-9999, cy:-9999, R:4 }, map:{ x:14, y:48, w:mw, h:mw / 2 }, labels:true }; }
+    else if (el.classList.contains('obo')){ const mw = w - 28, mmh = mw / 2, oh = h - 40 - mmh - 16; L = { orbit:{ cx:w / 2, cy:34 + oh / 2, R:oh * .27 }, map:{ x:14, y:h - 14 - mmh, w:mw, h:mmh }, labels:false }; }
     else { const oh = h - 84, ow = oh * .86, mw = w - 28 - ow - 6, mmh = Math.min(mw / 2, oh); L = { orbit:{ cx:14 + ow / 2, cy:36 + oh / 2, R:oh * .25 }, map:{ x:w - 14 - mw, y:36 + (oh - mmh) / 2, w:mw, h:mmh }, labels:false }; }
     const r = drawScheme(g, run, (now - t0m) / 1000, L);
     const tt = el.querySelector('[data-t]'); if (tt) tt.textContent = clock(r.ts) + ' · ' + Math.round(r.alt) + ' км'; };
@@ -9428,7 +9432,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       let k = 0; for (const e of pinIds.map(id => ({ id }))){ if (nodes[e.id]){ const b = new THREE.Box3().setFromObject(nodes[e.id]); const p = b.getCenter(new THREE.Vector3()); p.y = b.max.y + 1; pins.push({ id:e.id, p, el:pinEl(e.id, String(++k).padStart(2, '0')) }); } }
       const all = new THREE.Box3(); Object.values(zones).forEach(z => all.union(z)); place(all.getCenter(new THREE.Vector3())); cam.zoom = zoomFor(all, .04); cam.updateProjectionMatrix();
       hallLabels(); routeInit();
-      $('#m3load').hidden = true; window.__m3k = { THREE, scene, cam, ctl, nodes, root, box, GLTFLoader, MeshoptDecoder, r };
+      $('#m3load').hidden = true; window.__m3k = { THREE, scene, cam, ctl, nodes, root, box, GLTFLoader, MeshoptDecoder, r, zones, flyBox:(b, p) => flyBox(b, p) };
       if (window.__dive){ window.__dive = false; const c0 = all.getCenter(new THREE.Vector3()); place(c0.clone().add(new THREE.Vector3(0, 0, 60))); cam.zoom = .32; cam.updateProjectionMatrix();
         setTimeout(() => flyTo(c0, zoomFor(all, .04), 1600), 120); setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 1900); }
       else setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, () => { $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
@@ -9535,7 +9539,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       const w = box.clientWidth, h = box.clientHeight;
       if (you.visible){ const t = (now % 1600) / 1600; const rg = you.getObjectByName('ring'); rg.scale.setScalar(1 + t * 1.6); rg.material.opacity = 1 - t; }
       leg.children.forEach((m, k) => { m.material = ((now / 90 - k) % 8 + 8) % 8 < 2.2 ? hotM : dimM; });
-      const placed = []; for (const Lb of labels){ v.copy(Lb.p).project(cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; Lb.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = cam.zoom < 3.4 && (Lb.k !== 'vest' || cam.zoom > 1.4) && (curFloor === 'all' || HALLS[Lb.k]?.floor === curFloor); const bx = [x - 55, y - 12, x + 55, y + 12]; if (vis && placed.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) vis = false; if (vis) placed.push(bx); Lb.el.style.opacity = vis ? 1 : 0; Lb.el.style.pointerEvents = vis ? 'auto' : 'none'; }
+      const placed = []; for (const Lb of labels){ v.copy(Lb.p).project(cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; Lb.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = cam.zoom < 3.4 && (Lb.k !== 'vest' || cam.zoom < 1.3) && (curFloor === 'all' || HALLS[Lb.k]?.floor === curFloor); const bx = [x - 55, y - 12, x + 55, y + 12]; if (vis && placed.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) vis = false; if (vis) placed.push(bx); Lb.el.style.opacity = vis ? 1 : 0; Lb.el.style.pointerEvents = vis ? 'auto' : 'none'; }
       const rIds = RT.on ? ids() : [];
       for (const P of pins){ v.copy(P.p).project(cam); P.el.classList.toggle('done', RT.done.includes(P.id)); P.el.classList.toggle('inroute', rIds.includes(P.id)); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; P.el.style.transform = `translate(${x}px, ${y}px)`; P.el.classList.toggle('on', P.id === selected); P.el.style.opacity = (curFloor !== 'all' && floorOfId(P.id) !== curFloor) ? 0 : (cam.zoom > 1.6 && x > -20 && x < w + 20 && y > -20 && y < h + 20) ? 1 : 0; }
       r.render(scene, cam); }
@@ -10884,7 +10888,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     for (const [id, url] of Object.entries(FLOAT)){ const n = K.nodes[id]; if (!n || n.userData.swapped) continue; n.userData.swapped = 1;
       __ldJ(K, url, g => { const b = new T.Box3().setFromObject(n), sz = b.getSize(new T.Vector3());
         const m = g.scene; const inv = new T.Matrix4().copy(n.matrixWorld).invert(); const box2 = new T.Box3().setFromObject(m), s2 = box2.getSize(new T.Vector3()), c2 = box2.getCenter(new T.Vector3()); m.position.sub(c2);
-        const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * .95);
+        const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * .55);
         m.position.set(0, 0, 0); /* центр — сам шар: вокруг его оси потом вращаемся */
         const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .7, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
         n.add(fl); fl.position.copy(wp.applyMatrix4(inv)); const ws = new T.Vector3(); n.getWorldScale(ws); fl.scale.divide(ws);
@@ -10917,9 +10921,9 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .3);
     const scr = o => { const bb = new T.Box3().setFromObject(o), W = innerWidth, H = innerHeight; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]){ const q = new T.Vector3(x, y, z).project(K.cam); const sx = (q.x + 1) / 2 * W, sy = (1 - q.y) / 2 * H; x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); } return { x:(x0 + x1) / 2, y:(y0 + y1) / 2, s:Math.max(x1 - x0, y1 - y0) }; };
     /* 1. камера подлетает к экспонату */
-    const c = new T.Box3().setFromObject(obj).getCenter(new T.Vector3()); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone(); const p1 = c.clone().add(p0.clone().sub(t0).multiplyScalar(.55)); cur.cam = { t0, p0 };
+    const c = new T.Box3().setFromObject(obj).getCenter(new T.Vector3()); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone(), z0 = K.cam.zoom, z1 = Math.min(3.2, z0 * 1.7), dc = c.clone().sub(t0); cur.cam = { t0, p0, z0 }; /* карта ортографическая — подлетаем зумом */
     const me = cur;
-    anim(700, k => { if (cur !== me) return; const e = ez(k); K.ctl.target.lerpVectors(t0, c, e); K.cam.position.lerpVectors(p0, p1, e); });
+    anim(700, k => { if (cur !== me) return; const e = ez(k); K.ctl.target.copy(t0).addScaledVector(dc, e); K.cam.position.copy(p0).addScaledVector(dc, e); K.cam.zoom = z0 + (z1 - z0) * e; K.cam.updateProjectionMatrix(); });
     /* 2. он взмывает и начинает вращаться — вокруг своей оси (спутник) или доворачивается (остальные) */
     setTimeout(() => { if (cur !== me) return; anim(700, k => { if (cur !== me) return; const e = ez(k); n.position.y = me.y0 + lift * back(Math.min(1, k * 1.2)); if (AX) obj.rotation.z = me.z0 + 1.6 * e * e; else n.rotation.y = me.r0 + 1.1 * e; }); }, 420);
     /* 3. досье на весь экран, экспонат перелетает в кадр */
@@ -10949,7 +10953,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     /* конечная поза: спутник — ось к нижнему левому углу, вращение вокруг оси; остальные — лёгкий наклон и поворот */
     const qAlign = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), new T.Vector3(...DV).normalize()), tilt = new T.Quaternion().setFromEuler(new T.Euler(.32, 0, 0));
     const zA = new T.Vector3(0, 0, 1), yA = new T.Vector3(0, 1, 0), qr = new T.Quaternion(), qb = new T.Quaternion(), qa = new T.Quaternion();
-    let rot0 = AX ? obj.rotation.z : 0, dragA = 0, drag = null, mode = 'fly'; const t1 = performance.now(), DUR = 820; me.hero = hero; me.R = R; me.cv = cv;
+    let rot0 = AX ? obj.rotation.z : 0, dragA = 0, drag = null, mode = 'fly'; const t1 = performance.now(), DUR = 900; me.hero = hero; me.R = R; me.cv = cv;
     const pose = (r) => { if (AX){ qr.setFromAxisAngle(zA, r); qb.copy(qAlign).multiply(qr); } else { qr.setFromAxisAngle(yA, r); qb.copy(tilt).multiply(qr); } return qb; };
     const frame = now => { if (cur !== me) return; const W = innerWidth, H = innerHeight;
       const k = Math.min(1, (now - t1) / DUR), e = ez(k);
@@ -10963,7 +10967,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       R.render(sc, cam); requestAnimationFrame(frame); };
     requestAnimationFrame(frame);
     hero.addEventListener('pointerdown', e => { drag = e.clientX; e.stopPropagation(); }); addEventListener('pointermove', me.pm = e => { if (drag == null) return; const dx = e.clientX - drag; drag = e.clientX; dragA += dx * .012; }); addEventListener('pointerup', me.pu = () => { drag = null; });
-    me.back = () => { const r = hero.getBoundingClientRect(); if (r.bottom < 60 || mode !== 'dock') return false; const W = innerWidth, H = innerHeight;
+    me.back = () => false; me.backOld = () => { const r = hero.getBoundingClientRect(); if (r.bottom < 60 || mode !== 'dock') return false; const W = innerWidth, H = innerHeight;
       mode = 'home'; document.body.appendChild(cv); cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; const sx = r.left + r.width / 2, sy = r.top + r.height * .6, ss = Math.min(r.width, r.height * .78) * BIG;
       const qs = holder.quaternion.clone(); const t2 = performance.now(); const go2 = now => { if (!cv.isConnected) return; const k = Math.min(1, (now - t2) / 560), e = ez(k); const to = scr(obj);
         R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix(); obj.updateMatrixWorld(true); const qe = K.cam.getWorldQuaternion(new T.Quaternion()).invert().multiply(obj.getWorldQuaternion(new T.Quaternion()));
@@ -10981,8 +10985,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   function finish(now){ if (!cur) return; if (cur.landing){ const c = cur; cur = null; c.mo && c.mo.disconnect(); const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 480, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); return; } const c = cur; const ex = document.getElementById('vEx'); c.mo && c.mo.disconnect();
     removeEventListener('pointermove', c.pm); removeEventListener('pointerup', c.pu);
     const flew = !now && c.back && c.back(); cur = null;
-    if (!flew && c.R){ try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){} c.cv && c.cv.remove(); }
-    const K = window.__m3k; if (K && c.cam){ const t1 = K.ctl.target.clone(), p1 = K.cam.position.clone(); anim(now ? 1 : 700, k => { const e = ez(k); K.ctl.target.lerpVectors(t1, c.cam.t0, e); K.cam.position.lerpVectors(p1, c.cam.p0, e); }); }
+    if (!flew && c.R){ setTimeout(() => { try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){} c.cv && c.cv.remove(); }, now ? 0 : 600); }
+    const K = window.__m3k; if (K && c.cam){ const t1 = K.ctl.target.clone(), p1 = K.cam.position.clone(); const zz = K.cam.zoom; anim(now ? 1 : 700, k => { const e = ez(k); K.ctl.target.lerpVectors(t1, c.cam.t0, e); K.cam.position.lerpVectors(p1, c.cam.p0, e); K.cam.zoom = zz + (c.cam.z0 - zz) * e; K.cam.updateProjectionMatrix(); }); }
     if (c.obj && c.obj !== c.n){ const z1 = c.obj.rotation.z; anim(now ? 1 : 700, k => { c.obj.rotation.z = z1 + (c.z0 - z1) * ez(k); }); }
     setTimeout(() => { ex.classList.add('nt'); ex.classList.remove('full'); void ex.offsetWidth; requestAnimationFrame(() => ex.classList.remove('nt')); }, now ? 0 : 460);
     const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 520, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); }
@@ -10990,9 +10994,10 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 </script>
 <style>
 /* v113: досье с карты — на весь экран; студийный кадр экспоната с оранжевым контровым, как на рендерах сайта */
-#vEx.full{z-index:30;top:0;border-radius:0;border-top:0;box-shadow:none;background:#0b0c10;transition:opacity .42s ease,transform 0s}
-#vEx.full.fin{opacity:0}
-#vEx.full.off{transform:none;opacity:0;pointer-events:none;transition:opacity .4s ease}
+#vEx.full{z-index:30;top:0;border-radius:0;border-top:0;box-shadow:0 -30px 60px rgba(0,0,0,.6);background:#0b0c10;transition:transform .78s cubic-bezier(.32,.72,0,1),opacity .3s ease}
+#vEx.full.fin{transform:translateY(100%)} /* v115: досье въезжает снизу */
+#vEx.full.off{transform:translateY(40%);opacity:0;pointer-events:none;transition:transform .45s cubic-bezier(.4,0,1,1),opacity .4s ease}
+#vEx.full .top .kick{display:none}
 #vEx.full > *:not(.exhero):not(.top){animation:exRise .6s .12s cubic-bezier(.32,.72,0,1) both}
 @keyframes exRise{from{transform:translateY(28px);opacity:0}to{transform:none;opacity:1}}
 #vEx.full .grab{display:none}
@@ -11183,6 +11188,24 @@ canvas.exfly{display:block}
 })();
 </script>
 <style>
+/* v115: иллюминатор Белки — вытянутая капсула, как раньше в «Спроси Белку»; в досье без подложки: иллюминатор слева, рассказ справа */
+.dfc{background:none!important;border:0!important;box-shadow:none!important;padding:6px 6px 6px 132px!important;min-height:200px!important;margin:22px 12px 0!important}
+.dfc .po{left:6px!important;top:6px!important;width:108px!important;height:184px!important;border-radius:999px!important}
+.vg .vport{width:196px!important;height:300px!important;border-radius:999px!important}
+.askcard .po{width:86px!important;height:140px!important;border-radius:999px!important}
+/* v115: номера глав — кружки, как у выносок на схемах */
+#vEx .ps1t{align-items:center}
+#vEx .ps1t span{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid rgba(140,196,255,.6);display:grid;place-items:center;font-size:10px;letter-spacing:0}
+#vEx .ocbig{position:relative;margin:14px 12px 0;border-radius:24px;overflow:hidden;cursor:pointer;background:radial-gradient(120% 90% at 80% 0,#0f1d33 0,#0a0f18 55%,#090b10 100%);border:1px solid rgba(140,196,255,.10)}
+#vEx .ocbig canvas{position:absolute;inset:0;display:block}
+#vEx .ocbig.oc-orb{height:380px}
+#vEx .ocbig .och{position:absolute;left:16px;right:16px;top:14px;display:flex;justify-content:space-between;z-index:1;font:500 10.5px "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#8CC4FF}
+#vEx .ocbig .och b{font-weight:500;color:#9AA3B0}
+#vEx .ocbig .ocf{position:absolute;left:16px;right:16px;bottom:14px;display:flex;justify-content:space-between;align-items:flex-end;z-index:1}
+#vEx .ocbig .ocf b{font:400 17px Inter,-apple-system,system-ui,sans-serif;color:#EEF1F5}
+#vEx .ocbig .ocf span{font:500 10.5px "JetBrains Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:#8CC4FF}
+</style>
+<style>
 /* v114: «Как запускали первый спутник» — тёмный лонгрид из контурных схем */
 #vEx .ps1s{margin:18px 12px 8px;padding:22px 0 6px;border-top:1px solid rgba(255,255,255,.08)}
 #vEx .ps1h{padding:0 8px 6px}
@@ -11230,8 +11253,8 @@ canvas.exfly{display:block}
     ${T(324, 222, '83,6 кг · 2 передатчика', ' ac end')}${T(324, 236, 'две полусферы из алюминия', ' dim end')}
   </svg>`;
   /* 2. в носу ракеты Р-7 */
-  const cx = 104;
-  const s2 = `<svg viewBox="0 0 340 300">
+  const cx = 104, X = x => -14 + x * 1.2, Y = y => 4 + y * 1.2;
+  const s2 = `<svg viewBox="0 0 340 340"><g transform="translate(-14 4) scale(1.2)" vector-effect="non-scaling-stroke">
     <path d="M${cx - 9},70 L${cx - 9},40 Q${cx},4 ${cx + 9},40 L${cx + 9},70" ${L}/>
     <path d="M${cx - 9},70 L${cx - 10},76 L${cx - 10},262 M${cx + 9},70 L${cx + 10},76 L${cx + 10},262" ${L}/>
     <path d="M${cx - 10},92 L${cx + 10},92 M${cx - 10},150 L${cx + 10},150" ${F}/>
@@ -11240,12 +11263,13 @@ canvas.exfly{display:block}
     <path d="M${cx - 22},262 l-2,10 l10,0 l-2,-10 M${cx + 22},262 l2,10 l-10,0 l2,-10 M${cx - 6},262 l-2,10 l16,0 l-2,-10" ${L}/>
     <path d="M${cx - 6},28 L${cx - 6},58 L${cx + 6},58 L${cx + 6},28" ${F} stroke-dasharray="2 2.5"/>
     <circle cx="${cx}" cy="38" r="4.6" ${A}/><path d="M${cx - 2},42 L${cx - 3},56 M${cx},43 L${cx},56 M${cx + 2},42 L${cx + 3},56" ${A}/>
-    ${N(170, 38, 1)}<path d="M162,38 L${cx + 9},38" ${F}/>${T(184, 35, 'ПС-1 под обтекателем')}${T(184, 49, 'антенны сложены вдоль корпуса', ' dim')}
-    ${N(170, 120, 2)}<path d="M162,120 L${cx + 11},120" ${F}/>${T(184, 117, 'центральный блок')}${T(184, 131, 'работает до орбиты', ' dim')}
-    ${N(170, 210, 3)}<path d="M162,210 L${cx + 24},210" ${F}/>${T(184, 207, 'четыре боковых блока')}${T(184, 221, 'отходят «крестом» на 2-й мин', ' dim')}
-    <path d="M${cx - 44},4 L${cx - 44},272" ${F}/><path d="M${cx - 48},4 L${cx - 40},4 M${cx - 48},272 L${cx - 40},272" ${F}/>
-    <text x="${cx - 50}" y="140" class="pt dim" transform="rotate(-90 ${cx - 50} 140)" text-anchor="middle">≈ 30 м</text>
-    ${T(184, 270, 'Р-7 «Спутник» · Байконур', ' ac')}
+    <path d="M${cx + 9},38 L162,38 M${cx + 11},120 L162,120 M${cx + 24},210 L162,210" ${F}/>
+    <path d="M${cx - 44},4 L${cx - 44},272 M${cx - 48},4 L${cx - 40},4 M${cx - 48},272 L${cx - 40},272" ${F}/></g>
+    <text x="${X(cx - 50)}" y="${Y(140)}" class="pt dim" transform="rotate(-90 ${X(cx - 50)} ${Y(140)})" text-anchor="middle">≈ 30 м</text>
+    ${N(X(170), Y(38), 1)}${T(X(170) + 13, Y(38) - 2, 'ПС-1 под обтекателем')}${T(X(170) + 13, Y(38) + 12, 'антенны сложены вдоль корпуса', ' dim')}
+    ${N(X(170), Y(120), 2)}${T(X(170) + 13, Y(120) - 2, 'центральный блок')}${T(X(170) + 13, Y(120) + 12, 'работает до орбиты', ' dim')}
+    ${N(X(170), Y(210), 3)}${T(X(170) + 13, Y(210) - 2, 'четыре боковых блока')}${T(X(170) + 13, Y(210) + 12, 'отходят на 2-й минуте', ' dim')}
+    ${T(X(170) - 7, Y(270), 'Р-7 «Спутник» · Байконур', ' ac')}
   </svg>`;
   /* 3. выход на орбиту */
   const s3 = `<svg viewBox="0 0 340 210">
@@ -11293,7 +11317,11 @@ canvas.exfly{display:block}
 })();
 
 (function(){ const orig = window.openEx; if (typeof orig !== 'function') return;
-  window.openEx = openEx = function(id){ const r = orig.apply(this, arguments); if (id === 10 && window.PS1STORY){ try { const ex = document.getElementById('vEx'); ex.querySelectorAll('.story,.ps1s').forEach(x => x.remove()); const t = ex.querySelector('.acts2') || ex.querySelector('.ex'); const d = document.createElement('div'); d.innerHTML = PS1STORY(); t ? t.after(d.firstChild) : ex.appendChild(d.firstChild); } catch (e){ console.warn(e); } } return r; }; })();
+  window.openEx = openEx = function(id){ const r = orig.apply(this, arguments); if (id === 10 && window.PS1STORY){ try { const ex = document.getElementById('vEx'); ex.querySelectorAll('.story,.ps1s').forEach(x => x.remove()); const t = ex.querySelector('.acts2') || ex.querySelector('.ex'); const d = document.createElement('div'); d.innerHTML = PS1STORY(); const st = d.firstChild; t ? t.after(st) : ex.appendChild(st);
+      const old = ex.querySelector('#toSpace'); if (old) old.remove();
+      const w = document.createElement('div'); w.innerHTML = '<div class="ocbig oc-orb"><div class="och">Орбита · 1957<b data-t>T+00:00</b></div><div class="ocf"><b>Спутник на орбите</b><span>Во весь экран →</span></div></div><div class="ocbig oc-map"><div class="och"><span></span><b>с Байконура</b></div><div class="ocf"><b>Где он пролетал</b><span>Во весь экран →</span></div></div>';
+      const cards = [...w.children]; st.after(...cards); const mm = cards[1]; mm.style.height = Math.round((ex.clientWidth - 24 - 28) / 2 + 110) + 'px';
+      cards.forEach(c => { c.addEventListener('click', () => window.openSpace && openSpace()); window.mountMiniOrbit && mountMiniOrbit(c); }); } catch (e){ console.warn(e); } } return r; }; })();
 </script>
 <style>
 /* v111: карта во всю ширину без внутреннего скролла страницы; «Карта · Список»; экскурсия — плеер внизу. Старый вид: localStorage kosmoMapLayout = 'classic' */
@@ -11379,6 +11407,63 @@ canvas.exfly{display:block}
   setInterval(() => { const c = document.querySelector('#m3 .exc'); const cs = c && getComputedStyle(c); const on = c && c.offsetParent && cs.display !== 'none' && +cs.opacity > .5 && cs.visibility !== 'hidden' && !c.hidden && c.getBoundingClientRect().height > 20; pl.classList.toggle('hid', !!on && list.hidden); }, 300);
   /* при входе на вкладку карточка от автовыбора маршрута не нужна */
   const st2 = window.showTab; window.showTab = function(t){ const r = st2.apply(this, arguments); if (t === 'map') setTimeout(clr, 900); return r; };
+})();
+</script>
+<style>
+/* v115: входная группа на 3D-карте — что есть сразу у входа (по видео-экскурсии) */
+.m3poi{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;padding:4px 9px 4px 5px;border-radius:999px;background:rgba(11,14,18,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.1);font:500 10.5px var(--f);color:#E9ECF1;white-space:nowrap;cursor:pointer;transition:opacity .3s;pointer-events:auto;z-index:2}
+.m3poi i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--c,#FF8A4A);color:#0b0c10}
+.m3poi i svg{width:11px;height:11px}
+.m3poi.hid{opacity:0;pointer-events:none}
+.m3info{position:absolute;left:12px;right:12px;top:58px;z-index:40;opacity:0;padding:14px 16px;border-radius:20px;background:rgba(14,17,23,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.1);transform:translateY(-14px);pointer-events:none;transition:transform .45s cubic-bezier(.32,.72,0,1),opacity .3s}
+.m3info.on{transform:none;opacity:1;pointer-events:auto}
+.m3info .k{font:500 10px var(--m);letter-spacing:.12em;text-transform:uppercase;color:#8B93A0}
+.m3info b{display:block;margin-top:6px;font:500 17px var(--f);color:#fff}
+.m3info p{margin:6px 0 0;font-size:13.5px;line-height:1.45;color:#AEB6C2}
+.m3info .row{display:flex;gap:8px;margin-top:12px}
+.m3info button{height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:500 13px var(--f)}
+.m3info button.pr{background:#FF8A4A;border:0;color:#120a05}
+</style>
+<script>
+(function(){
+  const I = { door:'<path d="M7 3h10v18H7z"/><path d="M14 12h.5"/>', cash:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>', coat:'<path d="M12 6a2 2 0 1 1 2 2l-2 1.5L4 15h16l-8-5.5"/>', gate:'<path d="M5 4v16M19 4v16M5 12h6M13 12h6"/>', bag:'<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/>', cup:'<path d="M5 8h11v6a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/>', echo:'<circle cx="12" cy="12" r="2"/><path d="M8 8a6 6 0 0 0 0 8M16 8a6 6 0 0 1 0 8M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>', orion:'<circle cx="12" cy="13" r="7"/><path d="M5 13h14M12 6v14"/>' };
+  /* x,z — координаты макета; вестибюль: x −18…18, z 51…65, вход с фасада (z≈65) */
+  const POI = [
+    { id:'echo', x:0, z:58.1, c:'#B9A7FF', t:'Точка эха', k:'Круг на полу', p:'Встань в центр круга, подними голову и скажи что-нибудь — купол вернёт голос эхом. Попробуй шёпотом.' },
+    { id:'cash', x:-7, z:56.6, c:'#FF8A4A', t:'Кассы', k:'Вестибюль', p:'Билеты, аудиогид и бесплатные дни. Билет в приложении — без очереди: QR покажи на контроле.', a:['Билет без очереди', () => document.getElementById('tkFab')?.click()] },
+    { id:'coat', x:6.3, z:61.2, c:'#9AA3B0', t:'Гардероб', k:'Вестибюль', p:'Бесплатный гардероб у входа. Рюкзаки и большие сумки лучше сдать.' },
+    { id:'shop', x:-12.5, z:61.6, c:'#FFB27A', t:'Магазин', k:'Сувениры и книги', p:'Мерч, книги, модели и значки. Заказ из приложения соберут к твоему приходу.', a:['Открыть магазин', () => window.showTab && showTab('shop')] },
+    { id:'vend', x:13.8, z:55.4, c:'#7FE0C4', t:'Автоматы', k:'Космическая еда и кофе', p:'Космическая еда в тубах, кофе, мороженое и автомат сувенирных монет с видами музея.' },
+    { id:'orion', x:-13, z:54.2, c:'#FF7A9C', t:'«Орион»', k:'Аттракцион', p:'Аттракцион-симулятор в вестибюле: короткий «полёт» в капсуле. Билет — отдельно, на кассе.' },
+    { id:'door', x:-2, z:64.2, c:'#E9ECF1', t:'Вход', k:'Главный вход', p:'Вход в музей — под монументом «Покорителям космоса». Сразу за дверями — вестибюль.' },
+    { id:'gate', x:-2, z:52.4, c:'#8CC4FF', t:'Контроль билетов', k:'Вход в залы', p:'Турникеты перед первым залом: приложи QR из приложения или бумажный билет.' } ];
+  const wait = () => { const K = window.__m3k; if (!K || !K.zones || !K.zones.vest){ setTimeout(wait, 600); return; } build(K); }; wait();
+  function build(K){ const T = K.THREE, Y = (K.zones.vest.max.y || 1.33), g = new T.Group(); g.name = 'vestPOI'; K.scene.add(g);
+    const dark = new T.MeshStandardMaterial({ color:0x23262d, roughness:.6, metalness:.2 }), edge = new T.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:.45 });
+    const boxAt = (x, z, w, h, d, mat) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat || dark); m.position.set(x, Y + h / 2, z); m.castShadow = true; g.add(m); const e = new T.LineSegments(new T.EdgesGeometry(m.geometry), edge); e.position.copy(m.position); g.add(e); return m; };
+    const glow = c => new T.MeshStandardMaterial({ color:0x111111, emissive:new T.Color(c), emissiveIntensity:.9, roughness:.4 });
+    /* магазин: стеллажи и прилавок */
+    boxAt(-14, 62, 4.2, 1.6, .7); boxAt(-11, 62.6, .8, 1.0, 2.4); boxAt(-12.6, 60.6, 2.6, .9, .7, glow(0xFFB27A));
+    /* автоматы: кофе, мороженое, космическая еда, монеты */
+    [[0xff9a5a, 0], [0xff6f9c, 1], [0x7fe0c4, 2], [0xdfe6f2, 3]].forEach(([c, k]) => { const m = boxAt(13.8, 54 + k * 1.05, .8, 1.9, .9); const f = new T.Mesh(new T.PlaneGeometry(.6, 1.2), glow(c)); f.position.set(13.8 - .41, Y + 1.15, 54 + k * 1.05); f.rotation.y = -Math.PI / 2; g.add(f); });
+    /* «Орион»: капсула на платформе */
+    boxAt(-13, 54.2, 3.2, .3, 3.2); const cap = new T.Mesh(new T.SphereGeometry(1.15, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), new T.MeshStandardMaterial({ color:0xd9dde4, roughness:.3, metalness:.4 })); cap.position.set(-13, Y + .3, 54.2); cap.castShadow = true; g.add(cap);
+    /* точка эха: концентрические круги на полу */
+    for (let k = 0; k < 4; k++){ const r = 1.2 + k * .8; const ring = new T.Mesh(new T.RingGeometry(r, r + .05, 96), new T.MeshBasicMaterial({ color:0xB9A7FF, transparent:true, opacity:.5 - k * .1, depthWrite:false })); ring.rotation.x = -Math.PI / 2; ring.position.set(0, Y + .03, 58.1); g.add(ring); ring.userData.k = k; }
+    const echoRings = g.children.filter(o => o.userData.k !== undefined);
+    /* дверь на фасаде */
+    boxAt(-3.4, 64.5, .25, 2.4, .25); boxAt(-.6, 64.5, .25, 2.4, .25); boxAt(-2, 64.5 + 0, 3, .25, .25).position.y = Y + 2.4;
+    /* подписи */
+    const host = document.getElementById('m3pins'), wrap = document.getElementById('m3'); const info = document.createElement('div'); info.className = 'm3info'; wrap.appendChild(info);
+    const els = POI.map(P => { const el = document.createElement('button'); el.className = 'm3poi hid'; el.style.setProperty('--c', P.c); el.innerHTML = `<i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${I[P.id] || ''}</svg></i>${P.t}`; host.appendChild(el);
+      el.addEventListener('click', e => { e.stopPropagation(); info.innerHTML = `<div class="k">${P.k}</div><b>${P.t}</b><p>${P.p}</p><div class="row">${P.a ? `<button class="pr">${P.a[0]}</button>` : ''}<button class="x">Понятно</button></div>`; info.classList.add('on'); info.querySelector('.x').onclick = () => info.classList.remove('on'); const pr = info.querySelector('.pr'); if (pr) pr.onclick = () => { info.classList.remove('on'); P.a[1](); }; });
+      return { P, el, v:new T.Vector3(P.x, Y + (P.id === 'door' ? 3 : 2.2), P.z) }; });
+    wrap.addEventListener('pointerdown', e => { if (!e.target.closest('.m3info,.m3poi')) info.classList.remove('on'); });
+    const v = new T.Vector3();
+    (function loop(now){ requestAnimationFrame(loop); if (!wrap.offsetParent) return; const w = K.box.clientWidth, h = K.box.clientHeight; const show = K.cam.zoom > 1.3 && !document.querySelector('#m3wrap.scheme');
+      echoRings.forEach(r => { const t = ((now / 1600) + r.userData.k * .25) % 1; r.material.opacity = .55 * (1 - t); r.scale.setScalar(.7 + t * .6); });
+      const placed = []; for (const L of els){ v.copy(L.v).project(K.cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; L.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = show && x > 10 && x < w - 10 && y > 60 && y < h - 20; const bb = [x - 34, y - 9, x + 34, y + 9]; if (vis && placed.some(q => bb[0] < q[2] && bb[2] > q[0] && bb[1] < q[3] && bb[3] > q[1])) vis = false; if (vis) placed.push(bb); L.el.classList.toggle('hid', !vis); } })(0);
+  }
 })();
 </script>
 </body>
