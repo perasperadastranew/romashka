@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Музей космонавтики — концепт сайта, версия для компьютера</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--f:Inter,-apple-system,system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,Menlo,monospace;--ink:#14161A;--mu:#6B717D;--bg:#F3F1EC;--dark:#0E1013;--ac:#FF6A1F;--ac2:#FF8A4A;--acink:#C24A12}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--f)}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:1320px;margin:0 auto;padding:0 60px}
+/* шапка */
+header{position:sticky;top:0;z-index:5;background:rgba(14,16,19,.94);backdrop-filter:blur(12px);color:#fff}
+header .wrap{height:76px;display:flex;align-items:center;gap:36px}
+.logo{display:flex;align-items:center;gap:10px;font:600 13px/1.15 var(--f);letter-spacing:.08em;text-transform:uppercase}
+.logo svg{width:30px;height:30px;color:var(--ac2)}
+nav{display:flex;gap:28px;flex:1}
+nav a{color:rgba(255,255,255,.78);text-decoration:none;font:500 15px var(--f)}
+nav a:hover{color:#fff}
+.lang{color:rgba(255,255,255,.6);font:500 14px var(--f)}
+.buy{height:44px;padding:0 22px;border-radius:22px;border:0;background:var(--ac);color:#fff;font:500 15px var(--f)}
+/* первый экран */
+.hero{background:var(--dark);color:#fff}
+.hero .wrap{display:grid;grid-template-columns:1fr 600px;gap:64px;align-items:center;padding-top:56px;padding-bottom:64px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;border-radius:16px;background:rgba(255,255,255,.1);font:500 14px var(--f)}
+.pill i{width:8px;height:8px;border-radius:50%;background:#5FD08E}
+.pill.off i{background:#FF6A6A}
+.hero h1{font:300 72px/1.02 var(--f);letter-spacing:-.035em;margin-top:22px}
+.hero .lead{font:400 19px/1.5 var(--f);color:rgba(255,255,255,.72);margin-top:18px;max-width:520px}
+.btns{display:flex;gap:10px;margin-top:30px}
+.btns button{height:54px;padding:0 26px;border-radius:27px;border:0;font:500 16px var(--f)}
+.btns .p{background:var(--ac);color:#fff}
+.btns .s{background:rgba(255,255,255,.12);color:#fff}
+.slider{position:relative;height:560px;border-radius:28px;overflow:hidden;background:#16191E}
+.sl{position:absolute;inset:0;opacity:0;transition:opacity .8s}
+.sl.on{opacity:1}
+.sl img{width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+.sl::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,16,19,0) 55%,rgba(14,16,19,.85))}
+.cap{position:absolute;left:28px;bottom:26px;z-index:1;opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s}
+.sl.on .cap{opacity:1;transform:none;transition:opacity .45s .45s,transform .45s .45s}
+.cap small{display:block;font:500 12px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--ac2)}
+.cap b{display:block;font:500 28px/1.15 var(--f);margin-top:6px}
+.dots{position:absolute;right:28px;bottom:34px;z-index:2;display:flex;gap:6px}
+.dots button{width:8px;height:8px;border-radius:4px;border:0;padding:0;background:rgba(255,255,255,.3);transition:width .3s,background .3s}
+.dots button.on{width:24px;background:var(--ac2)}
+/* разделы */
+section.s{padding-top:72px}
+.s h2{display:flex;justify-content:space-between;align-items:baseline;font:400 36px/1.1 var(--f);letter-spacing:-.02em}
+.s h2 a{font:500 15px var(--f);color:var(--acink);text-decoration:none}
+.grid{display:grid;gap:16px;margin-top:24px}
+.g5{grid-template-columns:repeat(5,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g6{grid-template-columns:repeat(6,1fr)}
+.card{background:#fff;border:1px solid rgba(20,22,26,.07);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:8px}
+.card small{font:500 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:#8A8F9C}
+.card b{font:500 17px/1.3 var(--f)}
+.card p{font:400 14px/1.45 var(--f);color:var(--mu)}
+.card .date{margin-top:auto;padding-top:10px;font:500 13px var(--m);color:var(--acink)}
+.mapc{background:var(--dark);color:#fff;border:0;text-decoration:none}.mapc small{color:#8E95A0}.mapc .date{color:var(--ac2)}
+.hall i{display:block;width:36px;height:4px;border-radius:2px}
+.ex{display:flex;flex-direction:column;gap:10px}
+.ex div{aspect-ratio:1;border-radius:20px;background:#16191E;overflow:hidden;display:grid;place-items:center}
+.ex img{width:100%;height:100%;object-fit:contain}
+.ex b{font:500 14.5px/1.3 var(--f)}
+/* гид */
+.app{margin-top:72px;background:var(--dark);color:#fff;border-radius:28px;padding:36px 40px;display:grid;grid-template-columns:auto 1fr auto;gap:32px;align-items:center}
+.app svg{width:64px;height:64px;color:var(--ac2)}
+.app b{display:block;font:400 30px/1.15 var(--f);letter-spacing:-.02em}
+.app p{font:400 16px/1.5 var(--f);color:#A2A8B3;margin-top:8px;max-width:560px}
+.qr{display:flex;align-items:center;gap:16px}
+.qr img{width:128px;height:128px;border-radius:14px;background:#fff;padding:8px}
+.qr span{font:400 14px/1.4 var(--f);color:#A2A8B3;max-width:150px}
+/* перед визитом */
+.visit{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;margin-top:24px}
+.row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px dashed rgba(20,22,26,.12);font:400 15px var(--f);color:#3A3F48}
+.row:first-of-type{border-top:0}
+.row b{font-weight:500;color:var(--ink);white-space:nowrap}
+footer{margin-top:80px;background:var(--dark);color:#9AA1AC}
+footer .wrap{padding-top:40px;padding-bottom:48px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:24px;font:400 14px/2 var(--f)}
+footer b{display:block;color:#fff;font:500 15px var(--f);margin-bottom:8px}
+.concept{font:400 12px var(--f);color:#6B717D;margin-top:12px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/></svg>Музей<br>космонавтики</div>
+  <nav><a href="#visit">Билеты и&nbsp;цены</a><a href="#halls">Что посмотреть</a><a href="#now">Афиша</a><a href="#visit">Как добраться</a><a href="#halls">Школам и&nbsp;группам</a></nav>
+  <span class="lang">EN</span>
+  <button class="buy" data-buy>Купить билет</button>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="pill" id="open"><i></i><span>Сегодня открыто</span></span>
+    <h1>Музей космонавтики</h1>
+    <p class="lead">Два этажа о&nbsp;том, как человек полетел в&nbsp;космос. Проспект Мира, 111 — две минуты от&nbsp;метро ВДНХ.</p>
+    <div class="btns"><button class="p" data-buy>Купить билет · 500 ₽</button><button class="s" onclick="location.hash='visit'">Как добраться</button></div>
+  </div>
+  <div class="slider" id="slider">
+    <div class="sl on"><img src="g/luno_big.webp" alt="«Луноход-1»"><div class="cap"><small>Нижний этаж · Луна и планеты</small><b>«Луноход-1»</b></div></div>
+    <div class="sl"><img src="g/mir_big.webp" alt="Базовый блок станции «Мир»"><div class="cap"><small>Верхний этаж · Космический дом на&nbsp;орбите</small><b>Станция «Мир»</b></div></div>
+    <div class="sl"><img src="g/mars_big.webp" alt="Спускаемый аппарат «Марс-3»"><div class="cap"><small>Нижний этаж · Луна и планеты</small><b>«Марс-3»</b></div></div>
+    <div class="dots"><button class="on" aria-label="Слайд 1"></button><button aria-label="Слайд 2"></button><button aria-label="Слайд 3"></button></div>
+  </div>
+</div></section>
+
+<main class="wrap">
+  <section class="s" id="now"><h2>Сейчас в&nbsp;музее<a href="#now">Вся афиша →</a></h2>
+    <div class="grid g5">
+      <div class="card"><small>Выставка</small><b>«ПЛАНЕТА SiO2». Космос в&nbsp;работах художников по&nbsp;стеклу</b><span class="date">до 22 ноября</span></div>
+      <div class="card"><small>Выставка</small><b>«Дни Дальнего Востока в&nbsp;Москве»</b><span class="date">до 30 ноября</span></div>
+      <div class="card"><small>Выставка</small><b>«Звезда Гая Северина»</b><span class="date">до 7 февраля</span></div>
+      <div class="card"><small>Каждый день</small><b>Космический планетарий</b><span class="date">до 31 декабря</span></div>
+      <div class="card"><small>Тренажёр</small><b>Корабль «Орион»</b><span class="date">до 1 мая</span></div>
+    </div></section>
+
+  <section class="s" id="halls"><h2>Залы<a href="#halls">Карта музея →</a></h2><div class="grid g4" id="hallGrid"></div></section>
+
+  <section class="s"><h2>Главные экспонаты<a href="#halls">Все 15 →</a></h2><div class="grid g6" id="exGrid"></div></section>
+
+  <div class="app">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/><circle cx="12" cy="12" r="10.5" opacity=".35"/></svg>
+    <div><b>Скачай гид до&nbsp;визита</b><p>Маршрут по&nbsp;залам, аудиогид и&nbsp;печати в&nbsp;паспорт — в&nbsp;приложении «Музей в&nbsp;кармане». Откроется на&nbsp;телефоне.</p></div>
+    <div class="qr"><img src="g/qr_app.png" alt="QR-код: открыть гид «Музей в кармане» на телефоне"><span>Наведи камеру телефона — гид откроется сразу</span></div>
+  </div>
+
+  <section class="s" id="visit"><h2>Перед визитом</h2>
+    <div class="visit">
+      <div class="card"><small>Цены</small>
+        <div class="row"><span>Взрослый</span><b>500 ₽</b></div><div class="row"><span>Учащиеся колледжей</span><b>350 ₽</b></div><div class="row"><span>Пенсионеры</span><b>300 ₽</b></div><div class="row"><span>Билет с&nbsp;аудиогидом</span><b>от 250 ₽</b></div><div class="row"><span>Школьники Москвы</span><b>бесплатно</b></div><div class="row"><span>Пушкинская карта</span><b>можно оплатить</b></div><div class="row"><span>Остальные льготы</span><b>в&nbsp;перечне музея</b></div>
+      </div>
+      <div class="card"><small>Часы работы</small>
+        <div class="row"><span>Пн, вт, ср, пт, вс</span><b>10:00–19:00</b></div><div class="row"><span>Чт, сб</span><b>10:00–21:00</b></div><div class="row"><span>30 ноября</span><b>технический день</b></div>
+      </div>
+      <div class="card"><small>Как добраться</small><b>Проспект Мира, 111</b><p>Метро ВДНХ, две минуты пешком. Музей — в&nbsp;стилобате монумента «Покорителям космоса».</p></div>
+    </div></section>
+</main>
+
+<footer><div class="wrap">
+  <div><b>Музей космонавтики</b>Проспект Мира, 111<p class="concept">Концепт редизайна студии Perasperadastra. Не официальный сайт музея.</p></div>
+  <div><b>Посетителям</b>Билеты и цены<br>Часы и адрес<br>Доступная среда<br>Частые вопросы</div>
+  <div><b>Смотреть</b>Залы и экспонаты<br>Афиша<br>Новости<br>Дом-музей Королёва</div>
+  <div><b>Музей</b>О музее<br>Пресс-служба<br>Образование<br>Контакты</div>
+</div></footer>
+
+<script>
+const HALLS = [
+ ['Утро космической эры','Верхний этаж','#F0B898','Мемориальный зал: первый спутник, «Восток» Гагарина, Белка и Стрелка, первые скафандры и аппараты к Луне и Венере.'],
+ ['Творцы','Верхний этаж','#EDCB6E','Циолковский, Цандер, Королёв и первые ракеты ГИРД.'],
+ ['Космический дом на орбите','Верхний этаж','#9CC4EA','Станция «Мир», корабли «Союз», скафандры для выхода в открытый космос.'],
+ ['Исследования Луны и планет','Нижний этаж','#BDB0EA','«Луноход-1», «Луна-16», спускаемые аппараты «Венеры» и «Марса», лунный скафандр «Кречет».'],
+ ['Международное сотрудничество','Нижний этаж','#98D7B9','«Союз — Аполлон», «Интеркосмос», стыковочный агрегат АПАС и модель МКС.'],
+ ['Космонавтика — человечеству','Нижний этаж','#E8A8BF','Спутники навигации, связи и наблюдения Земли.'],
+ ['Международный космический парк','Нижний этаж','#B5D592','Модели ракет-носителей и стартовых комплексов СССР, России, США и Китая.']];
+document.getElementById('hallGrid').innerHTML = HALLS.map(([n, f, c, d]) => `<div class="card hall"><i style="background:${c}"></i><small>${f}</small><b>${n}</b><p>${d}</p></div>`).join('') + `<a class="card mapc" href="../deck/app/" target="_blank"><small>Схема двух этажей</small><b>Маршрут по залам — в&nbsp;гиде «Музей в&nbsp;кармане»</b><span class="date">Открыть гид →</span></a>`;
+const EXS = [[10,'Первый спутник'],[12,'Спускаемый аппарат «Восток»'],[11,'Контейнер Белки и Стрелки'],[14,'Скафандр «Беркут»'],[24,'«Луна-9»'],[13,'Скафандр «СК-1»']];
+document.getElementById('exGrid').innerHTML = EXS.map(([i, t]) => `<div class="ex"><div><img src="thumbs/${i}.webp" alt="${t}"></div><b>${t}</b></div>`).join('');
+// слайдер
+{ const sl = [...document.querySelectorAll('.sl')], dt = [...document.querySelectorAll('.dots button')]; let k = 0, tm;
+  const show = n => { k = (n + sl.length) % sl.length; sl.forEach((e, i) => e.classList.toggle('on', i === k)); dt.forEach((e, i) => e.classList.toggle('on', i === k)); };
+  const auto = () => { clearInterval(tm); tm = setInterval(() => show(k + 1), 4500); };
+  dt.forEach((b, i) => b.onclick = () => { show(i); auto(); }); auto(); }
+// статус часов по графику на ноябрь с сайта музея
+{ const d = new Date(), wd = d.getDay(), h = d.getHours() + d.getMinutes() / 60, end = (wd === 4 || wd === 6) ? 21 : 19, el = document.getElementById('open'), t = el.lastElementChild;
+  if (d.getMonth() === 10 && d.getDate() === 30) { t.textContent = 'Сегодня технический день'; el.classList.add('off'); }
+  else if (h < 10) t.textContent = 'Откроется сегодня в 10:00';
+  else if (h < end) t.textContent = `Сегодня открыто до ${end}:00`;
+  else { t.textContent = 'Закрыто · завтра с 10:00'; el.classList.add('off'); } }
+// покупка — в прототипе для телефона
+document.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => location.href = 'index.html#buy');
+</script>
+</body>
+</html>

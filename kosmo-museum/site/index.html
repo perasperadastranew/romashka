@@ -273,6 +273,31 @@ html,body{font-variant-numeric:tabular-nums}
 .sninfo .snbtns{margin-top:12px}
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .sntiles{margin-top:0}
+/* страница экспоната */
+button.snex{border:0;background:none;padding:0;text-align:left;color:inherit;cursor:pointer;font:inherit}
+.snx{position:absolute;inset:0;z-index:6;background:#F3F1EC;transition:transform .38s cubic-bezier(.32,.72,0,1)}
+.snx.off{transform:translateX(100%);pointer-events:none}
+.snxs{position:absolute;inset:0;overflow:auto;scrollbar-width:none}
+.snxs::-webkit-scrollbar{display:none}
+.snxh{position:sticky;top:0;z-index:2;height:100px;padding:54px 12px 0;display:flex;align-items:center;background:rgba(14,16,19,.94);backdrop-filter:blur(12px)}
+.snxh button{display:flex;align-items:center;gap:4px;height:34px;padding:0 12px 0 6px;border-radius:17px;border:0;background:rgba(255,255,255,.1);color:#fff;font:500 13.5px var(--f);cursor:pointer}
+.snxi{height:300px;background:#16191E;display:grid;place-items:center}
+.snxi img{width:270px;height:270px;object-fit:contain}
+.snxb{padding:18px 16px 40px}
+.snxb small{display:block;font:500 10.5px var(--m);letter-spacing:.08em;text-transform:uppercase;color:#C24A12}
+.snxb h1{font:400 27px/1.12 var(--f);letter-spacing:-.02em;margin-top:8px}
+.snxt{display:inline-block;margin-top:10px;padding:4px 9px;border-radius:8px;background:#E7E4DD;font:500 11px var(--m);color:#4A4F59}
+.snxb p{font:400 15px/1.5 var(--f);color:#3A3F48;margin-top:12px}
+.snxa{display:flex;gap:8px;margin-top:18px}
+.snxa button{flex:1;height:44px;border-radius:22px;border:1px solid rgba(20,22,26,.14);background:#fff;color:#14161A;font:500 14px var(--f);cursor:pointer}
+.snxa button.g{background:#14161A;color:#fff;border-color:#14161A}
+.snxapp{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:14px;border-radius:18px;border:0;background:#0E1013;color:#fff;text-align:left;cursor:pointer}
+.snxapp i{width:38px;height:38px;border-radius:12px;flex:none;background:radial-gradient(circle at 50% 50%,#FF8A4A 0 5px,transparent 6px),#1B1E23;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.snxapp span{flex:1;font:400 12.5px/1.4 var(--f);color:#A2A8B3}
+.snxapp b{display:block;font:500 14px var(--f);color:#fff;margin-bottom:2px}
+.snxapp em{font-style:normal;color:#FF8A4A;font-size:18px}
+.snxb h2{font:400 21px/1.1 var(--f);letter-spacing:-.02em;margin-top:28px}
+.snxb .snrow{margin:12px -16px 0;padding:0 16px}
 </style></head><body>
 <div class="dev"><div class="scr"><div class="island"></div><div class="sb"><span>9:41</span><span></span></div>
 <div class="sv new" id="siteNew"><div class="snscroll" id="snScroll">
@@ -302,7 +327,7 @@ html,body{font-variant-numeric:tabular-nums}
     </div></section>
   <section class="snsec" id="snHalls"><h2>Залы<small>Карта музея →</small></h2><div class="snrow" id="snHallRow"></div></section>
   <section class="snsec"><h2>Главные экспонаты<small>Все 15 →</small></h2><div class="snrow" id="snExRow"></div></section>
-  <div class="snapp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/><circle cx="12" cy="12" r="10.5" opacity=".35"/></svg><div><b>Музей в&nbsp;кармане</b><span>Маршрут по залам, досье экспонатов, NFC-метки и&nbsp;печати в&nbsp;паспорт</span><button id="snApp">Открыть приложение</button></div></div>
+  <div class="snapp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/><circle cx="12" cy="12" r="10.5" opacity=".35"/></svg><div><b>Скачай гид до&nbsp;визита</b><span>Маршрут по&nbsp;залам, аудиогид и&nbsp;печати в&nbsp;паспорт — в&nbsp;приложении «Музей в&nbsp;кармане»</span><button id="snApp">Открыть гид</button></div></div>
   <section class="snsec" id="snVisit"><h2>Перед визитом</h2>
     <div class="snacc">
       <details open><summary>Цены</summary><div class="in"><div class="snpr"><span>Взрослый</span><b>500 ₽</b></div><div class="snpr"><span>Учащиеся колледжей</span><b>350 ₽</b></div><div class="snpr"><span>Пенсионеры</span><b>300 ₽</b></div><div class="snpr"><span>Билет с&nbsp;аудиогидом</span><b>от 250 ₽</b></div><div class="snpr"><span>Школьники Москвы</span><b>бесплатно</b></div><div class="snpr"><span>Пушкинская карта</span><b>можно оплатить</b></div><div class="snpr"><span>Остальные льготы</span><b>в&nbsp;перечне музея</b></div></div></details>
@@ -314,6 +339,7 @@ html,body{font-variant-numeric:tabular-nums}
   <footer class="snfoot"><b>Музей космонавтики</b><div class="cols"><span>О музее</span><span>Новости</span><span>Дом-музей Королёва</span><span>Образование</span><span>Пресс-служба</span><span>Мы в эфире</span><span>Контакты</span><span>English</span></div></footer>
   </div>
   <div class="sncook" id="snCook">Сайт использует cookie. Подробнее — в&nbsp;политике.<button id="snCookOk">Хорошо</button></div>
+  <div class="snx off" id="snX" aria-hidden="true"><div class="snxs" id="snXs"></div></div>
   <div class="snt off" id="snt"><div class="sntp">
     <div class="snth"><b>Билет в&nbsp;музей</b><button id="sntX" aria-label="Закрыть"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="snst" id="snSt"><i class="on"></i><i></i><i></i><i></i></div><div class="sntl" id="sntL"></div>
@@ -394,7 +420,23 @@ function notes(m){ const n = NOTES[m], el = document.getElementById('notes'); el
   const H = window.M_HALLS || {}, HN = ['utro', 'tvortsy', 'dom', 'luna', 'mezhdu', 'chelovechestvu', 'park'];
   $('#snHallRow').innerHTML = HN.filter(k => H[k]).map(k => `<div class="snhall"><i style="background:${H[k].color}"></i><small>${H[k].floor === 'upper' ? 'Верхний этаж' : 'Нижний этаж'}</small><b>${H[k].name}</b><p>${H[k].desc || ''}</p></div>`).join('');
   const EXS = [[10, 'Первый спутник'], [12, 'Спускаемый аппарат «Восток»'], [11, 'Контейнер Белки и Стрелки'], [14, 'Скафандр «Беркут»'], [24, '«Луна-9»'], [13, 'Скафандр «СК-1»']];
-  $('#snExRow').innerHTML = EXS.map(([id, t]) => `<div class="snex"><div><img src="thumbs/${id}.webp" alt="${t}" loading="lazy"></div><b>${t}</b></div>`).join('');
+  $('#snExRow').innerHTML = EXS.map(([id, t]) => `<button class="snex" data-ex="${id}"><div><img src="thumbs/${id}.webp" alt="${t}" loading="lazy"></div><b>${t}</b></button>`).join('');
+  // страница экспоната
+  const EXD = Object.fromEntries((window.M_EX || []).map(r => [r[0], r]));
+  const openEx = id => { const r = EXD[id]; if (!r) return; const [, inv, name, hall, text] = r, h = H[hall] || {};
+    const near = EXS.filter(([i]) => i !== id && EXD[i] && EXD[i][3] === hall);
+    $('#snXs').innerHTML = `<div class="snxh"><button id="snXb" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Назад</button></div>
+      <div class="snxi"><img src="thumbs/${id}.webp" alt="${name}"></div>
+      <div class="snxb"><small>${h.floor === 'upper' ? 'Верхний этаж' : 'Нижний этаж'} · ${h.name || ''}</small><h1>${name}</h1>${inv && inv !== '—' ? `<span class="snxt">Инв. № ${inv}</span>` : ''}<p>${text}</p>
+      <div class="snxa"><button id="snXmap">Показать на&nbsp;схеме</button><button id="snXg" class="g">Слушать в&nbsp;гиде</button></div>
+      <button class="snxapp" id="snXapp"><i></i><span><b>Аудиогид и&nbsp;печать в&nbsp;паспорт</b>У&nbsp;таблички экспоната — в&nbsp;приложении «Музей в&nbsp;кармане»</span><em>→</em></button>
+      ${near.length ? `<h2>Рядом в&nbsp;зале</h2><div class="snrow">${near.map(([i, t]) => `<button class="snex" data-ex="${i}"><div><img src="thumbs/${i}.webp" alt="${t}" loading="lazy"></div><b>${t}</b></button>`).join('')}</div>` : ''}</div>`;
+    $('#snXs').scrollTop = 0; $('#snX').classList.remove('off'); $('#snX').setAttribute('aria-hidden', 'false');
+    $('#snXb').onclick = closeEx; $('#snXmap').onclick = () => { closeEx(); $('#snHalls').scrollIntoView({ behavior:'smooth', block:'start' }); };
+    $('#snXg').onclick = () => window.open('../deck/app/', '_blank'); $('#snXapp').onclick = () => window.open('../deck/app/', '_blank'); };
+  const closeEx = () => { $('#snX').classList.add('off'); $('#snX').setAttribute('aria-hidden', 'true'); };
+  window.openSiteExhibit = openEx;
+  document.getElementById('siteNew').addEventListener('click', e => { const b = e.target.closest('[data-ex]'); if (b) openEx(+b.dataset.ex); });
   
   // слайдер экспонатов на первом экране
   { const sl = [...document.querySelectorAll('#snHero .snsl')], dt = [...document.querySelectorAll('#snHero .sndots i')]; let k = 0, tm;
@@ -410,7 +452,8 @@ function notes(m){ const n = NOTES[m], el = document.getElementById('notes'); el
     else if (h < end) el.lastChild.textContent = `Сегодня открыто до ${end}:00`;
     else { el.lastChild.textContent = `Закрыто · завтра с 10:00`; el.classList.add('off'); } }
   $('#snCookOk').addEventListener('click', () => { $('#snCook').hidden = true; });
-  $('#snApp').addEventListener('click', () => {});
+  const APP = '../deck/app/'; const openApp = () => window.open(APP, '_blank');
+  $('#snApp').addEventListener('click', openApp);
   $('#snRoute').addEventListener('click', () => { const d = $('#snVisit details:nth-child(3)'); d.open = true; d.scrollIntoView({ behavior:'smooth', block:'center' }); });
   document.querySelectorAll('#siteNew [data-go]').forEach(b => b.addEventListener('click', () => { const t = { visit:'#snVisit', halls:'#snHalls', today:'#snToday', kids:'#snToday' }[b.dataset.go]; $(t).scrollIntoView({ behavior:'smooth', block:'start' }); }));
   // покупка в 4 шага
@@ -436,13 +479,14 @@ function notes(m){ const n = NOTES[m], el = document.getElementById('notes'); el
     if (T.step === 2) B.innerHTML = `<h3>Оплата</h3><div class="snsum">${dl(days[T.day])}, сеанс <b>${T.slot}</b><br>Взрослый × ${T.full}${T.pens ? ` · пенсионер × ${T.pens}` : ''}${T.school ? ` · школьник × ${T.school}` : ''}<br>Итого <b>${total()} ₽</b></div>
       <div class="snpay">${[['sbp', 'СБП', 'linear-gradient(135deg,#5B57A2,#1D9FD8,#F8B300)'], ['card', 'Банковская карта', '#14161A'], ['push', 'Пушкинская карта', '#E3561A']].map(([k, t, c]) => `<button data-p="${k}" class="${T.pay === k ? 'on' : ''}"><i style="background:${c}"></i>${t}</button>`).join('')}</div>
       <p class="sncmp">Демо: деньги не списываются. Билет придёт на почту, в Wallet и в приложение.</p>`;
-    if (T.step === 3){ B.innerHTML = `<div class="sntq"><small>Электронный билет · демо</small><b>${dl(days[T.day])}, ${T.slot}</b><canvas id="snQR" width="160" height="160"></canvas><span>Покажи код на входе · ${T.full + T.pens + T.school} чел.</span></div><div class="snwal"><button class="a">Добавить в Wallet</button><button class="b" id="snToApp">В приложение</button></div><p class="sncmp">Было: около 7 шагов и уход на bilet.mos.ru с попапом подписки. Стало: 4 шага на сайте музея.</p>`; qr($('#snQR')); $('#snToApp').onclick = () => close(); }
+    if (T.step === 3){ B.innerHTML = `<div class="sntq"><small>Электронный билет · демо</small><b>${dl(days[T.day])}, ${T.slot}</b><canvas id="snQR" width="160" height="160"></canvas><span>Покажи код на входе · ${T.full + T.pens + T.school} чел.</span></div><div class="snwal"><button class="a">Добавить в Wallet</button><button class="b" id="snToApp">В приложение</button></div><p class="sncmp">Было: около 7 шагов и уход на bilet.mos.ru с попапом подписки. Стало: 4 шага на сайте музея.</p>`; qr($('#snQR')); $('#snToApp').onclick = () => { close(); window.open('../deck/app/', '_blank'); }; }
     $('#sntSum').innerHTML = T.step < 3 ? `Итого<b>${total()} ₽</b>` : 'Готово';
     $('#sntNext').textContent = ['Дальше', 'К оплате', `Оплатить ${total()} ₽`, 'Закрыть'][T.step]; $('#sntNext').disabled = (T.step === 0 && !T.slot) || (T.step === 1 && T.full + T.pens + T.school === 0); }
   $('#sntB').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.d) T.day = +b.dataset.d; if (b.dataset.s) T.slot = b.dataset.s; if (b.dataset.q) T[b.dataset.q] = Math.max(0, Math.min(9, T[b.dataset.q] + +b.dataset.v)); if (b.dataset.p) T.pay = b.dataset.p; render(); });
   const open = () => { T.step = 0; render(); $('#snt').classList.remove('off'); }, close = () => $('#snt').classList.add('off');
   window.openSiteTicket = open;
+  if (location.hash === '#buy') setTimeout(open, 500);
   document.querySelectorAll('#siteNew [data-buy]').forEach(b => b.addEventListener('click', open));
   $('#sntX').addEventListener('click', close); $('#snt').addEventListener('click', e => { if (e.target.id === 'snt') close(); });
   $('#sntNext').addEventListener('click', () => { if (T.step === 3) return close(); T.step++; render(); });

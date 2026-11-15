@@ -7,6 +7,7 @@
 - Презентация с приложением: https://perasperadastranew.github.io/romashka/kosmo-museum/deck/
 - Приложение отдельно: https://perasperadastranew.github.io/romashka/kosmo-museum/deck/app/
 - Прототип сайта: https://perasperadastranew.github.io/romashka/kosmo-museum/site/
+- Прототип сайта для компьютера: https://perasperadastranew.github.io/romashka/kosmo-museum/site/desktop.html
 - Разбор сайта (мобильная версия): https://perasperadastranew.github.io/romashka/kosmo-museum/site-deck/
 
 ## Открыть без GitHub Pages
@@ -21,7 +22,7 @@
 |---|---|
 | `deck/` | Слайды «Музей в кармане»: слева тезисы, справа живое приложение; стрелки ← → или свайп |
 | `deck/app/` | Прототип приложения: онбординг, «Сегодня», карта (3D + контурная схема залов), досье, 3D-облёты, плеер, паспорт |
-| `site/` | Прототип нового сайта музея |
+| `site/` | Прототип нового сайта музея: `index.html` — телефон (слайдер, покупка в 4 шага, страницы экспонатов), `desktop.html` — главная для компьютера |
 | `site-deck/` | Презентация по сайту: мобильная версия kosmo-museum.ru, было / стало, путь до билета, приоритеты, метрики; стрелки ← → или свайп |
 
 Исходники (сборка, контурные экспонаты, Blender-скрипты) — в базе студии, `03_Проекты/Музей_космонавтики/`.
