@@ -379,6 +379,12 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 /* механики возвращения */
 .chips{display:flex;flex-wrap:wrap;gap:10px;max-width:60ch;margin-top:8px}.chips span{padding:9px 16px;border-radius:999px;background:rgba(10,11,14,.55);border:1px solid rgba(255,255,255,.18);font-size:calc(1.05*var(--u));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
+.ch:has(.phl)::after{display:none}
+.phl{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:calc(2*var(--u));margin-top:calc(3*var(--u));width:100%;align-items:start}
+.phl figure{margin:0;display:flex;flex-direction:column;gap:calc(1.4*var(--u))}
+.phl img{width:88%;aspect-ratio:1;object-fit:cover;border-radius:calc(2.4*var(--u));outline:1px solid rgba(255,255,255,.1)}
+.phl figcaption{display:grid;gap:6px}.phl b{font:400 calc(1.7*var(--u)) var(--f)}.phl span{font-size:calc(1.1*var(--u));color:#B8B5AF;max-width:30ch;line-height:1.4}
+
 .ch:has(.mvv)>h2{margin-bottom:0!important}.ch:has(.mvv)::after{display:none}
 .mvv{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(1.6*var(--u));margin-top:calc(2*var(--u));width:100%}
 .mvv figure{margin:0;display:flex;flex-direction:column;min-height:0;align-items:flex-start}
@@ -511,6 +517,9 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 </section>
 <section class="ch" data-act="flow" data-cap="Карта приложения" data-wide="1">
 <div class="kick">Как устроено</div><h2>Сначала — <em>схема</em> всего приложения</h2><div class="flowimg"><img src="img/flow_map2.webp" alt="Карта приложения: экраны и переходы"></div>
+</section>
+<section class="ch" data-cap="Философия" data-wide="1">
+<div class="kick">Философия</div><h2>От чертежа —<br><em>к космосу</em></h2><div class="phl"><figure><img src="img/scr/sp3_scheme.webp" alt=""><figcaption><b>01 · Чертёж</b><span>Схема зала: линии, маршрут, подиумы. Так экспонат задумывал конструктор</span></figcaption></figure><figure><img src="img/scr/sp3_holo.webp" alt=""><figcaption><b>02 · Прототип</b><span>Голограмма на карте: объём без лишних деталей, видно, где он стоит</span></figcaption></figure><figure><img src="img/scr/sp3_story.webp" alt=""><figcaption><b>03 · Космос</b><span>История экспоната: настоящий материал, свет и полёт</span></figcaption></figure></div>
 </section>
 <section class="ch" data-cap="Путь посетителя" data-wide="1">
 <div class="kick">Пройдём путь посетителя</div><h2>До визита, в музее <em>и после</em></h2><div class="jw"><div class="jc "><div class="jh"><i>01</i><b>До визита</b></div><div class="jp"><img src="img/scr/onboarding.webp" alt=""></div><div class="jr"><span>Сайт</span><p>Что посмотреть, билет в 4 шага</p></div><div class="jr ap"><span>Приложение</span><p>Маршрут на 45 минут, 3D-облёты</p></div></div><div class="jc "><div class="jh"><i>02</i><b>В дороге</b></div><div class="jp"><img src="img/scr/tickets.webp" alt=""></div><div class="jr"><span>Сайт</span><p>Часы работы, как добраться</p></div><div class="jr ap"><span>Приложение</span><p>Билет в Wallet, напоминание</p></div></div><div class="jc on"><div class="jh"><i>03</i><b>В музее</b></div><div class="jp"><img src="img/scr/tour.webp" alt=""></div><div class="jr"><span>Сайт</span><p>QR на кассе → приложение</p></div><div class="jr ap"><span>Приложение</span><p>Карта, экскурсия, досье, печати</p></div></div><div class="jc "><div class="jh"><i>04</i><b>После</b></div><div class="jp"><img src="img/scr/pass.webp" alt=""></div><div class="jr"><span>Сайт</span><p>Факт дня, новые выставки</p></div><div class="jr ap"><span>Приложение</span><p>Паспорт, сезоны, коллаборации</p></div></div></div>
