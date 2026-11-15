@@ -381,13 +381,13 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 
 .ch:has(.nfcw){padding:0!important}.ch:has(.nfcw)::after{display:none}
 .nfcw{position:absolute;inset:0;overflow:hidden}
-.nfcbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 40%}
-.nfcw::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.85) 0%,rgba(7,8,11,0) 30%,rgba(7,8,11,0) 58%,rgba(7,8,11,.92) 82%);pointer-events:none}
+.nfcbg{position:absolute;left:0;right:0;top:0;width:100%;height:86%;object-fit:cover;object-position:50% 12%;-webkit-mask:linear-gradient(180deg,#000 75%,transparent);mask:linear-gradient(180deg,#000 75%,transparent)}
+.nfcw::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.85) 0%,rgba(7,8,11,0) 30%,rgba(7,8,11,0) 70%,rgba(7,8,11,.0) 100%);pointer-events:none}
 .nfct,.nfcs,.nfcn{position:absolute;z-index:2;left:var(--M);right:var(--M)}
 .nfct{top:var(--M)}.nfct h2{margin:calc(1.2*var(--u)) 0 0!important}
-.nfcs{bottom:calc(var(--M) + 5*var(--u));align-items:start;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(1.6*var(--u))}
+.nfcs{bottom:var(--M);align-items:start;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(1.6*var(--u))}
 .nfcs>div{border-top:1px solid rgba(255,255,255,.22);padding-top:calc(1*var(--u));display:grid;gap:4px}.nfcs i{font:500 12px var(--m);font-style:normal;color:var(--ac);letter-spacing:.12em}.nfcs b{font:400 calc(1.7*var(--u)) var(--f)}.nfcs span{font-size:calc(1.05*var(--u));color:#B8B5AF}
-.nfcn{bottom:var(--M);margin:0;font-size:calc(.95*var(--u));color:rgba(255,255,255,.45)}
+.nfcn{display:none;bottom:var(--M);margin:0;font-size:calc(.95*var(--u));color:rgba(255,255,255,.45)}
 
 /* v13: слайды с приложением — заголовок и описание по верхней линии, тег слева внизу, подпись раздела справа внизу (кроме обложки) */
 .ch.ch:not([data-wide]):not(:first-of-type){grid-template-rows:auto 1fr!important}
