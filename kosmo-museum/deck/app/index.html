@@ -10965,12 +10965,12 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
         n.userData.floatModel = fl; }); } };
   swapIn();
   /* v130: «Беркут» на макете — та же модель скафандра, что в досье (скин запекаем в статичную геометрию: на карте позы не нужны, а клон для перелёта остаётся целым) */
-  (function suitIn(){ const K = window.__m3k; if (!K || !window.__claySt){ setTimeout(suitIn, 600); return; } const T = K.THREE, n = K.nodes[14]; if (!n || n.userData.suit) return; n.userData.suit = 1;
+  (function suitIn(){ /* v146: на карте «Беркут» — простая модель, как остальные скафандры; детальный скафандр — только в истории */ const K = window.__m3k; if (!K || !window.__claySt){ setTimeout(suitIn, 600); return; } const T = K.THREE, n = K.nodes[14]; if (!n || n.userData.suit) return; n.userData.suit = 1;
     __ldJ(K, 'models/14r.json', g => { const b = new T.Box3().setFromObject(n), sz = b.getSize(new T.Vector3()); const sc = g.scene; sc.updateMatrixWorld(true); const grp = new T.Group(), v = new T.Vector3();
       sc.traverse(o => { if (!o.isSkinnedMesh) return; o.skeleton.update(); const ge = o.geometry, P = ge.attributes.position, out = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ o.getVertexPosition(i, v); v.applyMatrix4(o.matrixWorld); out[i * 3] = v.x; out[i * 3 + 1] = v.y; out[i * 3 + 2] = v.z; }
         const g2 = new T.BufferGeometry(); g2.setAttribute('position', new T.BufferAttribute(out, 3)); if (ge.attributes.uv) g2.setAttribute('uv', ge.attributes.uv); if (ge.index) g2.setIndex(ge.index); g2.computeVertexNormals(); const m = new T.Mesh(g2, o.material); m.castShadow = true; grp.add(m); });
       const b2 = new T.Box3().setFromObject(grp), s2 = b2.getSize(new T.Vector3()), c2 = b2.getCenter(new T.Vector3()); const k = sz.y / s2.y * .96; grp.children.forEach(m => m.geometry.translate(-c2.x, -b2.min.y, -c2.z));
-      [...n.children].forEach(ch => n.remove(ch)); const inv = new T.Matrix4().copy(n.matrixWorld).invert(), ws = new T.Vector3(); n.getWorldScale(ws);
+      [...n.children].forEach(ch => { ch.userData.mapOnly = 1; }); grp.userData.storyOnly = 1; grp.visible = false; const inv = new T.Matrix4().copy(n.matrixWorld).invert(), ws = new T.Vector3(); n.getWorldScale(ws);
       grp.scale.set(k / ws.x, k / ws.y, k / ws.z); grp.position.copy(new T.Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2).applyMatrix4(inv)); n.add(grp); { const y0 = grp.position.y, h0 = sz.y / ws.y, t0 = performance.now(); (function br(now){ const t = (now - t0) / 1000; grp.position.y = y0 + Math.sin(t * 1.4) * h0 * .012; grp.rotation.y = Math.sin(t * .5) * .06; grp.rotation.z = Math.sin(t * .7) * .015; requestAnimationFrame(br); })(t0); } /* дышит и на макете */
       window.__claySt[14] = .5; /* палитра «макета» подхватит новые материалы */ }); })();
   /* v119: у контейнера Белки и Стрелки на макете убираем фигурки собак */
@@ -11143,7 +11143,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const holder = new T.Group(), spin = new T.Group(); holder.add(spin); sc.add(holder);
     const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(1 / Math.max(sz.x, sz.y, sz.z)); return g; };
     let hsU = null, BN = null; const put = o => { while (spin.children.length) spin.remove(spin.children[0]); BN = null; o.updateMatrixWorld(true); o.traverse(m => { if (m.isSkinnedMesh){ m.skeleton.update(); m.computeBoundingBox(); m.frustumCulled = false; } if (m.isBone){ BN = BN || {}; BN[m.name.replace(/^mixamorig:?/, '').replace(/_\d+$/, '')] = { b:m, q:m.quaternion.clone(), s:m.scale.x }; } }); /* v127: скинned — честный bbox и кости для поз */ hsU = story ? null : addHS(T, o, id, hero); o.traverse(m => { if (m.isMesh && m.material){ m.material = m.material.clone(); m.material.envMap = null; m.material.envMapIntensity = 1.3; if (m.material.metalness > .9){ m.material.color.setRGB(.95, .95, .96); m.material.roughness = Math.min(m.material.roughness, .12); } } }); spin.add(fit(o)); if (story && story.center) o.position.set(0, 0, 0); /* v123: в истории центр — шар */ };
-    const cl = obj.clone(true); cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); if (obj === n) cl.scale.set(1, 1, 1); cl.traverse(o => { const E = window.__EXO; if (E && o.isMesh && E.get(o.material)) o.material = E.get(o.material); if (o.isLineSegments && o.userData.cSkip) o.visible = false; if (o.isMesh && o.material && o.material.isMeshMatcapMaterial) o.material = new T.MeshStandardMaterial({ color:0xf2f4f7, metalness:1, roughness:.12 }); }); put(cl); /* v142: в истории — настоящие материалы, а не «голограмма»/«серебро» с карты */
+    const cl = obj.clone(true); cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); if (obj === n) cl.scale.set(1, 1, 1); cl.traverse(o => { if (o.userData.storyOnly) o.visible = true; if (o.userData.mapOnly) o.visible = false; const E = window.__EXO; if (E && o.isMesh && E.get(o.material)) o.material = E.get(o.material); if (o.isLineSegments && o.userData.cSkip) o.visible = false; if (o.isMesh && o.material && o.material.isMeshMatcapMaterial) o.material = new T.MeshStandardMaterial({ color:0xf2f4f7, metalness:1, roughness:.12 }); }); put(cl); /* v142: в истории — настоящие материалы, а не «голограмма»/«серебро» с карты */
     if (GLB.has(id) && !fm){ __ldJ(K, `models/${(STORYCFG[id] && STORYCFG[id].glb) || id}.json`, g => { if (id === 11) g.scene.traverse(o => { if (o.isMesh && /K_(white|tan|cream|brown)/.test(o.material && o.material.name || '')) o.visible = false; }); /* v119: без собак у контейнера */ if (cur === me) put(g.scene); }); }
     obj.updateMatrixWorld(true); const qCam = K.cam.getWorldQuaternion(new T.Quaternion()); const q0 = qCam.clone().invert().multiply(obj.getWorldQuaternion(new T.Quaternion()));
     const wAt = (sx, sy, W, H) => { const a = W / H; return new T.Vector3(((sx / W) * 2 - 1) * TAN * CZ * a, (1 - (sy / H) * 2) * TAN * CZ, 0); };
@@ -11953,21 +11953,27 @@ canvas.exfly{display:block}
 </script>
 
 <script>
-/* v145: детали со старой Blender-карты — кинозал с кольцом, вход с рамками и гардеробом, кафе «Взлёт», метеорит */
+/* v146: детали со старой Blender-карты — старая карта была развёрнута на 180°, поэтому каждую группу поворачиваем и ставим в свой зал */
 (() => {
   const OLD = [
-    { f:'cinema', am:'AM_kino001', k:3.2, ry:0 },
-    { f:'cafe', am:'AM_cafe001', k:2.6, ry:0 },
-    { f:'entrance', at:[-9, 1.33, 56.5], k:2.6, ry:Math.PI / 2 },
-    { f:'meteor', at:[-16.5, .3, -33], k:3, ry:0, pad:true } ];
-  (function w(){ const K = window.__m3k; if (!K || !window.__ldJ || !K.GLTFLoader){ setTimeout(w, 500); return; } const T = K.THREE;
-    OLD.forEach(o => { __ldJ(K, 'models/old_' + o.f + '.json', g => { const m = g.scene; m.rotation.y = o.ry; m.scale.setScalar(o.k); m.updateMatrixWorld(true);
-      let b = new T.Box3().setFromObject(m), c = b.getCenter(new T.Vector3()); let tx, ty, tz;
-      if (o.am){ const a = K.scene.getObjectByName(o.am); if (!a) return; const ab = new T.Box3().setFromObject(a), ac = ab.getCenter(new T.Vector3()); tx = ac.x; tz = ac.z; ty = ab.min.y; a.visible = false; a.traverse(x => x.visible = false); }
-      else [tx, ty, tz] = o.at;
-      m.position.set(tx - c.x, ty - b.min.y, tz - c.z);
-      m.traverse(x => { if (x.isMesh){ x.castShadow = x.receiveShadow = true; x.userData.cSkip = 1; x.raycast = () => {}; if (x.material && x.material.envMapIntensity !== undefined) x.material.envMapIntensity = 1.2; } });
-      m.userData.floor = ty > 1 ? 'upper' : 'lower'; m.name = 'OLD_' + o.f; K.root.add(m); }); }); })();
+    { f:'cinema', am:'AM_kino001', k:2.5, ry:Math.PI },
+    { f:'cafe', am:'AM_cafe001', k:2.6, ry:Math.PI },
+    { f:'entrance', k:2.6, split:true },
+    { f:'meteor', at:[-16.5, .3, -33], k:3, ry:0 } ];
+  const prep = (m, name, floor) => { m.traverse(x => { if (x.isMesh){ x.castShadow = x.receiveShadow = true; x.userData.cSkip = 1; x.raycast = () => {}; if (x.material && x.material.envMapIntensity !== undefined) x.material.envMapIntensity = 1.2; } }); m.userData.floor = floor; m.name = name; };
+  const place = (T, m, k, ry, tx, ty, tz) => { const w = new T.Group(); w.add(m); w.rotation.y = ry; w.scale.setScalar(k); w.updateMatrixWorld(true); const b = new T.Box3().setFromObject(w), c = b.getCenter(new T.Vector3()); w.position.set(tx - c.x, ty - b.min.y, tz - c.z); return w; };
+  (function w(){ const K = window.__m3k; if (!K || !window.__ldJ || !K.GLTFLoader || !K.scene.getObjectByName('vestPOI')){ setTimeout(w, 500); return; } const T = K.THREE;
+    OLD.forEach(o => { __ldJ(K, 'models/old_' + o.f + '.json', g => { const sc = g.scene; sc.updateMatrixWorld(true);
+      if (o.split){ /* вход: рамки-металлоискатели — к контролю билетов поперёк прохода, гардероб — к гардеробу */
+        const det = new T.Group(), war = new T.Group();
+        [...sc.children].forEach(ch => { const c = new T.Box3().setFromObject(ch).getCenter(new T.Vector3()); (c.x > -8.45 ? det : war).add(ch); });
+        const Y = (K.zones.vest.max.y || 1.33), vp = K.scene.getObjectByName('vestPOI');
+        /* старые заглушки-коробки у гардероба и контроля прячем, чтобы не наезжали */
+        vp && vp.children.forEach(x => { const d1 = Math.hypot(x.position.x + 15.2, x.position.z - 58), d2 = Math.hypot(x.position.x + 2, x.position.z - 52.2); if ((d1 < 3.2 || d2 < 2.6) && x.isMesh) x.visible = false; });
+        const a = place(T, det, o.k, Math.PI / 2, -2, Y, 52.6), bq = place(T, war, o.k, Math.PI, -15.2, Y, 58.4);
+        prep(a, 'OLD_gates', 'upper'); prep(bq, 'OLD_coat', 'upper'); K.root.add(a, bq); return; }
+      let tx, ty, tz; if (o.am){ const am = K.scene.getObjectByName(o.am); if (!am) return; const ab = new T.Box3().setFromObject(am), ac = ab.getCenter(new T.Vector3()); tx = ac.x; tz = ac.z; ty = ab.min.y; am.traverse(x => x.visible = false); } else [tx, ty, tz] = o.at;
+      const m = place(T, sc, o.k, o.ry, tx, ty, tz); prep(m, 'OLD_' + o.f, ty > 1 ? 'upper' : 'lower'); K.root.add(m); }); }); })();
 })();
 </script>
 </body>
