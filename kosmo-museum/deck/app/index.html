@@ -10848,5 +10848,72 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   window.__m3drop = drop;
 })();
 </script>
+<style>
+/* v108: тап по экспонату на 3D-карте — он подпрыгивает на макете, снизу в том же темпе выезжает досье-лист, наверху листа тот же экспонат поднимается в кадр */
+#vEx{transition:transform .5s cubic-bezier(.32,.72,0,1),top .5s cubic-bezier(.32,.72,0,1),opacity .3s}
+#vEx.peek{top:44%}
+#vEx .exhero{position:relative;height:210px;margin:-6px 0 2px;animation:exUp .72s cubic-bezier(.32,.72,0,1) both}
+#vEx .exhero canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+#vEx .exhero:after{content:"";position:absolute;left:50%;bottom:16px;width:46%;height:18px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,138,76,.35),transparent);pointer-events:none}
+#vEx .exhero + .ph, #vEx.peek .exhero ~ .ph{display:none}
+#vEx .exhero .hh{position:absolute;right:16px;bottom:8px;font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+@keyframes exUp{0%{transform:translateY(150px) scale(.5);opacity:0}35%{opacity:1}100%{transform:none;opacity:1}}
+#vEx.peek .grab{background:rgba(255,255,255,.4)}
+</style>
+<script>
+/* страховка: отрицательный радиус дуги (бывает в первом кадре разбора ПС-1, когда досье открыто наполовину) не роняет анимацию */
+(function(){ const A = CanvasRenderingContext2D.prototype.arc; CanvasRenderingContext2D.prototype.arc = function(x, y, r, ...o){ return A.call(this, x, y, Math.max(0, r), ...o); }; })();
+(function(){
+  const GLB = new Set([10, 11, 12, 13, 14, 16, 24, 36]);
+  const ez = t => 1 - Math.pow(1 - t, 3), back = t => { const c = 1.6; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  const anim = (dur, fn) => new Promise(res => { const t0 = performance.now(); const f = now => { const k = Math.min(1, (now - t0) / dur); fn(k); k < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); });
+  let tapT = 0; document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('#m3')) tapT = Date.now(); }, true);
+  let cur = null;
+  window.__m3lift = id => { if (Date.now() - tapT > 900 || !window.__m3k || typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
+  function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
+    cur = { id, n, y0:n.position.y, alive:true };
+    /* 1. на карте: экспонат подпрыгивает, карта сдвигается, чтобы он остался над листом */
+    const b = new T.Box3().setFromObject(n), c = b.getCenter(new T.Vector3()), hgt = b.getSize(new T.Vector3()).y || 4;
+    const v = c.clone().project(K.cam), want = new T.Vector3(v.x * .4, .52, v.z);
+    const d = want.clone().unproject(K.cam).sub(c.clone().project(K.cam).unproject(K.cam)); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone();
+    const lift = Math.max(1.2, hgt * .35);
+    const TW = 1.1, ry0 = n.rotation.y; /* подворот: на подъёме экспонат доворачивается к зрителю */
+    anim(720, k => { const e = ez(k); K.ctl.target.copy(t0).addScaledVector(d, -e); K.cam.position.copy(p0).addScaledVector(d, -e); if (cur && cur.n === n){ n.position.y = cur.y0 + lift * back(Math.min(1, k * 1.25)); n.rotation.y = ry0 + TW * ez(k); } })
+      .then(() => { const bob = now => { if (!cur || cur.n !== n) return; n.position.y = cur.y0 + lift + Math.sin(now / 520) * lift * .08; n.rotation.y += .006; requestAnimationFrame(bob); }; requestAnimationFrame(bob); });
+    cur.r0 = ry0;
+    /* 2. досье-лист выезжает наполовину */
+    ex.classList.add('peek'); openEx(id); window.__m3sel = id;
+    const unback = () => document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.toggle('back', !ex.classList.contains('peek') && !ex.classList.contains('off'))); unback(); cur.unback = unback;
+    /* 3. наверху листа — тот же экспонат, поднимается в кадр */
+    const hero = document.createElement('div'); hero.className = 'exhero'; hero.innerHTML = '<span class="hh">потяни · покрути</span>'; const top = ex.querySelector('.top'); top ? top.after(hero) : ex.prepend(hero);
+    const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; hero.prepend(R.domElement);
+    const sc = new T.Scene(); sc.environment = K.scene.environment || null; sc.add(new T.HemisphereLight(0xffffff, 0x2a2f3a, 1.4)); const dl = new T.DirectionalLight(0xffffff, 2.4); dl.position.set(3, 5, 4); sc.add(dl); const rim = new T.DirectionalLight(0xFFB27A, 1.2); rim.position.set(-4, 2, -3); sc.add(rim);
+    const cam = new T.PerspectiveCamera(26, 2, .1, 200); cam.position.set(0, 1.1, 7.4); cam.lookAt(0, 0, 0);
+    const holder = new T.Group(); sc.add(holder);
+    const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(2.6 / Math.max(sz.x, sz.y, sz.z)); return g; };
+    const put = o => { while (holder.children.length) holder.remove(holder.children[0]); holder.add(fit(o)); };
+    const cl = n.clone(true); cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); cl.scale.set(1, 1, 1); put(cl);
+    if (GLB.has(id)){ const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.load(`models/${id}.glb`, g => { if (cur && cur.id === id) put(g.scene); }, undefined, () => {}); }
+    const size = () => { const w = hero.clientWidth, h = hero.clientHeight; if (!w) return; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }; size();
+    const dir = K.cam.getWorldDirection(new T.Vector3()); const pitchMap = Math.asin(Math.min(1, -dir.y)), yawMap = Math.atan2(dir.x, dir.z) + Math.PI;
+    const pitchHero = Math.atan2(1.1, 7.4); const rx0 = pitchMap - pitchHero, ry0h = ry0 - yawMap;
+    let rot = ry0h, vel = .006, drag = null, ty = -1.4; const t1 = performance.now();
+    const loop = now => { if (!cur || cur.hero !== hero) return; size(); const k = Math.min(1, (now - t1) / 720), e = ez(k); holder.position.y = ty * (1 - e) + Math.sin(now / 900) * .04; holder.rotation.x = rx0 * (1 - e); if (k < 1 && !drag) holder.rotation.y = ry0h + TW * e, rot = holder.rotation.y; else { if (!drag){ rot += vel; } holder.rotation.y = rot; } R.render(sc, cam); requestAnimationFrame(loop); };
+    cur.hero = hero; cur.R = R; requestAnimationFrame(loop);
+    hero.addEventListener('pointerdown', e => { drag = e.clientX; e.stopPropagation(); }); addEventListener('pointermove', cur.pm = e => { if (drag == null) return; const dx = e.clientX - drag; drag = e.clientX; rot += dx * .012; vel = dx * .012; }); addEventListener('pointerup', cur.pu = () => { drag = null; });
+    /* 4. листаешь вверх — лист раскрывается целиком */
+    const onS = () => { if (ex.scrollTop > 6) ex.classList.remove('peek'); }; ex.addEventListener('scroll', onS, { passive:true }); cur.onS = onS;
+    const onW = e => { if (e.deltaY > 0) ex.classList.remove('peek'); }; ex.addEventListener('wheel', onW, { passive:true }); cur.onW = onW;
+    let ty0 = null; const ts = e => ty0 = e.touches[0].clientY, tm = e => { if (ty0 != null && ty0 - e.touches[0].clientY > 24) ex.classList.remove('peek'); }; ex.addEventListener('touchstart', ts, { passive:true }); ex.addEventListener('touchmove', tm, { passive:true }); cur.ts = ts; cur.tm = tm;
+    /* закрыли досье — экспонат опускается на место */
+    cur.mo = new MutationObserver(() => { if (ex.classList.contains('off')) finish(); else cur && cur.unback(); }); cur.mo.observe(ex, { attributes:true, attributeFilter:['class'] });
+  }
+  function finish(now){ if (!cur) return; const c = cur; cur = null; const ex = document.getElementById('vEx'); c.mo && c.mo.disconnect();
+    ex.removeEventListener('scroll', c.onS); ex.removeEventListener('wheel', c.onW); ex.removeEventListener('touchstart', c.ts); ex.removeEventListener('touchmove', c.tm); removeEventListener('pointermove', c.pm); removeEventListener('pointerup', c.pu);
+    try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){}
+    setTimeout(() => ex.classList.remove('peek'), now ? 0 : 520);
+    const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 480, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); }
+})();
+</script>
 </body>
 </html>
