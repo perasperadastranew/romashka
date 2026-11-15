@@ -10876,91 +10876,101 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       for (let i = 0; i < pos.count; i++){ v.fromBufferAttribute(pos, i).sub(a0).multiplyScalar(k).add(a0); pos.setXYZ(i, v.x, v.y, v.z); } pos.needsUpdate = true; g.computeBoundingBox(); g.computeBoundingSphere(); }); };
   /* артефакт не отдаёт .glb — модели лежат как models/<id>.json {glb: base64} */
   window.__ldJ = (K, url, ok) => fetch(url).then(r => r.json()).then(j => { const b = Uint8Array.from(atob(j.glb), c => c.charCodeAt(0)); const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.parse(b.buffer, '', ok, () => {}); }).catch(() => {});
+  /* спутник на макете и в досье смотрит вправо-вверх под 45°: антенны (ось −Z модели) уходят влево-вниз и чуть от зрителя */
+  const DV = [-1, -1.05, -.55];
+  function posed(K, n, fl){ const T = K.THREE; const D = new T.Vector3(...DV).normalize().applyQuaternion(K.cam.getWorldQuaternion(new T.Quaternion())); const qw = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), D); n.updateMatrixWorld(true); fl.quaternion.copy(n.getWorldQuaternion(new T.Quaternion()).invert().multiply(qw)); }
   const FLOAT = { 10:'models/10s.json' };
   const swapIn = () => { const K = window.__m3k; if (!K){ setTimeout(swapIn, 500); return; } const T = K.THREE;
     for (const [id, url] of Object.entries(FLOAT)){ const n = K.nodes[id]; if (!n || n.userData.swapped) continue; n.userData.swapped = 1;
       __ldJ(K, url, g => { const b = new T.Box3().setFromObject(n), sz = b.getSize(new T.Vector3());
         const m = g.scene; const inv = new T.Matrix4().copy(n.matrixWorld).invert(); const box2 = new T.Box3().setFromObject(m), s2 = box2.getSize(new T.Vector3()), c2 = box2.getCenter(new T.Vector3()); m.position.sub(c2);
-        const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * 1.5);
-        const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .62, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
+        const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * .95);
+        m.position.set(0, 0, 0); /* центр — сам шар: вокруг его оси потом вращаемся */
+        const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .7, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
         n.add(fl); fl.position.copy(wp.applyMatrix4(inv)); const ws = new T.Vector3(); n.getWorldScale(ws); fl.scale.divide(ws);
-        m.traverse(o => { if (o.isMesh){ o.castShadow = true; if (o.material && o.material.metalness > .5){ o.material = o.material.clone(); o.material.metalness = .55; o.material.roughness = .28; } } }); /* на макете нет студийного окружения — полуметалл, чтобы шар читался серебряным */
-        const y = fl.position.y, t0 = performance.now(); fl.userData.float = 1; (function bob(now){ fl.position.y = y + Math.sin((now - t0) / 900) * .9 / ws.y * .3; fl.rotation.y += .004; requestAnimationFrame(bob); })(t0);
+        const env = studioEnv(T, K.r); m.traverse(o => { if (o.isMesh){ o.castShadow = true; if (o.material){ o.material = o.material.clone(); o.material.envMap = env; o.material.envMapIntensity = 1; if (o.material.metalness > .5) o.material.roughness = Math.min(o.material.roughness, .16); } } });
+        fl.userData.axis = 1; posed(K, n, fl);
+        const y = fl.position.y, t0 = performance.now(); fl.userData.float = 1; (function bob(now){ fl.position.y = y + Math.sin((now - t0) / 1100) * .9 / ws.y * .18; requestAnimationFrame(bob); })(t0);
         n.userData.floatModel = fl; }); } };
   swapIn();
   window.__m3lift = id => { if (Date.now() - tapT > 900 || !window.__m3k) return false; if (id === 22 && window.openLuno){ goLanding(id, () => openLuno(), 'vl'); return true; } if (typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
   /* v113: тап по экспонату → на макете он взмывает и доворачивается, досье открывается на весь экран,
      и тот же экспонат «перелетает» с карты в студийный кадр наверху — поворот продолжается в том же ритме */
-  let ENV = null;
-  const studioEnv = (T, R) => { if (ENV) return ENV; const s = new T.Scene(); const box = new T.Mesh(new T.SphereGeometry(30, 32, 16), new T.MeshBasicMaterial({ color:0x050506, side:T.BackSide })); s.add(box);
-    const panel = (w, h, col, x, y, z, ry, rz) => { const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color:col, side:T.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); m.rotateZ(rz || 0); s.add(m); };
-    /* свет как на рендере сайта (render/hero.py, mood blue): мягкий ключ сверху-слева, узкие контровые полосы сзади, подсвет снизу, кикер сверху */
-    panel(9, 6, 0xf2efe9, -11, 13, 10, 0, 0);
-    panel(1.6, 18, 0xbfe0ff, 15, 2, -13, 0, 0);
-    panel(1.6, 15, 0xe9e4dc, -15, 5, -12, 0, 0);
-    panel(14, 3, 0x5fa8ff, 2, -16, -4, 0, 0);   /* снизу — отсвет Земли */
-    panel(10, 1.6, 0xe9e4dc, 0, 18, -6, 0, 0);
-    panel(44, 20, 0x0c2c5c, 6, 6, -26, 0, 0);   /* синий фон — отражается в шаре */
-    const pm = new T.PMREMGenerator(R); ENV = pm.fromScene(s, .025).texture; pm.dispose(); return ENV; };
+  /* v114: студийное окружение строим под каждый рендерер (PMREM-текстура живёт в своём контексте — общая давала «тухлый» металл со второго открытия); софтбоксы ярче 1 — чёткие блики */
+  function studioEnv(T, R){ const s = new T.Scene(); s.add(new T.Mesh(new T.SphereGeometry(30, 32, 16), new T.MeshBasicMaterial({ color:0x121a28, side:T.BackSide })));
+    const panel = (w, h, col, x, y, z, k) => { const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color:new T.Color(col).multiplyScalar(k), side:T.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); s.add(m); };
+    panel(10, 7, 0xffffff, -11, 13, 10, 5);      /* ключ сверху-слева */
+    panel(1.4, 20, 0xcfe6ff, 15, 2, -13, 7);     /* контровая полоса справа-сзади */
+    panel(1.4, 16, 0xffffff, -15, 5, -12, 4);    /* контровая слева-сзади */
+    panel(16, 3, 0x6fb2ff, 2, -16, -4, 3);       /* снизу — отсвет Земли */
+    panel(12, 1.4, 0xffffff, 0, 18, -6, 4);      /* кикер сверху */
+    panel(3, 12, 0xffffff, 14, 4, 12, 2.5);      /* узкий стрип справа-спереди — блик по шару */
+    panel(44, 20, 0x0e3570, 6, 6, -26, 1);       /* синий фон */
+    const pm = new T.PMREMGenerator(R); const t = pm.fromScene(s, .02).texture; pm.dispose(); return t; }
   /* v113: подпись в кадре — как у «Лунохода»: моно-строка с датой и местом, крупное тонкое имя */
   const HT = { 10:['Спутник-1','4 октября 1957 · Байконур'], 11:['Белка и Стрелка','19 августа 1960 · Корабль-спутник-2'], 12:['Восток','12 апреля 1961 · Юрий Гагарин'], 13:['СК-1','1961 · скафандр «Востоков»'], 16:['Венера-1','12 февраля 1961 · к Венере'], 14:['Беркут','18 марта 1965 · выход Леонова'], 24:['Луна-9','3 февраля 1966 · Океан Бурь'], 44:['Союз-4 · Союз-5','январь 1969 · первая стыковка'], 49:['Ястреб','1969 · переход между кораблями'], 36:['Мир','1986–2001 · орбитальная станция'], 45:['Шлюзовой отсек','станция «Мир»'], 19:['Орлан-Д','выходы в открытый космос'], 47:['Кречет','лунная программа'], 21:['Луна-16','1970 · грунт с Луны'], 23:['Венера-4','18 октября 1967 · атмосфера Венеры'], 15:['Марс-3','2 декабря 1971 · посадка на Марс'], 25:['АПАС-75','1975 · стыковочный агрегат'], 26:['Союз — Аполлон','июль 1975 · стыковка на орбите'], 27:['Союз-37','1980 · «Интеркосмос»'], 29:['МКС','с 1998 года · 16 стран'], 30:['КОСПАС-САРСАТ','поиск и спасение'], 56:['Глонасс-М','навигационный спутник'], 31:['Байконур','стартовый комплекс · «Союз»'], 38:['Спейс шаттл','стартовый комплекс 39 · Флорида'], 900:['Сатурн-5','программа «Аполлон»'], 33:['Протон','тяжёлая ракета-носитель'], 41:['Великий поход-2F','15 октября 2003 · «Шэньчжоу-5»'], 32:['РД-107','двигатель первой ступени'], 37:['Эксплорер-1','31 января 1958 · США'], 34:['Морской старт','старт с плавучей платформы'], 35:['Энергия — Буран','15 ноября 1988 · единственный полёт'], 20:['Союз','корабль · «Союз ТМА-4»'] };
   window.__HT = HT;
   const FOV = 26, CZ = 12, TAN = Math.tan(FOV * Math.PI / 360);
   function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
-    cur = { id, n, y0:n.position.y, alive:true };
-    /* 1. на карте: экспонат взмывает и доворачивается */
-    const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .35);
-    const TW = 1.1, ry0 = n.rotation.y; cur.r0 = ry0;
-    const fm = n.userData.floatModel; const obj = fm ? fm.children[0] : n;
-    /* где экспонат на экране и какого он размера — отсюда начнётся перелёт */
+    const fm = n.userData.floatModel, obj = fm ? fm.children[0] : n, AX = !!(fm && fm.userData.axis);
+    cur = { id, n, y0:n.position.y, r0:n.rotation.y, obj, z0:obj.rotation.z };
+    const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .3);
     const scr = o => { const bb = new T.Box3().setFromObject(o), W = innerWidth, H = innerHeight; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]){ const q = new T.Vector3(x, y, z).project(K.cam); const sx = (q.x + 1) / 2 * W, sy = (1 - q.y) / 2 * H; x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); } return { x:(x0 + x1) / 2, y:(y0 + y1) / 2, s:Math.max(x1 - x0, y1 - y0) }; };
+    /* 1. камера подлетает к экспонату */
+    const c = new T.Box3().setFromObject(obj).getCenter(new T.Vector3()); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone(); const p1 = c.clone().add(p0.clone().sub(t0).multiplyScalar(.55)); cur.cam = { t0, p0 };
+    const me = cur;
+    anim(700, k => { if (cur !== me) return; const e = ez(k); K.ctl.target.lerpVectors(t0, c, e); K.cam.position.lerpVectors(p0, p1, e); });
+    /* 2. он взмывает и начинает вращаться — вокруг своей оси (спутник) или доворачивается (остальные) */
+    setTimeout(() => { if (cur !== me) return; anim(700, k => { if (cur !== me) return; const e = ez(k); n.position.y = me.y0 + lift * back(Math.min(1, k * 1.2)); if (AX) obj.rotation.z = me.z0 + 1.6 * e * e; else n.rotation.y = me.r0 + 1.1 * e; }); }, 420);
+    /* 3. досье на весь экран, экспонат перелетает в кадр */
+    setTimeout(() => { if (cur === me) card(); }, 900);
+    function card(){
     const from0 = scr(obj);
-    anim(560, k => { if (cur && cur.n === n){ n.position.y = cur.y0 + lift * back(Math.min(1, k * 1.25)); n.rotation.y = ry0 + TW * ez(k); } })
-      .then(() => { const bob = now => { if (!cur || cur.n !== n) return; n.position.y = cur.y0 + lift + Math.sin(now / 520) * lift * .08; n.rotation.y += .006; requestAnimationFrame(bob); }; requestAnimationFrame(bob); });
-    /* 2. досье на весь экран: проявляется, пока экспонат летит */
     ex.classList.add('full', 'fin'); openEx(id); window.__m3sel = id; ex.scrollTop = 0;
     requestAnimationFrame(() => requestAnimationFrame(() => ex.classList.remove('fin')));
-    const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">потяни · покрути</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : ''); ex.querySelector('.grab').after(hero);
-    /* 3. один рендерер: на время перелёта — поверх всего экрана, потом переезжает в кадр досье без скачка */
-    const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+    const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">листай — повернётся</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : ''); ex.querySelector('.grab').after(hero);
+    const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.1;
     const cv = R.domElement; cv.className = 'exfly'; document.body.appendChild(cv);
     const sc = new T.Scene(); sc.environment = studioEnv(T, R);
-    const key = new T.DirectionalLight(0xfff4e8, .9); key.position.set(-4, 6, 5); sc.add(key);
-    const rim = new T.DirectionalLight(0xa9d2ff, 3); rim.position.set(5, 2.5, -6); sc.add(rim);
-    const fill = new T.DirectionalLight(0x4f8cff, .7); fill.position.set(3, -4, 4); sc.add(fill);
+    const key = new T.DirectionalLight(0xffffff, .8); key.position.set(-4, 6, 5); sc.add(key);
+    const rim = new T.DirectionalLight(0xa9d2ff, 2.6); rim.position.set(5, 2.5, -6); sc.add(rim);
+    const fill = new T.DirectionalLight(0x4f8cff, .6); fill.position.set(3, -4, 4); sc.add(fill);
     const cam = new T.PerspectiveCamera(FOV, 1, .1, 200); cam.position.set(0, 0, CZ);
     const holder = new T.Group(), spin = new T.Group(); holder.add(spin); sc.add(holder);
-    const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(1 / Math.max(sz.x, sz.y, sz.z)); return g; }; /* модель — в единичном кубе */
-    const put = o => { while (spin.children.length) spin.remove(spin.children[0]); o.traverse(m => { if (m.isMesh && m.material){ m.material = m.material.clone(); m.material.envMapIntensity = 1.6; if (m.material.metalness > .9){ m.material.color.setRGB(.9, .89, .87); m.material.roughness = Math.min(m.material.roughness, .14); } } }); spin.add(fit(o)); };
-    const cl = obj.clone(true); if (obj === n){ cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); cl.scale.set(1, 1, 1); } else { cl.position.set(0, 0, 0); } put(cl);
-    if (GLB.has(id) && !fm){ __ldJ(K, `models/${id}.json`, g => { if (cur && cur.id === id) put(g.scene); }); }
-    /* стартовая ориентация = как экспонат видно на карте (относительно камеры карты) */
-    obj.updateMatrixWorld(true); const qObj = obj.getWorldQuaternion(new T.Quaternion()); const qCam = K.cam.getWorldQuaternion(new T.Quaternion());
-    const q0 = qCam.clone().invert().multiply(qObj); const yawObj = 0;
+    const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(1 / Math.max(sz.x, sz.y, sz.z)); return g; };
+    const put = o => { while (spin.children.length) spin.remove(spin.children[0]); o.traverse(m => { if (m.isMesh && m.material){ m.material = m.material.clone(); m.material.envMap = null; m.material.envMapIntensity = 1.3; if (m.material.metalness > .9){ m.material.color.setRGB(.95, .95, .96); m.material.roughness = Math.min(m.material.roughness, .12); } } }); spin.add(fit(o)); };
+    const cl = obj.clone(true); cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); if (obj === n) cl.scale.set(1, 1, 1); put(cl);
+    if (GLB.has(id) && !fm){ __ldJ(K, `models/${id}.json`, g => { if (cur === me) put(g.scene); }); }
+    obj.updateMatrixWorld(true); const qCam = K.cam.getWorldQuaternion(new T.Quaternion()); const q0 = qCam.clone().invert().multiply(obj.getWorldQuaternion(new T.Quaternion()));
     const wAt = (sx, sy, W, H) => { const a = W / H; return new T.Vector3(((sx / W) * 2 - 1) * TAN * CZ * a, (1 - (sy / H) * 2) * TAN * CZ, 0); };
     const wSize = (px, H) => px / H * 2 * TAN * CZ;
-    const slot = () => { const r = hero.getBoundingClientRect(); const big = id === 10 ? .86 : .72; return { x:r.left + r.width / 2, y:r.top + r.height * .6, s:Math.min(r.width, r.height * .78) * big, r }; };
-    let mode = 'fly', rot = 0, vel = .006, drag = null; const t1 = performance.now(), DUR = 760; cur.hero = hero; cur.R = R; cur.cv = cv;
-    const tilt = new T.Quaternion().setFromEuler(new T.Euler(.32, 0, 0)); const qa = new T.Quaternion(), qb = new T.Quaternion(), yq = new T.Quaternion(), up = new T.Vector3(0, 1, 0);
-    const frame = now => { if (!cur || cur.cv !== cv) return; const W = innerWidth, H = innerHeight;
-      const k = Math.min(1, (now - t1) / DUR), e = ez(k); if (!drag) rot += vel, vel += (.006 - vel) * .03;
-      yq.setFromAxisAngle(up, rot); qb.copy(tilt).multiply(yq);
-      if (mode === 'fly'){ cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; R.setSize(W, H, false); cam.aspect = W / H; cam.clearViewOffset(); cam.updateProjectionMatrix();
-        const to = slot(); const x = from0.x + (to.x - from0.x) * e, y = from0.y + (to.y - from0.y) * e - Math.sin(Math.PI * e) * H * .06, s = from0.s + (to.s - from0.s) * e;
-        holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); qa.copy(q0).slerp(qb, e); holder.quaternion.copy(qa); spin.rotation.set(0, 0, 0);
-        if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; cur.dockS = to.s; } }
-      if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.clearViewOffset(); cam.updateProjectionMatrix();
-        holder.position.set(0, -wSize(h * .1, h) + Math.sin(now / 900) * .015 * wSize(h, h) * 3, 0); holder.scale.setScalar(wSize(Math.min(w, h * .78) * (id === 10 ? .86 : .72), h)); holder.quaternion.copy(qb); }
+    const BIG = id === 10 ? .8 : .72;
+    const slot = () => { const r = hero.getBoundingClientRect(); return { x:r.left + r.width / 2, y:r.top + r.height * .6, s:Math.min(r.width, r.height * .78) * BIG, r }; };
+    /* конечная поза: спутник — ось к нижнему левому углу, вращение вокруг оси; остальные — лёгкий наклон и поворот */
+    const qAlign = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), new T.Vector3(...DV).normalize()), tilt = new T.Quaternion().setFromEuler(new T.Euler(.32, 0, 0));
+    const zA = new T.Vector3(0, 0, 1), yA = new T.Vector3(0, 1, 0), qr = new T.Quaternion(), qb = new T.Quaternion(), qa = new T.Quaternion();
+    let rot0 = AX ? obj.rotation.z : 0, dragA = 0, drag = null, mode = 'fly'; const t1 = performance.now(), DUR = 820; me.hero = hero; me.R = R; me.cv = cv;
+    const pose = (r) => { if (AX){ qr.setFromAxisAngle(zA, r); qb.copy(qAlign).multiply(qr); } else { qr.setFromAxisAngle(yA, r); qb.copy(tilt).multiply(qr); } return qb; };
+    const frame = now => { if (cur !== me) return; const W = innerWidth, H = innerHeight;
+      const k = Math.min(1, (now - t1) / DUR), e = ez(k);
+      const rotNow = rot0 + 1.4 * e + ex.scrollTop * .009 + dragA; /* докручивается в полёте, дальше — только от скролла и пальца */
+      if (mode === 'fly'){ cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix();
+        const to = slot(); const x = from0.x + (to.x - from0.x) * e, y = from0.y + (to.y - from0.y) * e - Math.sin(Math.PI * e) * H * .05, s = from0.s + (to.s - from0.s) * e;
+        holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
+        if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; } }
+      if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+        holder.position.set(0, -wSize(h * .1, h) + Math.sin(now / 1400) * wSize(3, h), 0); holder.scale.setScalar(wSize(Math.min(w, h * .78) * BIG, h)); holder.quaternion.copy(pose(rotNow)); }
       R.render(sc, cam); requestAnimationFrame(frame); };
     requestAnimationFrame(frame);
-    hero.addEventListener('pointerdown', e => { drag = e.clientX; e.stopPropagation(); }); addEventListener('pointermove', cur.pm = e => { if (drag == null) return; const dx = e.clientX - drag; drag = e.clientX; rot += dx * .012; vel = dx * .012; }); addEventListener('pointerup', cur.pu = () => { drag = null; });
-    cur.back = () => { /* обратный перелёт в точку на карте */ const r = hero.getBoundingClientRect(); if (r.bottom < 60 || mode !== 'dock') return false; const W = innerWidth, H = innerHeight;
-      mode = 'home'; document.body.appendChild(cv); cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; const sx = r.left + r.width / 2, sy = r.top + r.height * .6, ss = Math.min(r.width, r.height * .78) * (id === 10 ? .86 : .72);
-      const qs = holder.quaternion.clone(); const t2 = performance.now(); const go2 = now => { if (!cur || cur.cv !== cv) { if (!cv.isConnected) return; } const k = Math.min(1, (now - t2) / 520), e = ez(k); const to = scr(obj);
+    hero.addEventListener('pointerdown', e => { drag = e.clientX; e.stopPropagation(); }); addEventListener('pointermove', me.pm = e => { if (drag == null) return; const dx = e.clientX - drag; drag = e.clientX; dragA += dx * .012; }); addEventListener('pointerup', me.pu = () => { drag = null; });
+    me.back = () => { const r = hero.getBoundingClientRect(); if (r.bottom < 60 || mode !== 'dock') return false; const W = innerWidth, H = innerHeight;
+      mode = 'home'; document.body.appendChild(cv); cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; const sx = r.left + r.width / 2, sy = r.top + r.height * .6, ss = Math.min(r.width, r.height * .78) * BIG;
+      const qs = holder.quaternion.clone(); const t2 = performance.now(); const go2 = now => { if (!cv.isConnected) return; const k = Math.min(1, (now - t2) / 560), e = ez(k); const to = scr(obj);
         R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix(); obj.updateMatrixWorld(true); const qe = K.cam.getWorldQuaternion(new T.Quaternion()).invert().multiply(obj.getWorldQuaternion(new T.Quaternion()));
         holder.position.copy(wAt(sx + (to.x - sx) * e, sy + (to.y - sy) * e, W, H)); holder.scale.setScalar(wSize(ss + (to.s - ss) * e, H)); holder.quaternion.copy(qs).slerp(qe, e); cv.style.opacity = String(1 - Math.max(0, (k - .75) / .25));
         R.render(sc, cam); if (k < 1) requestAnimationFrame(go2); else { try { R.dispose(); R.forceContextLoss(); } catch (er){} cv.remove(); } }; requestAnimationFrame(go2); return true; };
-    cur.mo = new MutationObserver(() => { if (ex.classList.contains('off')) finish(); else document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.add('back')); }); cur.mo.observe(ex, { attributes:true, attributeFilter:['class'] });
+    me.mo = new MutationObserver(() => { if (ex.classList.contains('off')) finish(); else document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.add('back')); }); me.mo.observe(ex, { attributes:true, attributeFilter:['class'] });
+    }
   }
   /* Луноход и др. с отдельной страницей: подворот на карте → страница выезжает; закрыли — опускается */
   function goLanding(id, open, vid){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const pane = document.getElementById(vid);
@@ -10971,7 +10981,9 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   function finish(now){ if (!cur) return; if (cur.landing){ const c = cur; cur = null; c.mo && c.mo.disconnect(); const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 480, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); return; } const c = cur; const ex = document.getElementById('vEx'); c.mo && c.mo.disconnect();
     removeEventListener('pointermove', c.pm); removeEventListener('pointerup', c.pu);
     const flew = !now && c.back && c.back(); cur = null;
-    if (!flew){ try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){} c.cv && c.cv.remove(); }
+    if (!flew && c.R){ try { c.R.dispose(); c.R.forceContextLoss(); } catch (e){} c.cv && c.cv.remove(); }
+    const K = window.__m3k; if (K && c.cam){ const t1 = K.ctl.target.clone(), p1 = K.cam.position.clone(); anim(now ? 1 : 700, k => { const e = ez(k); K.ctl.target.lerpVectors(t1, c.cam.t0, e); K.cam.position.lerpVectors(p1, c.cam.p0, e); }); }
+    if (c.obj && c.obj !== c.n){ const z1 = c.obj.rotation.z; anim(now ? 1 : 700, k => { c.obj.rotation.z = z1 + (c.z0 - z1) * ez(k); }); }
     setTimeout(() => { ex.classList.add('nt'); ex.classList.remove('full'); void ex.offsetWidth; requestAnimationFrame(() => ex.classList.remove('nt')); }, now ? 0 : 460);
     const y1 = c.n.position.y, r1 = c.n.rotation.y; anim(now ? 1 : 520, k => { const e = ez(k); c.n.position.y = y1 + (c.y0 - y1) * e; c.n.rotation.y = r1 + (c.r0 - r1) * e; }); }
 })();
@@ -11169,6 +11181,119 @@ canvas.exfly{display:block}
   pill.onclick = () => openStory(22);
   if (vl){ const fr = document.getElementById('vlFrame'); new MutationObserver(() => { pill.hidden = !(fr && /lunokhod/.test(fr.src) && !vl.classList.contains('off')); }).observe(vl, { attributes:true, attributeFilter:['class'] }); fr && fr.addEventListener('load', () => { pill.hidden = !(/lunokhod/.test(fr.src) && !vl.classList.contains('off')); }); }
 })();
+</script>
+<style>
+/* v114: «Как запускали первый спутник» — тёмный лонгрид из контурных схем */
+#vEx .ps1s{margin:18px 12px 8px;padding:22px 0 6px;border-top:1px solid rgba(255,255,255,.08)}
+#vEx .ps1h{padding:0 8px 6px}
+#vEx .ps1h .k{font:500 10.5px "JetBrains Mono",ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#8CC4FF}
+#vEx .ps1h h2{margin:10px 0 0;font:200 32px/1.05 Inter,-apple-system,system-ui,sans-serif;letter-spacing:-.03em;color:#EEF1F5}
+#vEx .ps1c{margin:14px 0 0;padding:18px 16px 12px;border-radius:24px;background:radial-gradient(120% 90% at 80% 0,#0f1d33 0,#0a0f18 55%,#090b10 100%);border:1px solid rgba(140,196,255,.10)}
+#vEx .ps1t{display:flex;align-items:baseline;gap:12px;font:400 19px/1.2 Inter,-apple-system,system-ui,sans-serif;letter-spacing:-.01em;color:#EEF1F5}
+#vEx .ps1t span{font:500 10.5px "JetBrains Mono",ui-monospace,Menlo,monospace;letter-spacing:.12em;color:#8CC4FF}
+#vEx .ps1c p{margin:8px 0 6px;font-size:14px;line-height:1.5;color:#9AA3B0}
+#vEx .ps1c svg{display:block;width:100%;height:auto;margin-top:6px;overflow:visible}
+#vEx .ps1c .pt{font:500 8.6px "JetBrains Mono",ui-monospace,Menlo,monospace;letter-spacing:.06em;fill:rgba(238,241,245,.82);text-transform:uppercase}
+#vEx .ps1c .pt.dim{fill:rgba(238,241,245,.42)}
+#vEx .ps1c .pt.ac{fill:#8CC4FF}
+#vEx .ps1c .pt.end{text-anchor:end}
+#vEx .ps1c .pn{font:600 8px "JetBrains Mono",ui-monospace,monospace;fill:#8CC4FF;text-anchor:middle}
+</style>
+<script>
+/* v114: «Как запускали первый спутник» — один спокойный блок контурных иллюстраций на тёмном, без анимации и листалки */
+(function(){
+  const L = 'stroke="rgba(238,241,245,.82)" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const F = 'stroke="rgba(238,241,245,.32)" stroke-width="1" fill="none" stroke-linecap="round"';
+  const A = 'stroke="#8CC4FF" stroke-width="1.2" fill="none" stroke-linecap="round"';
+  const T = (x, y, s, o = '') => `<text x="${x}" y="${y}" class="pt${o}">${s}</text>`;
+  const N = (x, y, n) => `<circle cx="${x}" cy="${y}" r="7.5" ${A}/><text x="${x}" y="${y + 3.2}" class="pn">${n}</text>`;
+  const brk = (x, y, a) => { const c = Math.cos(a), s = Math.sin(a), px = -s, py = c; return `<path d="M${x - px * 5 - c * 2},${y - py * 5 - s * 2} L${x + px * 5 - c * 2},${y + py * 5 - s * 2} M${x - px * 5 + c * 2},${y - py * 5 + s * 2} L${x + px * 5 + c * 2},${y + py * 5 + s * 2}" ${L}/>`; };
+  /* 1. сам спутник — наклонён на 45°, смотрит вправо вверх, антенны уходят влево вниз с разрывом */
+  const sx = 236, sy = 74, R = 30, fx0 = .7071, fy0 = -.7071, px = .7071, py = .7071;
+  /* крепления — на передней полусфере (как на чертеже ПС-1: ≈ 0,68 R вперёд от центра), антенны уходят назад под ≈ 29° к оси */
+  const c29 = Math.cos(.506), s29 = Math.sin(.506);
+  const AN = [ { o:.6, w:1, len:150, front:1 }, { o:-.6, w:-1, len:150, front:1 }, { o:.12, w:.12, len:128, front:1 }, { o:-.1, w:-.12, len:128, front:0 } ];
+  const one = ({ o, w, len }) => { const bx = sx + fx0 * R * .68 + px * R * o, by = sy + fy0 * R * .68 + py * R * o; const ux = -fx0 * c29 + px * s29 * w, uy = -fy0 * c29 + py * s29 * w; const l = Math.hypot(ux, uy), vx = ux / l, vy = uy / l;
+    const ex = bx + vx * len, ey = by + vy * len, mx = bx + vx * len * .6, my = by + vy * len * .6;
+    return `<path d="M${bx},${by} L${mx - vx * 4},${my - vy * 4} M${mx + vx * 4},${my + vy * 4} L${ex},${ey}" ${L}/>` + brk(mx, my, Math.atan2(vy, vx)) + `<path d="M${bx - vx * 1.5},${by - vy * 1.5} L${bx + vx * 6},${by + vy * 6}" stroke="rgba(238,241,245,.82)" stroke-width="2.6" stroke-linecap="round"/>`; };
+  const back = AN.filter(a => !a.front).map(one).join(''), ant = AN.filter(a => a.front).map(one).join('');
+  const fx = fx0 * (R + 16), fy = fy0 * (R + 16);
+  const s1 = `<svg viewBox="0 0 340 250">
+    ${back}<circle cx="${sx}" cy="${sy}" r="${R}" fill="#0b111c" stroke="rgba(238,241,245,.82)" stroke-width="1.1"/>
+    <ellipse cx="${sx}" cy="${sy}" rx="${R}" ry="${R * .3}" transform="rotate(45 ${sx} ${sy})" ${F}/>
+    <path d="M${sx + 2},${sy - 24} a24 24 0 0 1 20,10" ${F}/>${ant}
+    <path d="M${sx + fx - px * R},${sy + fy - py * R} L${sx + fx + px * R},${sy + fy + py * R}" ${A}/>
+    <path d="M${sx + fx - px * R + fx0 * 4},${sy + fy - py * R + fy0 * 4} l${-fx0 * 8},${-fy0 * 8} M${sx + fx + px * R + fx0 * 4},${sy + fy + py * R + fy0 * 4} l${-fx0 * 8},${-fy0 * 8}" ${A}/>
+    ${T(sx + fx + px * R + 6, sy + fy + py * R + 12, 'Ø 58 см', ' ac')}
+    ${N(312, 150, 1)}<path d="M${305},${147} L${sx + 22},${sy + 21}" ${F}/>${T(300, 168, 'корпус', ' end')}
+    ${N(24, 30, 2)}${T(36, 33, 'антенны 2,4 и 2,9 м')}${T(36, 47, 'крепятся к передней полусфере', ' dim')}
+    ${T(324, 222, '83,6 кг · 2 передатчика', ' ac end')}${T(324, 236, 'две полусферы из алюминия', ' dim end')}
+  </svg>`;
+  /* 2. в носу ракеты Р-7 */
+  const cx = 104;
+  const s2 = `<svg viewBox="0 0 340 300">
+    <path d="M${cx - 9},70 L${cx - 9},40 Q${cx},4 ${cx + 9},40 L${cx + 9},70" ${L}/>
+    <path d="M${cx - 9},70 L${cx - 10},76 L${cx - 10},262 M${cx + 9},70 L${cx + 10},76 L${cx + 10},262" ${L}/>
+    <path d="M${cx - 10},92 L${cx + 10},92 M${cx - 10},150 L${cx + 10},150" ${F}/>
+    <path d="M${cx - 10},150 L${cx - 22},186 L${cx - 24},262 L${cx - 10},262 M${cx + 10},150 L${cx + 22},186 L${cx + 24},262 L${cx + 10},262" ${L}/>
+    <path d="M${cx - 22},186 L${cx - 10},186 M${cx + 22},186 L${cx + 10},186" ${F}/>
+    <path d="M${cx - 22},262 l-2,10 l10,0 l-2,-10 M${cx + 22},262 l2,10 l-10,0 l2,-10 M${cx - 6},262 l-2,10 l16,0 l-2,-10" ${L}/>
+    <path d="M${cx - 6},28 L${cx - 6},58 L${cx + 6},58 L${cx + 6},28" ${F} stroke-dasharray="2 2.5"/>
+    <circle cx="${cx}" cy="38" r="4.6" ${A}/><path d="M${cx - 2},42 L${cx - 3},56 M${cx},43 L${cx},56 M${cx + 2},42 L${cx + 3},56" ${A}/>
+    ${N(170, 38, 1)}<path d="M162,38 L${cx + 9},38" ${F}/>${T(184, 35, 'ПС-1 под обтекателем')}${T(184, 49, 'антенны сложены вдоль корпуса', ' dim')}
+    ${N(170, 120, 2)}<path d="M162,120 L${cx + 11},120" ${F}/>${T(184, 117, 'центральный блок')}${T(184, 131, 'работает до орбиты', ' dim')}
+    ${N(170, 210, 3)}<path d="M162,210 L${cx + 24},210" ${F}/>${T(184, 207, 'четыре боковых блока')}${T(184, 221, 'отходят «крестом» на 2-й мин', ' dim')}
+    <path d="M${cx - 44},4 L${cx - 44},272" ${F}/><path d="M${cx - 48},4 L${cx - 40},4 M${cx - 48},272 L${cx - 40},272" ${F}/>
+    <text x="${cx - 50}" y="140" class="pt dim" transform="rotate(-90 ${cx - 50} 140)" text-anchor="middle">≈ 30 м</text>
+    ${T(184, 270, 'Р-7 «Спутник» · Байконур', ' ac')}
+  </svg>`;
+  /* 3. выход на орбиту */
+  const s3 = `<svg viewBox="0 0 340 210">
+    <path d="M-20,214 Q170,104 360,214" ${L}/><path d="M-20,206 Q170,92 360,206" ${F} stroke-dasharray="1 4"/>
+    <path d="M44,178 C70,120 120,74 214,60" ${A}/><path d="M214,60 C262,54 300,62 336,74" ${F} stroke-dasharray="3 4"/>
+    ${N(44, 178, 1)}${T(30, 200, 'старт · 4 октября 1957, 22:28 мск')}
+    ${N(96, 108, 2)}${T(110, 112, 'сброс боковых блоков')}
+    ${N(214, 60, 3)}${T(196, 40, 'отделение спутника · ≈ 5 мин')}
+    ${T(16, 22, 'высота ≈ 230 км', ' ac')}
+  </svg>`;
+  /* 4. орбита */
+  const ex = 130, ey = 112, a = 116, b = 88, c = Math.sqrt(a * a - b * b);
+  const s4 = `<svg viewBox="0 0 340 230">
+    <ellipse cx="${ex + c - 2}" cy="${ey}" rx="${a}" ry="${b}" ${A}/>
+    <circle cx="${ex}" cy="${ey}" r="30" ${L}/><path d="M${ex - 30},${ey} Q${ex},${ey + 12} ${ex + 30},${ey}" ${F}/><path d="M${ex - 22},${ey - 20} Q${ex - 6},${ey - 6} ${ex + 10},${ey - 28}" ${F}/>
+    <circle cx="${ex + c - 2 - a}" cy="${ey}" r="3" fill="#8CC4FF"/><circle cx="${ex + c - 2 + a}" cy="${ey}" r="3" fill="#8CC4FF"/>
+    <path d="M${ex + c - 2 - a},${ey + 4} L${ex + c - 2 - a - 30},${ey + 64}" ${F}/>${T(16, ey + 78, 'перигей ≈ 230 км')}${T(324, ey - 14, 'апогей ≈ 950 км', ' end')}
+    <path d="M${ex + c + 40},${ey - b + 2} l8,-3 l-6,7" ${A}/>
+    ${T(16, 22, '1 виток — 96 минут', ' ac')}${T(324, 22, 'наклон 65°', ' end')}${T(324, 222, 'высоты увеличены', ' end dim')}
+  </svg>`;
+  /* 5. сигнал */
+  const s5 = `<svg viewBox="0 0 340 200">
+    <path d="M-20,206 Q170,120 360,206" ${L}/>
+    <circle cx="96" cy="58" r="9" ${L}/><path d="M89,64 L58,94 M91,66 L64,100 M87,62 L54,88 M93,67 L70,104" ${L}/>
+    <path d="M114,44 a26 26 0 0 1 0,30 M126,36 a40 40 0 0 1 0,46 M138,28 a54 54 0 0 1 0,62" ${A}/>
+    <path d="M250,164 L250,140 M240,140 Q250,128 260,140" ${L}/><path d="M228,120 a30 30 0 0 1 44,0" ${F} stroke-dasharray="2 3"/>
+    ${T(160, 62, '«бип-бип»', ' ac')}${T(160, 78, '20,005 и 40,002 МГц')}${T(160, 94, 'около трёх недель — пока были батареи', ' dim')}
+    ${T(206, 186, 'радиолюбители по всему миру', ' dim')}
+  </svg>`;
+  /* 6. 92 дня */
+  let sp = ''; for (let k = 0; k < 5; k++){ const ra = 112 - k * 17, rb = 66 - k * 8; sp += `<ellipse cx="${170 + (4 - k) * 4}" cy="104" rx="${ra}" ry="${rb}" ${k === 0 ? A : F}/>`; }
+  const s6 = `<svg viewBox="0 0 340 210">${sp}<circle cx="170" cy="104" r="26" ${L}/>
+    <path d="M196,104 l10,-6" ${A}/><circle cx="208" cy="97" r="2.4" fill="#8CC4FF"/>
+    ${T(16, 22, '92 дня · ≈ 1440 витков', ' ac')}${T(324, 200, '4 января 1958 — сгорел в атмосфере', ' end')}
+  </svg>`;
+  const SEC = [
+    ['01', 'Простейший спутник', 'Большой научный аппарат не успевали построить. Королёв предложил «ПС» — простейший: металлический шар и четыре антенны.', s1],
+    ['02', 'В носу ракеты', 'Спутник летел под головным обтекателем ракеты Р-7 — той же «семёрки», что потом подняла Гагарина.', s2],
+    ['03', 'Выход на орбиту', 'Через пять минут после старта спутник отделился от центрального блока, обтекатель сбросили, антенны раскрылись пружинами.', s3],
+    ['04', 'Орбита', 'Орбита была вытянутой: у Земли спутник летел быстрее, вдали — медленнее.', s4],
+    ['05', 'Сигнал', 'Два передатчика посылали короткие импульсы. Их мог поймать любой радиолюбитель — и весь мир убедился, что спутник летит.', s5],
+    ['06', 'Финал', 'Орбита понемногу снижалась, и в январе 1958 года спутник вошёл в плотные слои атмосферы. Началась космическая эра.', s6]];
+  window.PS1STORY = () => `<section class="ps1s"><div class="ps1h"><div class="k">Как это было</div><h2>Как запускали первый спутник</h2></div>` +
+    SEC.map(([n, h, p, svg]) => `<div class="ps1c"><div class="ps1t"><span>${n}</span>${h}</div><p>${p}</p>${svg}</div>`).join('') + `</section>`;
+})();
+
+(function(){ const orig = window.openEx; if (typeof orig !== 'function') return;
+  window.openEx = openEx = function(id){ const r = orig.apply(this, arguments); if (id === 10 && window.PS1STORY){ try { const ex = document.getElementById('vEx'); ex.querySelectorAll('.story,.ps1s').forEach(x => x.remove()); const t = ex.querySelector('.acts2') || ex.querySelector('.ex'); const d = document.createElement('div'); d.innerHTML = PS1STORY(); t ? t.after(d.firstChild) : ex.appendChild(d.firstChild); } catch (e){ console.warn(e); } } return r; }; })();
 </script>
 <style>
 /* v111: карта во всю ширину без внутреннего скролла страницы; «Карта · Список»; экскурсия — плеер внизу. Старый вид: localStorage kosmoMapLayout = 'classic' */
