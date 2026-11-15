@@ -379,8 +379,11 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 /* механики возвращения */
 .chips{display:flex;flex-wrap:wrap;gap:10px;max-width:60ch;margin-top:8px}.chips span{padding:9px 16px;border-radius:999px;background:rgba(10,11,14,.55);border:1px solid rgba(255,255,255,.18);font-size:calc(1.05*var(--u));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
+.ch{top:0!important;bottom:0!important;left:0!important;right:0!important}
+
 .probs,.ag,.steps5,.road{max-width:none!important;width:100%}
-.ch.ch:not([data-wide])>:not(.kick):not(h1):not(h2){width:max-content}
+.ch.ch:not([data-wide])>:not(.kick):not(h1):not(h2){width:auto;min-width:0}
+.ch{overflow:hidden!important}
 /* v12: ближе к краям, всё по якорям: поля = 3,2u со всех сторон; правая колонка прижата к правому краю */
 :root{--M:calc(3.2*var(--u))!important}
 .ch{--M:calc(3.2*var(--u))!important}
