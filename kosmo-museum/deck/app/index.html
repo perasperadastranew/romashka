@@ -9751,7 +9751,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const MEX = new Map((window.M_EX || []).map(([id, inv, title, hall, desc]) => [id, { id, inv, title, hall, desc }]));
   const meta = id => { const m = MEX.get(id) || {}, e = (typeof EX !== 'undefined' ? EX : []).find(x => x.id === id) || {}, inf = (typeof INFO !== 'undefined' ? INFO : {})[id] || {};
     const H = (window.M_HALLS || {})[m.hall] || {}; const lines = [inf.sum || e.desc || m.desc, ...(inf.facts || [])].filter(Boolean);
-    return { id, title:e.short || e.title || m.title || 'Экспонат', full:e.title || m.title, inv:e.inv || m.inv || '', hall:H.name || 'Зал', color:H.color || '#F0B898', thumb:[10, 11, 12, 13, 14, 16, 24].includes(id) ? `thumbs/${id}.webp` : null, lines, dur:Math.max(40, Math.round(lines.join(' ').length / 13)) }; };
+    return { id, title:e.short || e.title || m.title || 'Экспонат', full:e.title || m.title, inv:e.inv || m.inv || '', hall:H.name || 'Зал', color:H.color || '#F0B898', thumb:[10, 11, 12, 13, 14, 16, 24].includes(id) ? `thumbs/${id}.webp` : ((e.photos && e.photos[0]) || null), lines, dur:Math.max(40, Math.round(lines.join(' ').length / 13)) }; };
   const fmt = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
   const ico = { play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', pause:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' };
   const S = { q:[], i:0, t:0, playing:false, mode:'route', spd:1, rk:'short', dos:null };
@@ -10474,19 +10474,22 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   /* подсказка внизу */
   const pill = document.createElement('div'); pill.className = 'pullx'; pill.innerHTML = '<i><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></i><span>Потяни, чтобы закрыть</span>';
   const host = () => document.getElementById('dev') || document.querySelector('.phone') || document.body;
-  const TH = 120;
-  const show = (el, pull) => { if (!pill.isConnected) host().appendChild(pill); const k = Math.min(1, pull / TH); pill.style.opacity = pull > 6 ? Math.min(1, .3 + k) : 0; pill.style.transform = `translate(-50%, ${20 - 20 * k}px)`; const go = pull >= TH; pill.classList.toggle('go', go); pill.querySelector('span').textContent = go ? 'Отпусти — закроется' : 'Потяни, чтобы закрыть';
+  const TH = 120, THW = 300; let endT = 0;
+  /* v136: оранжевое полотно снизу растёт и выгибается, пока тянешь дальше конца */
+  const sheet = document.createElement('div'); sheet.className = 'pullsheet'; sheet.innerHTML = '<svg viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 40 Q50 40 100 40 L100 40 L0 40Z"/></svg><div><b>Тяни ещё, чтобы закрыть</b><span>следующий экспонат — на карте</span></div>';
+  const showSheet = (k, go) => { if (!sheet.isConnected) host().appendChild(sheet); sheet.style.opacity = k > .02 ? 1 : 0; sheet.style.height = (20 + 190 * k) + 'px'; sheet.querySelector('path').setAttribute('d', `M0 40 Q50 ${40 - 40 * Math.min(1, k * 1.2)} 100 40 L100 40 L0 40Z`); sheet.classList.toggle('go', go); sheet.querySelector('b').textContent = go ? 'Отпусти — закроется' : 'Тяни ещё, чтобы закрыть'; };
+  const show = (el, pull, th) => { th = th || TH; showSheet(Math.min(1, pull / th), pull >= th); if (!pill.isConnected) host().appendChild(pill); const k = Math.min(1, pull / TH); pill.style.opacity = pull > 6 ? Math.min(1, .3 + k) : 0; pill.style.transform = `translate(-50%, ${20 - 20 * k}px)`; const go = pull >= TH; pill.classList.toggle('go', go); pill.querySelector('span').textContent = go ? 'Отпусти — закроется' : 'Потяни, чтобы закрыть';
     el.style.transition = 'none'; el.style.transform = pull > 0 ? `translateY(${-Math.min(pull, 220) * .28}px)` : ''; };
-  const hide = el => { pill.style.opacity = 0; pill.classList.remove('go'); el.style.transition = ''; el.style.transform = ''; };
+  const hide = el => { sheet.style.opacity = 0; sheet.style.height = '20px'; pill.style.opacity = 0; pill.classList.remove('go'); el.style.transition = ''; el.style.transform = ''; };
   /* жест: долистали до конца и тянем дальше */
   function bind(el, scroller, win){ let yb = null, pull = 0, wheelAcc = 0, wheelT = 0;
-    const atEnd = () => { const sc = scroller(); return sc.top + sc.h >= sc.H - (sc.tol || 4); };
+    const atEnd0 = () => { const sc = scroller(); return sc.top + sc.h >= sc.H - (sc.tol || 4); }; const atEnd = () => { const a = atEnd0(); if (!a){ endT = 0; return false; } if (!endT) endT = Date.now(); return true; };
     const T = win || el;
     T.addEventListener('touchstart', () => { yb = null; pull = 0; }, { passive:true });
     T.addEventListener('touchmove', e => { if (el.classList.contains('off')) return; const y = e.touches[0].clientY; if (!atEnd()){ yb = null; if (pull){ pull = 0; hide(el); } return; } if (yb === null) yb = y; pull = Math.max(0, yb - y); if (pull > 0){ e.cancelable && e.preventDefault(); show(el, pull); } }, { passive:false });
-    T.addEventListener('touchend', () => { if (pull >= TH){ pill.style.opacity = 0; pill.classList.remove('go'); morphClose(el); } else if (pull) hide(el); yb = null; pull = 0; }, { passive:true });
-    T.addEventListener('wheel', e => { if (el.classList.contains('off')) return; if (e.deltaY <= 0 || !atEnd()){ wheelAcc = 0; hide(el); return; } const nw = Date.now(); if (nw - wheelT > 450) wheelAcc = 0; wheelT = nw; wheelAcc += Math.min(80, e.deltaY) * .5; show(el, wheelAcc);
-      clearTimeout(T.__wt); T.__wt = setTimeout(() => { if (wheelAcc >= TH){ pill.style.opacity = 0; pill.classList.remove('go'); morphClose(el); } else hide(el); wheelAcc = 0; }, 260); }, { passive:true }); }
+    T.addEventListener('touchend', () => { if (pull >= TH){ pill.style.opacity = 0; pill.classList.remove('go'); hide(el); morphClose(el); } else if (pull) hide(el); yb = null; pull = 0; }, { passive:true });
+    T.addEventListener('wheel', e => { if (el.classList.contains('off')) return; if (e.deltaY <= 0 || !atEnd()){ wheelAcc = 0; hide(el); return; } const nw = Date.now(); if (nw - endT < 700){ return; } /* v136: инерция докрутки до конца не закрывает */ if (nw - wheelT > 450) wheelAcc = 0; wheelT = nw; wheelAcc += Math.min(60, e.deltaY) * .5; show(el, wheelAcc, THW);
+      clearTimeout(T.__wt); T.__wt = setTimeout(() => { if (wheelAcc >= THW){ pill.style.opacity = 0; pill.classList.remove('go'); hide(el); morphClose(el); } else hide(el); wheelAcc = 0; }, 260); }, { passive:true }); }
   const ex = $('#vEx'), vl = $('#vl');
   watch(ex); watch(vl);
   if (ex) bind(ex, () => ({ top:ex.scrollTop, h:ex.clientHeight, H:ex.scrollHeight }));
@@ -10597,7 +10600,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 </script>
 <style>
 /* v103: плеер аудиогида по образцу Spotify / Яндекс Музыки / Литрес */
-#fp{background:radial-gradient(120% 60% at 50% 0%,color-mix(in srgb,var(--hc,#FF6A1F) 55%,#111) 0%,color-mix(in srgb,var(--hc,#FF6A1F) 18%,#0B0C0F) 48%,#0A0B0D 80%)!important}
+#fp{background:radial-gradient(120% 60% at 50% 0%,#B8501C 0%,#3A1A0C 42%,#0A0B0D 78%)!important;--hc:#FF8A4A!important} /* v136: плеер в оранжевом */
+#fp .fpcov{background:linear-gradient(150deg,#FF8A4A,#2a1408 115%)}
 .fputil{display:flex;justify-content:space-between;gap:8px;margin:14px 20px 0}
 .fputil button{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:40px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#E8EBF0;font:500 13px var(--f,system-ui);cursor:pointer}
 .fputil button.on{background:#fff;color:#0A0B0D}
@@ -10978,8 +10982,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
      Чертёж и скафандр (≈ 1,9 м) в одном масштабе: в каждой главе скафандр стоит в своей точке чертежа (BK.A), масштаб — из размера скафандра на экране (BK.S) */
   const BK = { th:70 * Math.PI / 180, S:[1, .33, .8, .3, .62, .5, .41],
     A:[null, [.838, 2.303], [1.333, 3.665], [3.848, 5.03], [2.648, 4.33], [1.317, 3.618], [0, 0]] };
-  const STORYCFG = { 14:{ center:false, rad:.2, glb:'14r', /* Rust Space Suit (Homeless_Models, CC BY), шильдики убраны, текстура выбелена; риг Mixamo — позы по главам */
-    rig:[{"LeftArm":[-0.3,0,0.2],"RightArm":[-0.25,0,-0.15],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.3,0,0],"LeftUpLeg":[0.25,0,0],"LeftLeg":[-0.45,0,0],"RightUpLeg":[-0.05,0,0],"RightLeg":[-0.15,0,0]},{"LeftArm":[0.35,0,0],"RightArm":[0.35,0,0],"LeftForeArm":[0.35,0,0],"RightForeArm":[0.35,0,0]},{"LeftArm":[0.1,0,0.5],"RightArm":[0.1,0,-0.5],"LeftForeArm":[0.5,0,0],"RightForeArm":[0.5,0,0]},{"LeftArm":[-0.45,0,0],"RightArm":[-0.45,0,0],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.4,0,0],"LeftUpLeg":[0,0,0.15],"RightUpLeg":[0,0,-0.15],"LeftLeg":[-0.3,0,0],"RightLeg":[-0.2,0,0]},{"LeftArm":[-0.6,0,0,1.08],"RightArm":[-0.6,0,0,1.08],"LeftForeArm":[0.15,0,0],"RightForeArm":[0.15,0,0],"Spine1":[0,0,0,1.05],"Spine2":[0,0,0,1.08],"LeftUpLeg":[0,0,0.22,1.06],"RightUpLeg":[0,0,-0.22,1.06]},{"LeftArm":[0.5,0,0.12],"RightArm":[0.5,0,-0.12],"LeftForeArm":[0.15,0,0],"RightForeArm":[0.15,0,0]},{"LeftArm":[0.25,0,0],"RightArm":[0.25,0,0],"LeftForeArm":[0.25,0,0],"RightForeArm":[0.25,0,0]}],
+  const STORYCFG = { 14:{ center:false, rad:.2, glb:'14r', sub:'Скафандр, в котором Алексей Леонов первым вышел в открытый космос', /* Rust Space Suit (Homeless_Models, CC BY), шильдики убраны, текстура выбелена; риг Mixamo — позы по главам */
+    rig:[{"LeftArm":[-0.3,0,0.2],"RightArm":[-0.25,0,-0.15],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.3,0,0],"LeftUpLeg":[0.25,0,0],"LeftLeg":[-0.45,0,0],"RightUpLeg":[-0.05,0,0],"RightLeg":[-0.15,0,0]},{"LeftArm":[0.35,0,0],"RightArm":[0.35,0,0],"LeftForeArm":[0.35,0,0],"RightForeArm":[0.35,0,0]},{"LeftArm":[0.1,0,0.5],"RightArm":[0.1,0,-0.5],"LeftForeArm":[0.5,0,0],"RightForeArm":[0.5,0,0]},{"LeftArm":[-0.45,0,0],"RightArm":[-0.45,0,0],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.4,0,0],"LeftUpLeg":[0,0,0.15],"RightUpLeg":[0,0,-0.15],"LeftLeg":[-0.3,0,0],"RightLeg":[-0.2,0,0]},{"LeftArm":[-0.6,0,0,1.08],"RightArm":[-0.6,0,0,1.08],"LeftForeArm":[0.15,0,0],"RightForeArm":[0.15,0,0],"Spine1":[0,0,0,1.05],"Spine2":[0,0,0,1.08],"LeftUpLeg":[0,0,0.22,1.06],"RightUpLeg":[0,0,-0.22,1.06]},{"LeftArm":[0.5,0,0.12],"RightArm":[0.5,0,-0.12],"LeftForeArm":[0.15,0,0],"RightForeArm":[0.15,0,0]},{"LeftArm":[-0.3,0,0.2],"RightArm":[-0.25,0,-0.15],"LeftForeArm":[0.4,0,0],"RightForeArm":[0.3,0,0],"LeftUpLeg":[0.25,0,0],"LeftLeg":[-0.45,0,0],"RightUpLeg":[-0.05,0,0],"RightLeg":[-0.15,0,0]}],
     CH:[
       ['01', '«Восход-2» и шлюз «Волга»', 'Кабину нельзя было разгерметизировать, поэтому к спускаемому аппарату пристроили надувной шлюз «Волга»: 2,5 м в длину, внутри — 1 м. Леонов перешёл в шлюз, люк за ним закрыли и стравили воздух.'],
       ['02', 'Выход', '18 марта 1965 года в 11:34 по Москве Алексей Леонов открыл внешний люк шлюза и первым в мире вышел в открытый космос.'],
@@ -10987,9 +10991,9 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       ['04', 'Скафандр раздуло', 'Внутри «Беркута» было 0,4 атмосферы, снаружи — вакуум. Скафандр раздулся и стал жёстким: руки выскальзывали из перчаток, ноги — из сапог. В шлюз шириной 1 м было не войти.'],
       ['05', 'Возвращение', 'Без доклада на Землю Леонов сбросил давление до 0,27 атмосферы и вошёл в шлюз головой вперёд, хотя по плану полагалось ногами. Весь выход вместе со шлюзованием занял 23 минуты 41 секунду.'],
       ['06', 'Финал', 'Шлюз «Волга» отстрелили. 19 марта «Восход-2» сел в тайге под Пермью — экипаж искали почти двое суток.'] ],
-    pose:[ [[.16, -.55, .14], 1.28, 0, .03], [[0, .9, -.35, 'ZYX'], .33, .2, -.15], [[0, .5, -.35, 'ZYX'], .8, .05, -.064], [[0, -.5, .25, 'ZYX'], .3, .036, .055], [[0, .15, -.1, 'ZYX'], .62, .05, -.03], [[0, .9, 2.79, 'ZYX'], .5, .09, -.03], [[0, 0, 0], .001, .04, -.03] ],
+    pose:[ [[.16, -.55, .14], 1.28, 0, .03], [[0, .9, -.35, 'ZYX'], .33, .2, -.15], [[0, .5, -.35, 'ZYX'], .8, .05, -.064], [[0, -.5, .25, 'ZYX'], .3, .036, .055], [[0, .15, -.1, 'ZYX'], .62, .05, -.03], [[0, .9, 2.79, 'ZYX'], .5, .09, -.03], [[.14, -.45, .1], 1.1, 0, .02] ], /* v136: финал — снова скафандр крупно */
     draw(h, cx, cy, r, W, H, t){ const { L, F, A, tx, ch } = h; if (!ch){ let z = ''; for (let i = 0; i < 46; i++){ const x = (Math.sin(i * 91.7) * .5 + .5) * W, y = (Math.sin(i * 47.3 + 1) * .5 + .5) * H * .82, rr = i % 7 ? .7 : 1.3; z += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr}" fill="#cfe3ff" opacity="${(.25 + .45 * (Math.sin(i * 13.1 + t / 1700) * .5 + .5)).toFixed(2)}"/>`; } return z; } let o = '';
-      const ppm = Math.min(W, H * .5) * .72 * BK.S[ch] / 1.9, a0 = BK.A[ch], u = [Math.cos(BK.th), Math.sin(BK.th)], n = [-u[1], u[0]];
+      if (ch === 6) return `<text x="${(W / 2).toFixed(1)}" y="${(H * .17).toFixed(1)}" class="pt ac" text-anchor="middle">19 марта 1965 · посадка в тайге под Пермью</text>`; const ppm = Math.min(W, H * .5) * .72 * BK.S[ch] / 1.9, a0 = BK.A[ch], u = [Math.cos(BK.th), Math.sin(BK.th)], n = [-u[1], u[0]];
       const M = (x, y) => [cx + (x - a0[0]) * ppm, cy - (y - a0[1]) * ppm], pt = q => M(q[0], q[1]).map(v => v.toFixed(1)).join(','), PL = (q, st, z) => `<path d="M${q.map(pt).join(' L')}${z ? ' Z' : ''}" ${st}/>`;
       let sh = 0; const ax = (d, w) => [u[0] * (1.15 + d + sh) + n[0] * w, u[1] * (1.15 + d + sh) + n[1] * w], B0 = ax(0, 0), T0 = ax(2.5, 0);
       const G = (v, lab) => { const gx = W - 64, gy = 132, gr = 34, a = Math.PI * (.75 + 1.5 * v / .5); let g = `<path d="M${gx + gr * Math.cos(Math.PI * .75)},${gy + gr * Math.sin(Math.PI * .75)} A${gr},${gr} 0 1 1 ${gx + gr * Math.cos(Math.PI * .25)},${gy + gr * Math.sin(Math.PI * .25)}" ${L}/>`;
@@ -11010,15 +11014,15 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
           + `<path d="M${T[0]},${T[1]} C${T[0] + 40},${T[1] - 70} ${cx - 80},${cy + 30} ${cx - 8},${cy + 10}" ${A}/>` + tx(T[0] + 5.35 * ppm * .55, T[1] - 5.35 * ppm * .86 - 8, 'фал 5,35 м', 'ac', 'middle') + tx(cx, cy - 1.45 * ppm, '≈ 12 минут снаружи', '', 'middle'); }
       if (ch === 4){ o += ship(1); const p1 = M(...ax(2.62, -.5)), p2 = M(...ax(2.62, .5)), q1 = M(...ax(2.95, -.5)), q2 = M(...ax(2.95, .5)); o += `<path d="M${p1[0]},${p1[1]} L${q1[0]},${q1[1]} M${p2[0]},${p2[1]} L${q2[0]},${q2[1]} M${q1[0]},${q1[1]} L${q2[0]},${q2[1]}" ${A}/>` + tx((q1[0] + q2[0]) / 2 - 18, (q1[1] + q2[1]) / 2 - 6, 'вход Ø 1 м', 'ac', 'end') + G(.4, 'давление, атм'); }
       if (ch === 5){ o += ship(1, 0, 0, .96); const a1 = M(...ax(.5, 0)), a2 = M(...ax(-.35, 0)); o += `<path d="M${a1[0]},${a1[1]} L${a2[0]},${a2[1]}" ${A}/><path d="M${a2[0] - 7},${a2[1] - 4} L${a2[0]},${a2[1]} L${a2[0] + 2},${a2[1] - 8}" ${A}/>` + tx(cx + .7 * ppm, cy + .9 * ppm, 'головой вперёд', 'ac') + G(.27, 'давление, атм'); }
-      if (ch === 6){ o += ship(0); sh = .75; o += ship(1, 'stroke="rgba(238,241,245,.35)" stroke-width="1" fill="none" stroke-dasharray="3 4"', 1); const lk = M(...ax(2.6, .9)); sh = 0;
-        o += tx(lk[0] + 6, lk[1], 'шлюз отстрелили', 'dim') + tx(cx, H * .62, '19 марта 1965 · посадка в тайге под Пермью', 'ac', 'middle'); }
+      if (ch === 6){ o += tx(W / 2, H * .17, '19 марта 1965 · посадка в тайге под Пермью', 'ac', 'middle'); }
       return o; } } };
   function ps1Story(ex, hero, cfg){ cfg = cfg || {}; const w = document.createElement('div'); w.className = 'psw'; hero.before(w); w.appendChild(hero); hero.classList.add('stk');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
+    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><span class="mouse"><i></i></span><em>листай</em>`; hero.appendChild(sd); }
     const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn">${n} / ${String(CH.length).padStart(2, '0')}</div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st);
     ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
-    /* v133: реплика Белки — внизу досье, перед «Следующий экспонат» */
-    const bel = () => { const d = ex.querySelector('.dfc'); if (!d) return false; const nx = ex.querySelector('#nextEx'); const at = nx ? (nx.closest('.exbody > *, section > *') || nx) : null; if (at && at.parentNode) at.parentNode.insertBefore(d, at); else d.parentNode.appendChild(d); return true; }; if (!bel()) setTimeout(bel, 350);
+    /* v136: реплика Белки — сразу после истории */
+    const bel = () => { const d = ex.querySelector('.dfc'); if (!d) return false; w.after(d); d.classList.add('afterst'); return true; }; /* v136: Белка — сразу после истории */ if (!bel()) setTimeout(bel, 350);
     const steps = [...st.querySelectorAll('.pst')]; let ch = 0, k = 1;
     const L = 'stroke="rgba(238,241,245,.75)" stroke-width="1.1" fill="none" stroke-linecap="round"', F = 'stroke="rgba(238,241,245,.3)" stroke-width="1" fill="none" stroke-linecap="round"', A = 'stroke="#8CC4FF" stroke-width="1.3" fill="none" stroke-linecap="round"';
     const tx = (x, y, t, c = '', a = 'start') => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="pt ${c}" text-anchor="${a}">${t}</text>`;
@@ -11692,6 +11696,24 @@ canvas.exfly{display:block}
 #vHall.mapfull .m3halls,#vHall.mapfull .m3exs{display:none!important}
 #vHall.mapfull #m3wrap #mvSeg{top:auto!important;bottom:136px!important;right:12px;height:auto}
 #vHall.mapfull .hd .mvtog{position:static;display:inline-flex;margin-top:14px}
+
+/* v136 */
+#vEx .exhero .sdesc{position:absolute;left:24px;right:24px;bottom:96px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;transition:opacity .5s;pointer-events:none}
+#vEx .exhero .sdesc p{margin:0;max-width:300px;font-size:14px;line-height:1.45;color:rgba(232,236,242,.78)}
+#vEx .exhero .sdesc .mouse{width:20px;height:32px;border:1.5px solid rgba(255,255,255,.55);border-radius:10px;position:relative}
+#vEx .exhero .sdesc .mouse i{position:absolute;left:50%;top:6px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:#fff;animation:sdm 1.6s ease-in-out infinite}
+@keyframes sdm{50%{transform:translateY(9px);opacity:.3}}
+#vEx .exhero .sdesc em{font:500 10px ui-monospace,Menlo,monospace;font-style:normal;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+#vEx .exhero:not([data-ch="0"]) .sdesc{opacity:0}
+#vEx.full .psw .exhero .hh{display:none}
+.dfc.afterst{margin-top:8px}
+.pullsheet{position:absolute;left:0;right:0;bottom:0;height:20px;z-index:2000;opacity:0;pointer-events:none;transition:opacity .2s,height .12s;display:flex;flex-direction:column;justify-content:flex-end}
+.pullsheet svg{position:absolute;left:0;right:0;top:-39px;width:100%;height:40px;fill:#FF8A4A}
+.pullsheet{background:#FF8A4A}
+.pullsheet div{position:relative;padding:0 24px calc(28px + env(safe-area-inset-bottom,0px));color:#1a0d05;display:grid;gap:4px;text-align:center}
+.pullsheet b{font:600 17px var(--f,system-ui)}.pullsheet span{font-size:13px;opacity:.7}
+.pullsheet.go{background:#FFA06A}.pullsheet.go svg{fill:#FFA06A}
+.pullx{display:none!important}
 .m3exs{position:absolute;left:10px;right:10px;top:46px;z-index:7;display:flex;align-items:center;gap:6px;pointer-events:none;transition:opacity .3s}
 .m3exs.hid{opacity:0}
 .m3exs > *{pointer-events:auto}
