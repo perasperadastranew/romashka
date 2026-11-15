@@ -1249,7 +1249,7 @@ window.M_EX = [
         <h1>Карта <em>музея</em></h1>
       </div>
       <div class="m3wrap" id="m3wrap"><div class="m3" id="m3"><div class="m3pins" id="m3pins"></div><div class="m3load" id="m3load">загружаю карту…</div>
-        <div class="m3seg" id="m3seg"><button class="on" data-f="all">Все</button><button data-f="upper">Верх</button><button data-f="lower">Низ</button></div>
+        <div class="m3seg" id="m3seg"><button class="on" data-f="upper">Верхний этаж</button><button data-f="lower">Нижний этаж</button></div>
         <button class="m3find" id="m3find" aria-label="Найти экспонат"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg></button>
         <div class="m3srch" id="m3srch" hidden><div class="m3sh"><input id="m3q" placeholder="Найти экспонат: луноход, «Мир»…" autocomplete="off"><button id="m3sx" aria-label="Закрыть поиск"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="m3sl" id="m3sl"></div></div>
         <button class="m3full" id="m3full" aria-label="Развернуть карту"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
@@ -11799,7 +11799,7 @@ canvas.exfly{display:block}
 .m3exs .nm{min-width:0;max-width:62%;height:30px;padding:0 12px;border-radius:15px;background:rgba(10,11,13,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;font:500 12px var(--f);color:#fff;cursor:pointer}
 .m3exs .nm b{font:500 10px var(--m);color:#8B93A0;letter-spacing:.06em}
 .m3exs .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#m3.v118 #m3seg{display:flex} /* v152: этажи снова видны — внизу, где был переключатель видов */
+#m3.v118 #m3seg{display:flex} #m3seg button{font-size:12px;padding:0 10px} /* v152: этажи снова видны — внизу, где был переключатель видов */
 .m3wrap.scheme .m3halls,.m3wrap.scheme .m3exs{display:none}
 #vHall.mapfull #mvSeg{top:88px!important}
 </style>
@@ -12132,5 +12132,6 @@ canvas.exfly{display:block}
     const rim = new T.Mesh(new T.RingGeometry(.46, .463, 128), new T.MeshBasicMaterial({ color:0x9cc6ff, transparent:true, opacity:.18 })); rim.rotation.x = -Math.PI / 2; rim.position.y = .002; g.add(rim); };
 })();
 </script>
+<script>/* v154: этажи — только «Верхний / Нижний», стартуем с верхнего */ (function w(){ if (!window.m3floor || !window.__m3k) return setTimeout(w, 400); setTimeout(() => m3floor('upper', true), 600); })();</script>
 </body>
 </html>
