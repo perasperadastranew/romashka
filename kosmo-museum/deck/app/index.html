@@ -11734,7 +11734,7 @@ canvas.exfly{display:block}
 .m3halls button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
 .m3halls button.on{background:#fff;color:#0A0B0D;border-color:#fff}
 /* v132: верх карты — без наложений: подписи залов из сцены не нужны (есть ряд залов), карта обрезает всё по своим краям, статус не заходит под переключатель */
-#m3pins .m3lab{display:none!important}
+#m3pins .m3lab{display:flex!important;padding:3px 8px 3px 6px!important;font-size:10px!important;background:rgba(11,14,18,.62)!important;cursor:pointer;pointer-events:auto} /* v144: подписи залов снова на карте — нажатие подлетает к залу */
 #vHall.mapfull #m3wrap{overflow:hidden}
 #vHall.mapfull .amchip{max-width:calc(100% - 200px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:inline-block;line-height:28px}
 #vHall.mapfull .amchip i{display:inline-block;vertical-align:middle;margin-right:6px}
@@ -11920,6 +11920,35 @@ canvas.exfly{display:block}
   };
   /* сравнение: зал «Утро космической эры» — голограмма, остальные — серебро */
   window.__exCmp = { utro:'holo', '*':'silver' }; (function w(){ if (!window.__m3k) return setTimeout(w, 300); [0, 1500, 4000, 8000].forEach(t => setTimeout(() => m3exMat(window.__exCmp), t)); })();
+})();
+</script>
+
+<script>
+/* v144: кнопка «Залы» рядом с поиском — список залов с этажом и числом экспонатов */
+(() => {
+  const st = document.createElement('style'); st.textContent = `
+  .m3halls2{position:absolute;right:52px;top:10px;z-index:5;height:34px;padding:0 12px 0 10px;border-radius:12px;border:1px solid var(--line,rgba(255,255,255,.12));background:rgba(10,11,13,.72);color:#fff;display:flex;align-items:center;gap:7px;font:500 12.5px var(--f);cursor:pointer}
+  #vHall #m3find{right:140px!important}
+  .hlsheet{position:absolute;left:0;right:0;bottom:0;z-index:80;max-height:72%;overflow:auto;padding:14px 14px calc(18px + env(safe-area-inset-bottom,0px));border-radius:26px 26px 0 0;background:#14161b;border-top:1px solid rgba(255,255,255,.08);transform:translateY(105%);transition:transform .4s cubic-bezier(.2,.9,.3,1)}
+  .hlsheet.on{transform:none}
+  .hlsheet h4{margin:4px 6px 10px;font:500 11px var(--m,ui-monospace);letter-spacing:.16em;text-transform:uppercase;color:#8d929c}
+  .hlsheet button{display:flex;align-items:center;gap:12px;width:100%;padding:12px 10px;border:0;border-radius:14px;background:none;color:#fff;text-align:left;font:inherit}
+  .hlsheet button:active,.hlsheet button:hover{background:rgba(255,255,255,.05)}
+  .hlsheet i{flex:none;width:10px;height:10px;border-radius:50%}.hlsheet b{flex:1;font:500 15px var(--f)}.hlsheet small{font-size:12px;color:#8d929c;white-space:nowrap}
+  .hlscrim{position:absolute;inset:0;z-index:79;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s}.hlscrim.on{opacity:1;pointer-events:auto}`;
+  document.head.appendChild(st);
+  (function w(){ const f = document.getElementById('m3find'); if (!f || !window.M_HALLS){ setTimeout(w, 500); return; }
+    const b = document.createElement('button'); b.className = 'm3halls2'; b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Залы'; f.after(b);
+    const host = document.querySelector('.scr') || document.body; const sh = document.createElement('div'); sh.className = 'hlsheet'; const sc = document.createElement('div'); sc.className = 'hlscrim'; host.append(sc, sh);
+    const cnt = k => (window.M_EX || []).filter(x => x[3] === k).length;
+    const close = () => { sh.classList.remove('on'); sc.classList.remove('on'); };
+    const H = window.M_HALLS, keys = Object.keys(H).filter(k => k !== 'kino');
+    const row = k => `<button data-k="${k}"><i style="background:${H[k].color}"></i><b>${H[k].name}</b><small>${cnt(k) ? cnt(k) + ' экспонатов' : ''}</small></button>`;
+    sh.innerHTML = '<h4>Верхний этаж</h4>' + keys.filter(k => H[k].floor === 'upper').map(row).join('') + '<h4>Нижний этаж</h4>' + keys.filter(k => H[k].floor !== 'upper').map(row).join('');
+    b.onclick = e => { e.stopPropagation(); sh.classList.add('on'); sc.classList.add('on'); };
+    sc.onclick = close;
+    sh.onclick = e => { const r = e.target.closest('button[data-k]'); if (!r) return; close(); setTimeout(() => window.__m3goHall && __m3goHall(r.dataset.k), 250); };
+  })();
 })();
 </script>
 </body>
