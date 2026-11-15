@@ -263,17 +263,27 @@ html,body{font-variant-numeric:tabular-nums}
 .sndays button:disabled{opacity:.35;cursor:default}
 .snhours{display:grid;grid-template-columns:1fr auto;gap:6px 12px}
 .snhours b{font-weight:500}
+
+/* первый экран, v2: только слайдер, статус и две кнопки */
+.snhero{height:400px}
+.snsl .cap{left:18px;bottom:16px}
+.snsl .cap b{font:500 22px/1.15 var(--f);letter-spacing:-.01em}
+.sndots{bottom:22px}
+.sninfo{padding:4px 18px 18px}
+.sninfo .snbtns{margin-top:12px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sntiles{margin-top:0}
 </style></head><body>
 <div class="dev"><div class="scr"><div class="island"></div><div class="sb"><span>9:41</span><span></span></div>
 <div class="sv new" id="siteNew"><div class="snscroll" id="snScroll">
   <header class="snh"><div class="snlogo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-25 12 12)"/></svg>Музей<br>космонавтики</div><button class="snbuy" data-buy>Билеты</button><button class="snburg" aria-label="Меню"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></header>
   <section class="snhero" id="snHero" aria-label="Экспонаты музея">
-    <div class="snsl on"><img src="g/luno_big.webp" alt="«Луноход-1»"><div class="cap"><small>Нижний этаж · Луна и планеты</small><b>«Луноход-1»</b><span>Первый самоходный аппарат на&nbsp;другом небесном теле</span></div></div>
-    <div class="snsl"><img src="g/mir_big.webp" alt="Базовый блок станции «Мир»"><div class="cap"><small>Верхний этаж · Космический дом на&nbsp;орбите</small><b>Станция «Мир»</b><span>В&nbsp;базовый блок можно зайти: каюты, стол, рабочие места</span></div></div>
-    <div class="snsl"><img src="g/mars_big.webp" alt="Спускаемый аппарат «Марс-3»"><div class="cap"><small>Нижний этаж · Луна и планеты</small><b>«Марс-3»</b><span>Первая мягкая посадка на&nbsp;Марс, 1971&nbsp;год</span></div></div>
+    <div class="snsl on"><img src="g/luno_big.webp" alt="«Луноход-1»"><div class="cap"><small>Нижний этаж · Луна и планеты</small><b>«Луноход-1»</b></div></div>
+    <div class="snsl"><img src="g/mir_big.webp" alt="Базовый блок станции «Мир»"><div class="cap"><small>Верхний этаж · Космический дом на&nbsp;орбите</small><b>Станция «Мир»</b></div></div>
+    <div class="snsl"><img src="g/mars_big.webp" alt="Спускаемый аппарат «Марс-3»"><div class="cap"><small>Нижний этаж · Луна и планеты</small><b>«Марс-3»</b></div></div>
     <div class="sndots"><i class="on"></i><i></i><i></i></div>
   </section>
-  <section class="sninfo"><span class="snpill" id="snOpen"><i></i>Сегодня открыто</span><h1>Музей космонавтики</h1><p>Два этажа о&nbsp;том, как человек полетел в&nbsp;космос. Проспект Мира, 111 — две минуты от&nbsp;метро ВДНХ.</p><div class="snbtns"><button class="p" data-buy>Купить билет · 500 ₽</button><button class="s" id="snRoute">Как добраться</button></div></section>
+  <section class="sninfo"><h1 class="vh">Музей космонавтики</h1><span class="snpill" id="snOpen"><i></i>Сегодня открыто</span><div class="snbtns"><button class="p" data-buy>Купить билет · 500 ₽</button><button class="s" id="snRoute">Как добраться</button></div></section>
   <div class="sntiles">
     <button data-buy><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg>Билеты и цены</button>
     <button data-go="visit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Как добраться</button>
