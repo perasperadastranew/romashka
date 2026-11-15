@@ -10954,6 +10954,15 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     ['05', 'Сигнал', 'Два передатчика на 20 и 40 МГц посылали короткие «бип-бип». Их ловили радиолюбители по всему миру — около трёх недель, пока не сели батареи.'],
     ['06', 'Финал', 'Орбита понемногу снижалась. 4 января 1958 года, сделав около 1440 витков, спутник вошёл в атмосферу и сгорел. Началась космическая эра.'] ];
   const PS1SC = [1, 1, .55, .62, .38, .75, .4];
+  /* v122: в каждой главе спутник встаёт в свою позу — как камера у «Лунохода»: [куда смотрят антенны (экран), крен, масштаб, сдвиг x, сдвиг y] */
+  const PS1POSE = [
+    [[-1, -1.05, -.55], null, 1, 0, 0],      /* обложка: под 45° */
+    [[-1, -.12, -.25], .4, 1.05, .02, .02],   /* устройство: в профиль, видно антенны и шар */
+    [[0, -1, -.05], .8, .46, 0, .02],         /* в носу ракеты: носом вверх, антенны вниз */
+    [[-.95, -.2, -.25], 1.4, .62, 0, 0],      /* выход на орбиту: летит вправо */
+    [[-1, .02, -.15], 2.2, .38, 0, 0],        /* орбита: идёт по эллипсу */
+    [[-.25, -.3, -1], 3.4, .78, 0, 0],        /* сигнал: антенны веером вокруг шара */
+    [[.75, .7, -.25], 4.4, .42, -.04, .05] ]; /* финал: падает вниз-влево, антенны назад */
   function ps1Story(ex, hero){ const w = document.createElement('div'); w.className = 'psw'; hero.before(w); w.appendChild(hero); hero.classList.add('stk');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
     const st = document.createElement('div'); st.className = 'psteps'; st.innerHTML = '<div class="pst p0"></div>' + PS1CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn">${n}<i></i>${PS1CH.length < 10 ? '06' : ''}</div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st);
@@ -10963,7 +10972,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const tx = (x, y, t, c = '', a = 'start') => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="pt ${c}" text-anchor="${a}">${t}</text>`;
     const dotp = (x, y, n) => `<circle cx="${x}" cy="${y}" r="3.2" fill="#8CC4FF"/>`;
     function draw(cx, cy, r, W, H, t){ let o = '';
-      if (ch === 1){ const y = cy - r - 18; o += `<path d="M${cx - r},${y} L${cx + r},${y} M${cx - r},${y - 5} l0,10 M${cx + r},${y - 5} l0,10" ${A}/>` + tx(cx, y - 10, 'Ø 58 см', 'ac', 'middle') + `<path d="M${cx + r * .75},${cy + r * .75} L${cx + r + 26},${cy + r + 22} L${cx + r + 60},${cy + r + 22}" ${F}/>` + tx(cx + r + 30, cy + r + 18, '83,6 кг') + tx(cx + r + 30, cy + r + 34, '2 передатчика', 'dim'); }
+      if (ch === 1){ const y = cy - r - 18; o += `<path d="M${cx - r},${y} L${cx + r},${y} M${cx - r},${y - 5} l0,10 M${cx + r},${y - 5} l0,10" ${A}/>` + tx(cx, y - 10, 'Ø 58 см', 'ac', 'middle') + tx(cx, cy + r + 30, '83,6 кг · 2 передатчика', '', 'middle'); }
       if (ch === 2){ const bw = 1.35 * r, by = cy + 1.9 * r, tp = cy - 2.7 * r; o += `<path d="M${cx - bw},${H + 10} L${cx - bw},${by} C${cx - bw},${cy - .6 * r} ${cx - .5 * r},${tp + .5 * r} ${cx},${tp} C${cx + .5 * r},${tp + .5 * r} ${cx + bw},${cy - .6 * r} ${cx + bw},${by} L${cx + bw},${H + 10}" ${L}/><path d="M${cx - bw},${by} L${cx + bw},${by}" ${F} stroke-dasharray="3 4"/>`
         + `<path d="M${cx + bw + 4},${cy - r} L${cx + bw + 30},${cy - r}" ${F}/>` + tx(Math.min(W - 12, cx + bw + 34), cy - r + 4, 'обтекатель', '', cx + bw + 120 > W ? 'end' : 'start') + tx(cx, by + 22, 'Р-7 «Спутник» · Байконур', 'ac', 'middle'); }
       if (ch === 3){ const sx = W * .1, sy = H * .9; o += `<path d="M${sx},${sy} C${sx + W * .05},${cy + H * .1} ${cx - W * .25},${cy + 6} ${cx},${cy}" ${A}/><path d="M${cx},${cy} C${cx + W * .2},${cy - 8} ${cx + W * .4},${cy - 4} ${W + 20},${cy + 10}" ${F} stroke-dasharray="3 5"/>` + dotp(sx, sy) + tx(sx + 8, sy - 8, 'старт · 22:28 мск') + tx(cx, cy - r - 14, '≈ 5 мин · отделение', 'ac', 'middle'); }
@@ -10971,7 +10980,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       if (ch === 5){ for (let i = 0; i < 4; i++){ const q = ((t / 1600) + i / 4) % 1; o += `<circle cx="${cx}" cy="${cy}" r="${r * (1.15 + q * 2.4)}" stroke="#8CC4FF" stroke-width="1.2" fill="none" opacity="${(1 - q) * .8}"/>`; } o += tx(cx, cy - r * 3.8, '«бип-бип»', 'ac big', 'middle') + tx(cx, cy - r * 3.8 + 18, '20,005 и 40,002 МГц', '', 'middle'); }
       if (ch === 6){ o += `<defs><radialGradient id="psg"><stop offset="0" stop-color="#FFB27A" stop-opacity=".75"/><stop offset="1" stop-color="#FF6A1F" stop-opacity="0"/></radialGradient></defs><circle cx="${cx}" cy="${cy}" r="${r * 2.6}" fill="url(#psg)"/>` + [0, 1, 2, 3, 4].map(i => `<path d="M${cx + r * .6},${cy - r * .6 + i * 5 - 10} l${80 + i * 14},${-60 - i * 6}" stroke="rgba(255,178,122,${.5 - i * .08})" stroke-width="1.4" stroke-linecap="round"/>`).join('') + tx(cx, cy + r * 3, '4 января 1958 · ≈ 1440 витков', 'ac', 'middle'); }
       svg.innerHTML = o; }
-    return { scale:() => k, ch:() => ch, update(cx, cy, r, W, H, t){ let c = 0; steps.forEach((s, i) => { const b = s.getBoundingClientRect(); if (i > 0 && b.top < innerHeight * .7) c = i; }); if (c !== ch || hero.dataset.ch === undefined){ ch = c; hero.dataset.ch = c; steps.forEach((s, i) => s.classList.toggle('on', i === c)); } k += (PS1SC[ch] - k) * .08; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); draw(cx, cy, r, W, H, t); } }; }
+    const f = () => { let v = 0; steps.forEach((s, i) => { if (!i) return; const b = s.getBoundingClientRect(); v += Math.max(0, Math.min(1, (innerHeight * .78 - b.top) / (innerHeight * .34))); }); return v; };
+    return { f, scale:() => k, ch:() => ch, update(cx, cy, r, W, H, t){ let c = 0; steps.forEach((s, i) => { const b = s.getBoundingClientRect(); if (i > 0 && b.top < innerHeight * .7) c = i; }); if (c !== ch || hero.dataset.ch === undefined){ ch = c; hero.dataset.ch = c; steps.forEach((s, i) => s.classList.toggle('on', i === c)); } k += (PS1SC[ch] - k) * .08; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); draw(cx, cy, r, W, H, t); } }; }
   function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
     const fm = n.userData.floatModel, obj = fm ? fm.children[0] : n, AX = !!(fm && fm.userData.axis);
     cur = { id, n, y0:n.position.y, r0:n.rotation.y, obj, z0:obj.rotation.z };
@@ -11018,7 +11028,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     /* конечная поза: спутник — ось к нижнему левому углу, вращение вокруг оси; остальные — лёгкий наклон и поворот */
     const qAlign = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), new T.Vector3(...DV).normalize()), tilt = new T.Quaternion().setFromEuler(new T.Euler(.32, 0, 0));
     const zA = new T.Vector3(0, 0, 1), yA = new T.Vector3(0, 1, 0), qr = new T.Quaternion(), qb = new T.Quaternion(), qa = new T.Quaternion();
-    let rot0 = AX ? obj.rotation.z : 0, dragA = 0, drag = null, mode = 'fly'; const t1 = performance.now(), DUR = 900; me.hero = hero; me.R = R; me.cv = cv;
+    let rot0 = AX ? obj.rotation.z : 0, dragA = 0, drag = null, mode = 'fly', rollEnd = null, ss = 1, sx = 0, sy = 0; const sq = new T.Quaternion(); const t1 = performance.now(), DUR = 900; me.hero = hero; me.R = R; me.cv = cv;
     const pose = (r) => { if (AX){ qr.setFromAxisAngle(zA, r); qb.copy(qAlign).multiply(qr); } else { qr.setFromAxisAngle(yA, r); qb.copy(tilt).multiply(qr); } return qb; };
     const frame = now => { if (cur !== me) return; const W = innerWidth, H = innerHeight;
       const k = Math.min(1, (now - t1) / DUR), e = ez(k);
@@ -11026,9 +11036,14 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       if (mode === 'fly'){ cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix();
         const to = slot(); const x = from0.x + (to.x - from0.x) * e, y = from0.y + (to.y - from0.y) * e - Math.sin(Math.PI * e) * H * .05, s = from0.s + (to.s - from0.s) * e;
         holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
-        if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; } }
+        if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; sq.copy(holder.quaternion); } }
       if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
-        holder.position.set(0, wSize(h * (.5 - YC), h) + Math.sin(now / 1400) * wSize(3, h), 0); holder.scale.setScalar(wSize(Math.min(w, h * SZ) * BIG, h) * (story ? story.scale() : 1)); holder.quaternion.copy(pose(rotNow)); }
+        if (story){ if (rollEnd == null) rollEnd = rot0 + 1.6; const F = story.f(), i0 = Math.min(PS1POSE.length - 1, Math.floor(F)), i1 = Math.min(PS1POSE.length - 1, i0 + 1), u = F - i0, sm = u * u * (3 - 2 * u);
+          const P = (j) => { const [d, rl, sc, dx, dy] = PS1POSE[j]; const q = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), new T.Vector3(...d).normalize()); q.multiply(new T.Quaternion().setFromAxisAngle(zA, (rl == null ? rollEnd : rollEnd + rl) + dragA)); return { q, sc, dx, dy }; };
+          const A = P(i0), B = P(i1); const tq = A.q.clone().slerp(B.q, sm), tsc = A.sc + (B.sc - A.sc) * sm, tdx = A.dx + (B.dx - A.dx) * sm, tdy = A.dy + (B.dy - A.dy) * sm;
+          sq.slerp(tq, .12); ss += (tsc - ss) * .12; sx += (tdx - sx) * .12; sy += (tdy - sy) * .12;
+          holder.position.set(wSize(w * sx, h), wSize(h * (.5 - YC - sy), h) + Math.sin(now / 1400) * wSize(3, h), 0); holder.scale.setScalar(wSize(Math.min(w, h * SZ) * BIG, h) * ss); holder.quaternion.copy(sq); }
+        else { holder.position.set(0, wSize(h * (.5 - YC), h) + Math.sin(now / 1400) * wSize(3, h), 0); holder.scale.setScalar(wSize(Math.min(w, h * SZ) * BIG, h)); holder.quaternion.copy(pose(rotNow)); } }
       if (story && mode === 'dock'){ const r2 = hero.getBoundingClientRect(); const o0 = spin.children[0] && spin.children[0].children[0]; if (o0){ const wp = o0.getWorldPosition(new T.Vector3()), pr = wp.clone().project(cam); const e1 = wp.clone().add(new T.Vector3(1, 0, 0).applyQuaternion(cam.quaternion).multiplyScalar(.995 * o0.getWorldScale(new T.Vector3()).x)).project(cam); const cx = (pr.x + 1) / 2 * r2.width, cy = (1 - pr.y) / 2 * r2.height, rr = Math.abs((e1.x - pr.x) / 2 * r2.width); story.update(cx, cy, rr, r2.width, r2.height, now); } }
       if (hsU){ const r2 = hero.getBoundingClientRect(); hsU.update(cam, r2.width, r2.height, mode === 'dock' && (!story || story.ch() === 0)); }
       R.render(sc, cam); requestAnimationFrame(frame); };
