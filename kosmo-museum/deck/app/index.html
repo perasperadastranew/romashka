@@ -9430,8 +9430,8 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       hallLabels(); routeInit();
       $('#m3load').hidden = true; window.__m3k = { THREE, scene, cam, ctl, nodes, root, box, GLTFLoader, MeshoptDecoder, r };
       if (window.__dive){ window.__dive = false; const c0 = all.getCenter(new THREE.Vector3()); place(c0.clone().add(new THREE.Vector3(0, 0, 60))); cam.zoom = .32; cam.updateProjectionMatrix();
-        setTimeout(() => flyTo(c0, zoomFor(all, .04), 1600), 120); setTimeout(() => RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1), 1900); }
-      else setTimeout(() => RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1), 700); }, () => { $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
+        setTimeout(() => flyTo(c0, zoomFor(all, .04), 1600), 120); setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 1900); }
+      else setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, () => { $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
     // ---- тёмная карта: пол, стены и залы перекрашиваем, у залов — светящийся контур цвета зала
     const FLOOR = new THREE.Color(0x151A23);
     const M = (c) => new THREE.MeshStandardMaterial({ color:c, roughness:.92, metalness:0 });
@@ -10028,7 +10028,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const prevFoc = window.__hlFocused; window.__hlFocused = (id) => { if (id != null) window.__schemeSel = id; prevFoc && prevFoc(id); };
   const routeOnScheme = () => { const r = window.tourState ? tourState() : null, R = window.ROUTES || window.TOUR_ROUTES; if (!r || !R || !R[r.key]) return; const ids = window.routeIds && window.RT ? routeIds() : R[r.key].ids; window.__hlRoute && __hlRoute(ids, r.i || 0); };
   function focusScheme(id){ const h = hallOf(id); if (!SCH.includes(h)) return false; if (h !== curHall) chip(h); setTimeout(() => window.__hlFocusId && __hlFocusId(id), 90); return true; }
-  function setView(v, init){ if (v === view) return; view = window.__mapView = v; try { localStorage.setItem('kosmoMapView', v); } catch(_){}
+  function setView(v, init){ if (v === view) return; view = window.__mapView = v; try { localStorage.setItem('kosmoMapView2', v); } catch(_){}
     seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); wrap.classList.toggle('scheme', v === 'scheme');
     if (v === 'scheme'){ FLOAT.forEach(n => s.appendChild(n)); segOn(curHall === 'luna' ? 'lower' : 'upper'); const id = window.__m3sel;
       if (!init){ if (id == null || !focusScheme(id)) chip(curHall); setTimeout(routeOnScheme, 140); } }
@@ -10042,7 +10042,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   /* «Начать экскурсию отсюда» на схеме = экскурсия главной: отмечаем старт, обновляем главную и вкладку */
   go && go.addEventListener('click', () => setTimeout(() => { const r = window.tourState && tourState(); if (r){ r.started = true; window.tourSave && tourSave(r); } window.renderHome && renderHome(); window.renderTour && renderTour(); window.badgeUpd && badgeUpd(); routeOnScheme(); }, 60));
   /* маршрут двигается — подсветка на схеме за ним (routeGo уже зовёт __hlRoute; это — для шагов из вкладки «Экскурсия») */
-  let v0 = 'scheme'; try { v0 = localStorage.getItem('kosmoMapView') || 'scheme'; } catch(_){}
+  let v0 = '3d'; try { v0 = localStorage.getItem('kosmoMapView2') || '3d'; } catch(_){} /* v107: 3D по умолчанию */
   setView(v0 === '3d' ? '3d' : 'scheme', true);
   new IntersectionObserver(es => { if (view === 'scheme' && es.some(x => x.isIntersecting)){ chip(curHall); setTimeout(routeOnScheme, 140); } }).observe(hl);
 })();
@@ -10390,7 +10390,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   /* --- 3D */
   const m3 = $('#m3'), oc = $('#m3card');
   if (m3 && oc){ const D = mk(m3, '3d');
-    const upd = () => { if (oc.hidden){ D.show(null); return; } const id = window.__m3sel; if (id == null) return; oc.classList.add('exhide'); D.show(id); };
+    const upd = () => { if (oc.hidden || window.__m3auto){ D.show(null); window.__m3auto && oc.classList.add('exhide'); return; } const id = window.__m3sel; if (id == null) return; oc.classList.add('exhide'); D.show(id); };
     new MutationObserver(upd).observe(oc, { attributes:true, attributeFilter:['hidden'], subtree:true, childList:true, characterData:true }); }
 })();
 </script>
@@ -10756,6 +10756,9 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 .lfx .lc .bt button.pr{flex:1.4;background:#FF6A1F}
 .lfx .hint{position:absolute;left:0;right:0;top:-30px;text-align:center;font-size:12px;color:rgba(255,255,255,.45);opacity:0;transition:opacity .4s 1s}
 .lfx.on .hint{opacity:1}
+
+/* v107: 3D-карта крупнее */
+.m3wrap:not(.scheme){height:max(500px,calc(100dvh - 300px))}
 </style>
 <script>
 (function(){
@@ -10793,7 +10796,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     /* куда поднимаем: центр по горизонтали, верхняя часть экрана; размер — ~45% высоты */
     const v = c0.clone().project(K.cam); const zN = Math.max(-.92, v.z - .35); const tgt = new T.Vector3(0, .3, zN).unproject(K.cam); /* ближе к камере — перед затемнением */
     const proj = b => { const pts = []; for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) pts.push(new T.Vector3(x, y, z).project(K.cam)); return Math.max(...pts.map(p => p.y)) - Math.min(...pts.map(p => p.y)); };
-    const sc = Math.min(5, .72 / Math.max(.02, proj(b0)));
+    const sc = Math.min(5, .62 / Math.max(.02, proj(b0)));
     /* макет: делаем прозрачным, запоминаем исходное */
     /* затемнение — плоскость между экспонатом и картой: материалы макета не трогаем (без перекомпиляции шейдеров) */
     const bg = K.scene.background && K.scene.background.isColor ? K.scene.background : new T.Color(0x0A0B0D);
@@ -10809,6 +10812,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       const s = 1 + (sc - 1) * e; placeN(e, s); n.position.y += Math.sin(e * Math.PI) * 4;
       n.scale.copy(s0).multiplyScalar(s); n.rotation.y = rot0 + e * Math.PI * .6; });
     K.root.visible = false; veil.visible = false; K.scene.background = bg;
+    /* прячем всё, что осталось вне макета (кольца, маршрут, «ты здесь»), кроме света и туманностей */
+    st.hid = []; K.scene.children.forEach(o => { if (o === n || o === K.root || o === veil || o.isLight || o.isCamera || !o.visible) return; const add = o.material && o.material.blending === T.AdditiveBlending; if (add) return; o.visible = false; st.hid.push(o); });
     /* подмена на детальную модель, если успела загрузиться */
     const hi = await Promise.race([hiP, new Promise(r => setTimeout(() => r(null), 1500))]);
     if (hi && st){ const bn = new T.Box3().setFromObject(n), sz = bn.getSize(new T.Vector3()), cn = bn.getCenter(new T.Vector3());
@@ -10828,7 +10833,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const cv = box.querySelector('canvas'); cv.removeEventListener('pointerdown', st.pd); removeEventListener('pointermove', st.pm); removeEventListener('pointerup', st.pu);
     st.ui.classList.remove('on');
     if (st.hi){ n.visible = true; n.rotation.y = st.hi.rotation.y; const hm = []; mats(st.hi, m => { hm.push(m); m.transparent = true; }); await anim(fast ? 150 : 300, k => { hm.forEach(m => m.opacity = 1 - k); st.nm.forEach(([m, , o]) => m.opacity = o * k); }); K.scene.remove(st.hi); st.nm.forEach(([m, t, o]) => { m.transparent = t; m.opacity = o; }); }
-    K.root.visible = true; st.veil.visible = true; const r1 = n.rotation.y;
+    (st.hid || []).forEach(o => o.visible = true); K.root.visible = true; st.veil.visible = true; const r1 = n.rotation.y;
     await anim(fast ? 450 : 900, k => { const e = 1 - ez(k);
       st.tilt(-.55 * e); K.root.position.y -= 40 * e; st.veil.material.opacity = eo(Math.min(1, e * 1.3));
       const s = 1 + (st.sc - 1) * e; st.placeN(e, s); n.scale.copy(st.s0).multiplyScalar(s); n.rotation.y = st.rot0 + (r1 - st.rot0) * e; });
