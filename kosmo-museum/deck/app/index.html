@@ -11100,7 +11100,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       /* v125: схема главы появляется, только когда спутник почти встал в её позу */
       const fv = f(), o2 = Math.min(CH.length, Math.floor(fv + .08)); if (o2 !== ch || hero.dataset.ch === undefined){ ch = o2; hero.dataset.ch = o2; svg.classList.remove('fi'); requestAnimationFrame(() => svg.classList.add('fi')); }
       ex.classList.toggle('instory', w.getBoundingClientRect().bottom > innerHeight * .9); k += (PS1SC[ch] - k) * .08; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); if (cfg.draw){ const dd = Math.abs(f() - ch), op = ch ? Math.max(0, Math.min(1, 1 - (dd - .03) / .08)) : 1; svg.innerHTML = op > .01 ? `<g opacity="${op.toFixed(2)}">` + cfg.draw({ L, F, A, tx, ch }, cx, cy, r, W, H, t) + '</g>' : ''; } /* v130: схема видна, только когда скафандр стоит в позе главы */ else { draw(cx, cy, r, W, H, t); /* v137: схема Спутника гаснет, пока модель переходит в следующую главу — не спорит со спутником */ const dd = Math.abs(f() - ch); svg.style.opacity = ch ? Math.max(0, Math.min(1, 1 - (dd - .03) / .1)).toFixed(2) : 1; } }, poses:cfg.pose || null, rig:cfg.rig || null, rad:cfg.rad || .995, center:cfg.center !== false }; }
-  function go(id){ if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
+  function go(id){ if (window.__m3line && !window.__lnPass && window.lineTo && window.lineTo(id, () => { window.__lnPass = 1; go(id); window.__lnPass = 0; })) return; if (cur) finish(true); const K = window.__m3k, T = K.THREE, n = K.nodes[id]; if (!n) return; const ex = document.getElementById('vEx');
     const fm = n.userData.floatModel, obj = fm ? fm.children[0] : n, AX = !!(fm && fm.userData.axis);
     cur = { id, n, y0:n.position.y, r0:n.rotation.y, obj, z0:obj.rotation.z };
     const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .3);
@@ -11850,6 +11850,43 @@ canvas.exfly{display:block}
     if (b.dataset.v === 'line'){ e.stopPropagation(); e.preventDefault(); if (window.__mapView === 'scheme'){ const b3 = document.querySelector('#mvSeg button[data-v="3d"]'); b3 && b3.click(); setTimeout(() => m3contour(true), 900); } else m3contour(!window.__m3line); }
     else if (b.dataset.v === '3d' && window.__m3line){ m3contour(false); } }, true);
   if (/[?&]contour/.test(location.search)) (function w(){ window.__m3k ? m3contour(true) : setTimeout(w, 400); })();
+})();
+</script>
+
+<script>
+/* v140: контурная карта → иллюстрация: линии экспоната отрываются от карты, вырастают в рисунок Hairline, затем история */
+(() => {
+  const FIG = { 10:'sputnik', 11:'container', 12:'vostok', 13:'sk1', 14:'berkut', 16:'venera', 24:'luna9', 22:'lunokhod', 36:'mir', 17:'gird09', 21:'luna16', 15:'mars3', 23:'venera4' };
+  const st = document.createElement('style'); st.textContent = `
+  .lnov{position:absolute;inset:0;z-index:70;pointer-events:none;overflow:hidden}
+  .lnov .bg{position:absolute;inset:0;background:radial-gradient(90% 60% at 50% 42%,rgba(20,26,38,.96),#07080b 70%);opacity:0;transition:opacity .7s ease}
+  .lnov.on .bg{opacity:1}
+  .lnov .fg{position:absolute;width:340px;height:272px;left:0;top:0;transform-origin:0 0;transition:transform .95s cubic-bezier(.2,.8,.2,1),opacity .4s;opacity:.0}
+  .lnov.on .fg{opacity:1}
+  .lnov .fg .st,.lnov .fg [data-hairline]{width:100%!important;height:100%!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important}
+  .lnov .fg svg{width:100%!important;height:100%!important;display:block}
+  .lnov .fg svg path,.lnov .fg svg line,.lnov .fg svg polyline,.lnov .fg svg polygon,.lnov .fg svg circle,.lnov .fg svg ellipse{stroke-dasharray:var(--L,600);stroke-dashoffset:var(--L,600);animation:lnDraw 1.4s cubic-bezier(.4,.1,.2,1) forwards}
+  @keyframes lnDraw{to{stroke-dashoffset:0}}
+  .lnov .cap{position:absolute;left:0;right:0;bottom:22%;text-align:center;opacity:0;transform:translateY(12px);transition:all .6s .7s}
+  .lnov.on .cap{opacity:1;transform:none}
+  .lnov .cap i{display:block;font:500 11px var(--m,ui-monospace);letter-spacing:.2em;text-transform:uppercase;color:#FF8A4A}
+  .lnov .cap b{display:block;font:300 30px/1.1 var(--f,system-ui);color:#fff;margin-top:8px}
+  .lnov.out{transition:opacity .45s;opacity:0}`;
+  document.head.appendChild(st);
+  window.lineTo = (id, done) => { const K = window.__m3k; const name = FIG[id]; if (!K || !name || !window.mountFig) return false;
+    const n = K.nodes[id]; if (!n) return false; const T = K.THREE;
+    const host = document.querySelector('.scr') || document.getElementById('dev') || document.body, hr = host.getBoundingClientRect();
+    const cv = K.r.domElement.getBoundingClientRect(); const b = new T.Box3().setFromObject(n), c = b.getCenter(new T.Vector3()).project(K.cam);
+    const sx = cv.left - hr.left + (c.x + 1) / 2 * cv.width, sy = cv.top - hr.top + (1 - c.y) / 2 * cv.height;
+    const ov = document.createElement('div'); ov.className = 'lnov'; ov.innerHTML = '<div class="bg"></div><div class="fg"><div class="st"></div></div><div class="cap"><i>' + ((window.M_EX || []).find(x => x[0] === id) ? '' : '') + 'Экспонат</i><b></b></div>';
+    const e = (window.M_EX || []).find(x => x[0] === id); ov.querySelector('.cap b').textContent = e ? e[2] : ''; host.appendChild(ov);
+    const fg = ov.querySelector('.fg'), W = 340, H = 272, s0 = .22; fg.style.transform = `translate(${sx - W * s0 / 2}px,${sy - H * s0 / 2}px) scale(${s0})`;
+    let fig = null; try { fig = window.mountFig(ov.querySelector('.st'), name, '', () => {}); fig && fig.stopTour && fig.stopTour(); } catch(_){}
+    ov.querySelectorAll('svg path,svg line,svg polyline,svg polygon,svg circle,svg ellipse').forEach(el => { try { const L = el.getTotalLength ? Math.ceil(el.getTotalLength()) : 600; el.style.setProperty('--L', L || 600); } catch(_){ } });
+    const sc = Math.min(hr.width * .9 / W, hr.height * .5 / H);
+    requestAnimationFrame(() => requestAnimationFrame(() => { ov.classList.add('on'); fg.style.transform = `translate(${(hr.width - W * sc) / 2}px,${hr.height * .38 - H * sc / 2}px) scale(${sc})`; }));
+    setTimeout(() => { done(); setTimeout(() => { ov.classList.add('out'); setTimeout(() => { try { fig && fig.destroy(); } catch(_){} ov.remove(); }, 500); }, 450); }, 2600);
+    return true; };
 })();
 </script>
 </body>
