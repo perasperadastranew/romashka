@@ -10884,7 +10884,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const DV = [-1, -1.05, -.55];
   /* v116: на макете ось спутника почти горизонтальна — антенны уходят назад-влево, нос чуть вверх (сверху «ножки» читались как паук) */
   function posed(K, n, fl){ const T = K.THREE; const q = K.cam.getWorldQuaternion(new T.Quaternion()); const L = new T.Vector3(-1, 0, 0).applyQuaternion(q); L.y = 0; L.normalize(); const Fw = new T.Vector3(0, 0, -1).applyQuaternion(q); Fw.y = 0; Fw.normalize();
-    const D = L.multiplyScalar(.8).addScaledVector(Fw, .45).add(new T.Vector3(0, -.32, 0)).normalize(); const qw = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), D); n.updateMatrixWorld(true); fl.quaternion.copy(n.getWorldQuaternion(new T.Quaternion()).invert().multiply(qw)); }
+    const D = L.multiplyScalar(.72).addScaledVector(Fw, -.38).add(new T.Vector3(0, -.5, 0)).normalize(); /* v117: под 45° — на экране нос вправо-вверх, антенны влево-вниз */ const qw = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, -1), D); n.updateMatrixWorld(true); fl.quaternion.copy(n.getWorldQuaternion(new T.Quaternion()).invert().multiply(qw)); }
   /* хром на макете — маткап из студийного окружения: не берёт тёплый свет зала, поэтому не рыжеет */
   function chromeMatcap(K){ const T = K.THREE; if (K.__mc) return K.__mc; const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
     /* полированное серебро: светлое небо сверху, тёмный горизонт, холодный отсвет снизу, резкий блик слева-сверху */
@@ -10899,7 +10899,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
         const m = g.scene; const inv = new T.Matrix4().copy(n.matrixWorld).invert(); const box2 = new T.Box3().setFromObject(m), s2 = box2.getSize(new T.Vector3()), c2 = box2.getCenter(new T.Vector3()); m.position.sub(c2);
         const fl = new T.Group(); fl.add(m); const k = Math.max(sz.x, sz.z, sz.y * .8) / Math.max(s2.x, s2.y, s2.z) * 1.15; fl.scale.setScalar(k * .78);
         m.position.set(0, 0, 0); /* центр — сам шар: вокруг его оси потом вращаемся */
-        const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .62, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
+        const wp = new T.Vector3((b.min.x + b.max.x) / 2, b.min.y + sz.y * .86, (b.min.z + b.max.z) / 2); n.children.forEach(ch => ch.visible = false);
         n.add(fl); fl.position.copy(wp.applyMatrix4(inv)); const ws = new T.Vector3(); n.getWorldScale(ws); fl.scale.divide(ws);
         const mc = chromeMatcap(K); m.traverse(o => { if (o.isMesh){ o.castShadow = true; o.material = new T.MeshMatcapMaterial({ matcap:mc, color:o.material.metalness > .9 ? 0xffffff : 0xd8dce2 }); } });
         /* подиум как у соседних экспонатов: белый диск и тонкое светящееся кольцо — спутник парит над ним */
@@ -10932,9 +10932,13 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const fm = n.userData.floatModel, obj = fm ? fm.children[0] : n, AX = !!(fm && fm.userData.axis);
     cur = { id, n, y0:n.position.y, r0:n.rotation.y, obj, z0:obj.rotation.z };
     const b = new T.Box3().setFromObject(n), hgt = b.getSize(new T.Vector3()).y || 4, lift = Math.max(1.2, hgt * .3);
-    const scr = o => { const bb = new T.Box3().setFromObject(o), W = innerWidth, H = innerHeight; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]){ const q = new T.Vector3(x, y, z).project(K.cam); const sx = (q.x + 1) / 2 * W, sy = (1 - q.y) / 2 * H; x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); } return { x:(x0 + x1) / 2, y:(y0 + y1) / 2, s:Math.max(x1 - x0, y1 - y0) }; };
+    const scr = o => { const bb = new T.Box3().setFromObject(o), br = K.box.getBoundingClientRect(); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]){ const q = new T.Vector3(x, y, z).project(K.cam); const sx = br.left + (q.x + 1) / 2 * br.width, sy = br.top + (1 - q.y) / 2 * br.height; /* v117: экранные координаты с учётом положения окна карты */ x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); } return { x:(x0 + x1) / 2, y:(y0 + y1) / 2, s:Math.max(x1 - x0, y1 - y0) }; };
     /* 1. камера подлетает к экспонату */
-    const c = new T.Box3().setFromObject(obj).getCenter(new T.Vector3()); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone(), z0 = K.cam.zoom, z1 = Math.min(3.2, z0 * 1.7), dc = c.clone().sub(t0); cur.cam = { t0, p0, z0 }; /* карта ортографическая — подлетаем зумом */
+    const c = new T.Box3().setFromObject(obj).getCenter(new T.Vector3()); const t0 = K.ctl.target.clone(), p0 = K.cam.position.clone(), z0 = K.cam.zoom, z1 = Math.min(3.2, z0 * 1.7);
+    /* v117: экспонат — ровно в центр экрана (а не в центр окна карты) */
+    { const br = K.box.getBoundingClientRect(), hh = br.height, upp = (K.cam.top - K.cam.bottom) / z1 / hh; const q = K.cam.getWorldQuaternion(new T.Quaternion()); const rt = new T.Vector3(1, 0, 0).applyQuaternion(q), up = new T.Vector3(0, 1, 0).applyQuaternion(q);
+      const px = innerWidth / 2 - br.left - br.width / 2, py = innerHeight * .46 - br.top - hh / 2; c.addScaledVector(rt, -px * upp).addScaledVector(up, py * upp); }
+    const dc = c.clone().sub(t0); cur.cam = { t0, p0, z0 }; /* карта ортографическая — подлетаем зумом */
     const me = cur;
     anim(700, k => { if (cur !== me) return; const e = ez(k); K.ctl.target.copy(t0).addScaledVector(dc, e); K.cam.position.copy(p0).addScaledVector(dc, e); K.cam.zoom = z0 + (z1 - z0) * e; K.cam.updateProjectionMatrix(); });
     /* 2. он взмывает и начинает вращаться — вокруг своей оси (спутник) или доворачивается (остальные) */
@@ -11207,6 +11211,7 @@ canvas.exfly{display:block}
 .dfc .po{left:6px!important;top:6px!important;width:108px!important;height:184px!important;border-radius:999px!important}
 .vg .vport{width:196px!important;height:300px!important;border-radius:999px!important}
 .askcard .po{width:86px!important;height:140px!important;border-radius:999px!important}
+.dfc .dfrow{display:none!important} /* v117: без кнопок «Спросить Белку / Ещё раз» */
 /* v115: номера глав — кружки, как у выносок на схемах */
 #vEx .ps1t{align-items:center}
 #vEx .ps1t span{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid rgba(140,196,255,.6);display:grid;place-items:center;font-size:10px;letter-spacing:0}
@@ -11444,24 +11449,32 @@ canvas.exfly{display:block}
   /* x,z — координаты макета; вестибюль: x −18…18, z 51…65, вход с фасада (z≈65) */
   const POI = [
     { id:'echo', x:0, z:58.1, c:'#B9A7FF', t:'Точка эха', k:'Круг на полу', p:'Встань в центр круга, подними голову и скажи что-нибудь — купол вернёт голос эхом. Попробуй шёпотом.' },
-    { id:'cash', x:-7, z:56.6, c:'#FF8A4A', t:'Кассы', k:'Вестибюль', p:'Билеты, аудиогид и бесплатные дни. Билет в приложении — без очереди: QR покажи на контроле.', a:['Билет без очереди', () => document.getElementById('tkFab')?.click()] },
-    { id:'coat', x:6.3, z:61.2, c:'#9AA3B0', t:'Гардероб', k:'Вестибюль', p:'Бесплатный гардероб у входа. Рюкзаки и большие сумки лучше сдать.' },
-    { id:'shop', x:-12.5, z:61.6, c:'#FFB27A', t:'Магазин', k:'Сувениры и книги', p:'Мерч, книги, модели и значки. Заказ из приложения соберут к твоему приходу.', a:['Открыть магазин', () => window.showTab && showTab('shop')] },
-    { id:'vend', x:13.8, z:55.4, c:'#7FE0C4', t:'Автоматы', k:'Космическая еда и кофе', p:'Космическая еда в тубах, кофе, мороженое и автомат сувенирных монет с видами музея.' },
-    { id:'orion', x:-13, z:54.2, c:'#FF7A9C', t:'«Орион»', k:'Аттракцион', p:'Аттракцион-симулятор в вестибюле: короткий «полёт» в капсуле. Билет — отдельно, на кассе.' },
+    { id:'cash', x:13.4, z:52.8, c:'#FF8A4A', t:'Кассы', k:'Вестибюль', p:'Билеты, аудиогид и бесплатные дни. Билет в приложении — без очереди: QR покажи на контроле.', a:['Билет без очереди', () => document.getElementById('tkFab')?.click()] },
+    { id:'coat', x:-15.2, z:58, c:'#9AA3B0', t:'Гардероб', k:'Вестибюль', p:'Бесплатный гардероб у входа. Рюкзаки и большие сумки лучше сдать.' },
+    { id:'shop', x:14.2, z:62.4, c:'#FFB27A', t:'Магазин', k:'Сувениры и книги', p:'Мерч, книги, модели и значки. Заказ из приложения соберут к твоему приходу.', a:['Открыть магазин', () => window.showTab && showTab('shop')] },
+    { id:'vend', x:6.4, z:63.6, c:'#7FE0C4', t:'Автоматы', k:'Космическая еда и кофе', p:'Космическая еда в тубах, кофе, мороженое и автомат сувенирных монет с видами музея.' },
+    { id:'orion', x:6, z:55, c:'#FF7A9C', t:'«Орион»', k:'Аттракцион', p:'Аттракцион-симулятор в вестибюле: короткий «полёт» в капсуле. Билет — отдельно, на кассе.' },
     { id:'door', x:-2, z:64.2, c:'#E9ECF1', t:'Вход', k:'Главный вход', p:'Вход в музей — под монументом «Покорителям космоса». Сразу за дверями — вестибюль.' },
-    { id:'gate', x:-2, z:52.4, c:'#8CC4FF', t:'Контроль билетов', k:'Вход в залы', p:'Турникеты перед первым залом: приложи QR из приложения или бумажный билет.' } ];
+    { id:'gate', x:-2, z:52.2, c:'#8CC4FF', t:'Контроль билетов', k:'Вход в залы', p:'Турникеты перед первым залом: приложи QR из приложения или бумажный билет.' } ];
   const wait = () => { const K = window.__m3k; if (!K || !K.zones || !K.zones.vest){ setTimeout(wait, 600); return; } build(K); }; wait();
   function build(K){ const T = K.THREE, Y = (K.zones.vest.max.y || 1.33), g = new T.Group(); g.name = 'vestPOI'; K.scene.add(g);
     const dark = new T.MeshStandardMaterial({ color:0x23262d, roughness:.6, metalness:.2 }), edge = new T.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:.45 });
     const boxAt = (x, z, w, h, d, mat) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat || dark); m.position.set(x, Y + h / 2, z); m.castShadow = true; g.add(m); const e = new T.LineSegments(new T.EdgesGeometry(m.geometry), edge); e.position.copy(m.position); g.add(e); return m; };
     const glow = c => new T.MeshStandardMaterial({ color:0x111111, emissive:new T.Color(c), emissiveIntensity:.9, roughness:.4 });
-    /* магазин: стеллажи и прилавок */
-    boxAt(-14, 62, 4.2, 1.6, .7); boxAt(-11, 62.6, .8, 1.0, 2.4); boxAt(-12.6, 60.6, 2.6, .9, .7, glow(0xFFB27A));
-    /* автоматы: кофе, мороженое, космическая еда, монеты */
-    [[0xff9a5a, 0], [0xff6f9c, 1], [0x7fe0c4, 2], [0xdfe6f2, 3]].forEach(([c, k]) => { const m = boxAt(13.8, 54 + k * 1.05, .8, 1.9, .9); const f = new T.Mesh(new T.PlaneGeometry(.6, 1.2), glow(c)); f.position.set(13.8 - .41, Y + 1.15, 54 + k * 1.05); f.rotation.y = -Math.PI / 2; g.add(f); });
+    /* v117: своя расстановка вестибюля (по словам Саши): кассы — правый верхний угол, магазин — правый нижний, гардероб — вся левая сторона; старую заглушку макета прячем */
+    { const old = K.scene.getObjectByName('AM_vestibule001'); if (old) old.visible = false; }
+    /* кассы: стойка с тремя окнами */
+    boxAt(13.4, 52.2, 7, 1.1, 1.1); [11.4, 13.4, 15.4].forEach(x => { const f = new T.Mesh(new T.PlaneGeometry(1.2, .45), glow(0xFF8A4A)); f.position.set(x, Y + 1.5, 52.2); g.add(f); boxAt(x, 52.2, .08, .7, .08).position.y = Y + 1.45; });
+    /* магазин: стеллажи по стене и прилавок */
+    boxAt(15.6, 62.6, 1, 1.7, 4.2); boxAt(13.2, 64.2, 4.2, 1.7, .8); boxAt(12.6, 61.4, 2.6, .95, .9, glow(0xFFB27A));
+    /* гардероб: длинная стойка по всей левой стороне и вешалки за ней */
+    boxAt(-14.6, 58, 1, 1.1, 11); for (let z = 53.6; z <= 62.4; z += 1.1) boxAt(-16.8, z, .9, 1.7, .5, new T.MeshStandardMaterial({ color:0x3a4150, roughness:.8 }));
+    /* автоматы у фасада: кофе, мороженое, космическая еда, монеты */
+    [[0xff9a5a, 0], [0xff6f9c, 1], [0x7fe0c4, 2], [0xdfe6f2, 3]].forEach(([c, k]) => { boxAt(4.8 + k * 1.05, 64.1, .9, 1.9, .8); const f = new T.Mesh(new T.PlaneGeometry(.62, 1.2), glow(c)); f.position.set(4.8 + k * 1.05, Y + 1.15, 64.1 - .41); f.rotation.y = Math.PI; g.add(f); });
     /* «Орион»: капсула на платформе */
-    boxAt(-13, 54.2, 3.2, .3, 3.2); const cap = new T.Mesh(new T.SphereGeometry(1.15, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), new T.MeshStandardMaterial({ color:0xd9dde4, roughness:.3, metalness:.4 })); cap.position.set(-13, Y + .3, 54.2); cap.castShadow = true; g.add(cap);
+    boxAt(6, 55, 3, .25, 3); { const cap = new T.Mesh(new T.SphereGeometry(1.05, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), new T.MeshStandardMaterial({ color:0xd9dde4, roughness:.3, metalness:.4 })); cap.position.set(6, Y + .25, 55); cap.castShadow = true; g.add(cap); }
+    /* контроль: турникеты перед залом */
+    [-4.4, -3, -1, .4].forEach(x => boxAt(x, 52.2, .22, 1, 1));
     /* точка эха: концентрические круги на полу */
     for (let k = 0; k < 4; k++){ const r = 1.2 + k * .8; const ring = new T.Mesh(new T.RingGeometry(r, r + .05, 96), new T.MeshBasicMaterial({ color:0xB9A7FF, transparent:true, opacity:.5 - k * .1, depthWrite:false })); ring.rotation.x = -Math.PI / 2; ring.position.set(0, Y + .03, 58.1); g.add(ring); ring.userData.k = k; }
     const echoRings = g.children.filter(o => o.userData.k !== undefined);
@@ -11474,7 +11487,8 @@ canvas.exfly{display:block}
       return { P, el, v:new T.Vector3(P.x, Y + (P.id === 'door' ? 3 : 2.2), P.z) }; });
     wrap.addEventListener('pointerdown', e => { if (!e.target.closest('.m3info,.m3poi')) info.classList.remove('on'); });
     const v = new T.Vector3();
-    (function loop(now){ requestAnimationFrame(loop); if (!wrap.offsetParent) return; const w = K.box.clientWidth, h = K.box.clientHeight; const show = K.cam.zoom > 1.3 && !document.querySelector('#m3wrap.scheme');
+    const crumbsO = K.scene.getObjectByName('routeCrumbs'); const youO = K.scene.children.find(o => o.isGroup && o.getObjectByName('ring') && !o.name);
+    (function loop(now){ requestAnimationFrame(loop); if (!wrap.offsetParent) return; if (crumbsO) crumbsO.visible = false; /* v117: путь — только текущий шаг */ if (youO && window.RT && !RT.on) youO.visible = false; const w = K.box.clientWidth, h = K.box.clientHeight; const show = K.cam.zoom > 1.3 && !document.querySelector('#m3wrap.scheme');
       echoRings.forEach(r => { const t = ((now / 1600) + r.userData.k * .25) % 1; r.material.opacity = .55 * (1 - t); r.scale.setScalar(.7 + t * .6); });
       const placed = []; for (const L of els){ v.copy(L.v).project(K.cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; L.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = show && x > 10 && x < w - 10 && y > 60 && y < h - 20; const bb = [x - 34, y - 9, x + 34, y + 9]; if (vis && placed.some(q => bb[0] < q[2] && bb[2] > q[0] && bb[1] < q[3] && bb[3] > q[1])) vis = false; if (vis) placed.push(bb); L.el.classList.toggle('hid', !vis); } })(0);
   }
