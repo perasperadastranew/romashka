@@ -11151,7 +11151,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const fit = o => { const bb = new T.Box3().setFromObject(o), sz = bb.getSize(new T.Vector3()), cc = bb.getCenter(new T.Vector3()); o.position.sub(cc); const g = new T.Group(); g.add(o); g.scale.setScalar(1 / Math.max(sz.x, sz.y, sz.z)); return g; };
     let hsU = null, BN = null; const put = o => { while (spin.children.length) spin.remove(spin.children[0]); BN = null; o.updateMatrixWorld(true); o.traverse(m => { if (m.isSkinnedMesh){ m.skeleton.update(); m.computeBoundingBox(); m.frustumCulled = false; } if (m.isBone){ BN = BN || {}; BN[m.name.replace(/^mixamorig:?/, '').replace(/_\d+$/, '')] = { b:m, q:m.quaternion.clone(), s:m.scale.x }; } }); /* v127: скинned — честный bbox и кости для поз */ hsU = story ? null : addHS(T, o, id, hero); o.traverse(m => { if (m.isMesh && m.material){ m.material = m.material.clone(); m.material.envMap = null; m.material.envMapIntensity = 1.3; if (m.material.metalness > .9){ m.material.color.setRGB(.95, .95, .96); m.material.roughness = Math.min(m.material.roughness, .12); } } }); spin.add(fit(o)); if (story && story.center) o.position.set(0, 0, 0); /* v123: в истории центр — шар */ };
     const cl = obj.clone(true); cl.position.set(0, 0, 0); cl.rotation.set(0, 0, 0); if (obj === n) cl.scale.set(1, 1, 1); cl.traverse(o => { const E = window.__EXO; if (E && o.isMesh && E.get(o.material)) o.material = E.get(o.material); if (o.isLineSegments && o.userData.cSkip) o.visible = false; if (o.isMesh && o.material && o.material.isMeshMatcapMaterial) o.material = new T.MeshStandardMaterial({ color:0xf2f4f7, metalness:1, roughness:.12 }); }); put(cl); /* v142: в истории — настоящие материалы, а не «голограмма»/«серебро» с карты */
-    if (GLB.has(id) && !fm){ __ldJ(K, `models/${(STORYCFG[id] && STORYCFG[id].glb) || id}.json`, g => { if (id === 11) g.scene.traverse(o => { if (o.isMesh && /K_(white|tan|cream|brown)/.test(o.material && o.material.name || '')) o.visible = false; }); /* v119: без собак у контейнера */ if (cur === me) put(g.scene); }); }
+    if (GLB.has(id) && !fm){ __ldJ(K, `models/${(STORYCFG[id] && STORYCFG[id].glb) || id}.json`, g => { if (id === 11) g.scene.traverse(o => { if (o.isMesh && /K_(white|tan|cream|brown)/.test(o.material && o.material.name || '')) o.visible = false; }); /* v119: без собак у контейнера */ if (id === 11 && window.__dogsPose){ window.__dogsPose(T, g.scene).then(() => { if (cur === me) put(g.scene); }); return; } if (cur === me) put(g.scene); }); }
     obj.updateMatrixWorld(true); const qCam = K.cam.getWorldQuaternion(new T.Quaternion()); const q0 = qCam.clone().invert().multiply(obj.getWorldQuaternion(new T.Quaternion()));
     const wAt = (sx, sy, W, H) => { const a = W / H; return new T.Vector3(((sx / W) * 2 - 1) * TAN * CZ * a, (1 - (sy / H) * 2) * TAN * CZ, 0); };
     const wSize = (px, H) => px / H * 2 * TAN * CZ;
@@ -11170,7 +11170,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       const rotNow = rot0 + 1.6 * e + ex.scrollTop * .0035 + dragA; /* v118: скролл крутит медленнее */ /* докручивается в полёте, дальше — только от скролла и пальца */
       if (mode === 'fly'){ cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix();
         const to = slot(); const x = from0.x + (to.x - from0.x) * e, y = from0.y + (to.y - from0.y) * e - Math.sin(Math.PI * e) * H * .05, s = from0.s + (to.s - from0.s) * e;
-        holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); if (story && story.poses){ /* v131: к позе героя — разворот по часовой стрелке, лицом к зрителю */ const p0 = story.poses[0][0], qT = new T.Quaternion().setFromEuler(new T.Euler(p0[0], p0[1], p0[2], p0[3] || 'XYZ')); if (!me.yw){ const a0 = new T.Euler().setFromQuaternion(q0, 'YXZ'), aT = new T.Euler().setFromQuaternion(qT, 'YXZ'); let dl = aT.y - a0.y; while (dl > Math.PI) dl -= Math.PI * 2; while (dl < -Math.PI) dl += Math.PI * 2; /* v147: разворот к зрителю — по кратчайшему пути */ me.yw = { y0:a0.y, dl, r0:new T.Quaternion().setFromEuler(new T.Euler(a0.x, 0, a0.z, 'YXZ')), rT:new T.Quaternion().setFromEuler(new T.Euler(aT.x, 0, aT.z, 'YXZ')) }; } const Y = me.yw; qa.setFromAxisAngle(yA, Y.y0 + Y.dl * e).multiply(qb.copy(Y.r0).slerp(Y.rT, e)); if (story.rig) rigAt(story.rig[0], story.rig[0], 1, now); BN && Object.values(BN).forEach(o => o.b.quaternion.slerp(o.q, 1 - e)); } else qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
+        holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); if (story && story.poses){ /* v131: к позе героя — разворот по часовой стрелке, лицом к зрителю */ const p0 = story.poses[0][0], qT = new T.Quaternion().setFromEuler(new T.Euler(p0[0], p0[1], p0[2], p0[3] || 'XYZ')); if (!me.yw){ const a0 = new T.Euler().setFromQuaternion(q0, 'YXZ'), aT = new T.Euler().setFromQuaternion(qT, 'YXZ'); let dl = aT.y - a0.y; while (dl > Math.PI) dl -= Math.PI * 2; while (dl < -Math.PI) dl += Math.PI * 2; if (id === 14 && dl < 0) dl += Math.PI * 2; /* v149: «Беркут» разворачивается вправо, к кадру героя */ me.yw = { y0:a0.y, dl, r0:new T.Quaternion().setFromEuler(new T.Euler(a0.x, 0, a0.z, 'YXZ')), rT:new T.Quaternion().setFromEuler(new T.Euler(aT.x, 0, aT.z, 'YXZ')) }; } const Y = me.yw; qa.setFromAxisAngle(yA, Y.y0 + Y.dl * e).multiply(qb.copy(Y.r0).slerp(Y.rT, e)); if (story.rig) rigAt(story.rig[0], story.rig[0], 1, now); BN && Object.values(BN).forEach(o => o.b.quaternion.slerp(o.q, 1 - e)); } else qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
         if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; sq.copy(holder.quaternion); } }
       if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
         if (story){ if (rollEnd == null) rollEnd = rot0 + 1.6; const F = story.f(), PLn = story.poses ? story.poses.length : PS1POSE.length, i0 = Math.min(PLn - 1, Math.floor(F)), i1 = Math.min(PLn - 1, i0 + 1), u = F - i0, sm = u * u * (3 - 2 * u);
@@ -12009,6 +12009,32 @@ canvas.exfly{display:block}
     try { mk(a, { pose:'sit', full:true }); } catch(e){}
     try { const d = mk(b, { pose:'lie', full:true }); d && d.setWho && d.setWho('strelka'); d && d.setPose && setTimeout(() => d.setPose('lie'), 400); } catch(e){}
     setTimeout(() => dispatchEvent(new Event('resize')), 300); setTimeout(() => dispatchEvent(new Event('resize')), 1500); a.insertAdjacentHTML('beforeend', '<i>Белка</i>'); b.insertAdjacentHTML('beforeend', '<i>Стрелка</i>'); };
+})();
+</script>
+
+<script>
+/* v149: история контейнера — у капсулы на подставке цельные Белка (сидит) и Стрелка (лежит) — та же модель, что в онбординге, позы из её анимаций */
+(() => {
+  let P = null;
+  const glb = () => P || (P = new Promise((res, rej) => { if (window.BELKAGLB) return res(); const sc = document.createElement('script'); sc.src = 'belka.js'; sc.onload = () => res(); sc.onerror = rej; document.head.appendChild(sc); }));
+  const parse = K => new Promise((res, rej) => { const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.parse(Uint8Array.from(atob(window.BELKAGLB), c => c.charCodeAt(0)).buffer, '', res, rej); });
+  window.__dogsPose = (T, root) => glb().then(async () => { const K = window.__m3k; if (root.userData.dogs) return;
+    root.updateMatrixWorld(true); const bb = new T.Box3(); root.traverse(o => { if (o.isMesh && o.visible) bb.expandByObject(o); });
+    const sz = bb.getSize(new T.Vector3()), M = Math.max(sz.x, sz.y, sz.z); const meshes = []; root.traverse(o => o.isMesh && o.visible && meshes.push(o));
+    const top = (x, z) => { const rc = new T.Raycaster(new T.Vector3(x, bb.max.y + 1, z), new T.Vector3(0, -1, 0)); const hs = rc.intersectObjects(meshes, false); const h = hs[hs.length - 1]; return h ? h.point.y : bb.min.y; };
+    let tx = null; try { tx = await new T.TextureLoader().loadAsync('g/strelka_tex.webp'); tx.colorSpace = T.SRGBColorSpace; tx.flipY = false; } catch(e){}
+    const make = async (clip, strelka) => { const g = await parse(K); const d = g.scene;
+      d.traverse(o => { if (!o.isMesh) return; o.frustumCulled = false; if (/^(Spec|Tag)/.test(o.name)){ o.visible = false; return; } const om = o.material;
+        let map = om.map || null; if (strelka && /^(Belka|Under)$/.test(o.name) && tx) map = tx;
+        o.material = /^Collar/.test(o.name) ? new T.MeshStandardMaterial({ color:0x4A2E22, roughness:.7 }) : new T.MeshStandardMaterial({ color:om.color ? om.color.clone() : 0xffffff, map, roughness:.85, metalness:0 }); if (o.name === 'Under' && strelka && tx) o.material.map = tx; });
+      const mx = new T.AnimationMixer(d), cl = g.animations.find(a => a.name === clip); if (cl){ const a = mx.clipAction(cl); a.play(); mx.setTime(Math.min(cl.duration * .6, cl.duration - .01)); }
+      d.updateMatrixWorld(true); const db = new T.Box3(); d.traverse(o => { if (o.isSkinnedMesh){ o.skeleton.update(); } }); d.traverse(o => { if (o.isBone) db.expandByPoint(o.getWorldPosition(new T.Vector3())); });
+      return { d, db }; };
+    const put = (o, h, x, z, ry) => { const { d, db } = o; const k = h / Math.max(1e-6, db.max.y - db.min.y); const w = new T.Group(); w.add(d); d.scale.setScalar(k); d.position.set(-(db.min.x + db.max.x) / 2 * k, -db.min.y * k, -(db.min.z + db.max.z) / 2 * k); w.rotation.y = ry; w.position.set(x, top(x, z), z); root.add(w); };
+    const [b, s] = await Promise.all([make('sit', false), make('sleep', true)]);
+    put(b, M * .24, bb.min.x + sz.x * .09, bb.min.z + sz.z * .13, -Math.PI / 2 + .45);
+    put(s, M * .13, bb.min.x + sz.x * .2, bb.max.z - sz.z * .17, -Math.PI / 2 - .5);
+    root.userData.dogs = 1; }).catch(e => console.warn('dogs', e));
 })();
 </script>
 </body>
