@@ -9456,7 +9456,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       $('#m3load').hidden = true; window.__m3k = { THREE, scene, cam, ctl, nodes, root, box, GLTFLoader, MeshoptDecoder, r, zones, flyBox:(b, p) => flyBox(b, p) };
       if (window.__dive){ window.__dive = false; const c0 = all.getCenter(new THREE.Vector3()); place(c0.clone().add(new THREE.Vector3(0, 0, 60))); cam.zoom = .32; cam.updateProjectionMatrix();
         setTimeout(() => flyTo(c0, zoomFor(all, .04), 1600), 120); setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 1900); }
-      else setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, () => { $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
+      else setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, e => { console.error('MAPERR', e && e.stack || e); $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
     // ---- тёмная карта: пол, стены и залы перекрашиваем, у залов — светящийся контур цвета зала
     const FLOOR = new THREE.Color(0x151A23);
     const M = (c) => new THREE.MeshStandardMaterial({ color:c, roughness:.92, metalness:0 });
@@ -9473,7 +9473,14 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       const holder = new THREE.Group(); holder.add(mk(gpos, a * .18), mk(pos, a)); holder.userData.floorOf = n; holder.userData.top = top; glowHolders.push(holder); }); }
     // подставка под экспонатом: светящееся кольцо цвета зала
     const ringG = new THREE.RingGeometry(.986, 1, 128).rotateX(-Math.PI / 2) /* v116: тонкое кольцо вместо толстого */, discG = new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2);
-    function pad(n, root){ const b = new THREE.Box3().setFromObject(n), c = b.getCenter(new THREE.Vector3()), r0 = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) * .55 + .5; const d = MEX.get(+n.name.slice(3)) || {}; const col = new THREE.Color(HALLS[d.hall]?.color || '#9aa6bf');
+    function pad(n, root){ const b = new THREE.Box3().setFromObject(n), c = b.getCenter(new THREE.Vector3()); let r0 = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) * .55 + .5; const d = MEX.get(+n.name.slice(3)) || {}; const nid = +n.name.slice(3);
+      { /* v143: у всех экспонатов — аккуратная низкая цилиндрическая подставка-«стекло» и тонкое кольцо вокруг */
+        const w = Math.min(Math.max(b.max.x - b.min.x, b.max.z - b.min.z), nid === 10 ? 1.2 : 99), pr = Math.max(.45, w * .42), h = .12;
+        const ped = new THREE.Mesh(new THREE.CylinderGeometry(pr, pr, h, 64), new THREE.MeshBasicMaterial({ color:0x9FB4D2, transparent:true, opacity:.38, depthWrite:false }));
+        const ed = new THREE.LineSegments(new THREE.EdgesGeometry(ped.geometry, 30), new THREE.LineBasicMaterial({ color:0xE2EBF7, transparent:true, opacity:.95 })); ed.userData.cSkip = 1; ped.add(ed);
+        ped.position.set(c.x, b.min.y + h / 2, c.z); ped.userData.floor = n.userData.floor; ped.userData.cSkip = 1; ped.traverse(o => o.raycast = () => {}); root.add(ped);
+        n.position.y += h; n.updateMatrixWorld(true); r0 = pr * 1.7; }
+      const col = new THREE.Color(HALLS[d.hall]?.color || '#9aa6bf');
       const g = new THREE.Group(); g.add(new THREE.Mesh(discG, new THREE.MeshBasicMaterial({ color:col, transparent:true, opacity:.05, depthWrite:false })), new THREE.Mesh(ringG, new THREE.MeshBasicMaterial({ color:col, transparent:true, opacity:.45, depthWrite:false, blending:THREE.AdditiveBlending })));
       g.scale.setScalar(r0); g.position.set(c.x, b.min.y + .04, c.z); g.traverse(o => o.raycast = () => {}); g.userData.floor = n.userData.floor; root.add(g); }
     function darken(root){
