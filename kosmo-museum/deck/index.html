@@ -198,26 +198,25 @@ h2{font-size:clamp(36px,3.1vw,60px);max-width:20ch}
 .qr{display:flex;align-items:center;gap:24px;margin-top:28px}.qr img{width:150px;height:150px;background:#fff;border-radius:16px;padding:10px}.qr span{font-size:20px;color:#C9C7C2}
 .logos{display:flex;flex-wrap:wrap;gap:12px;align-content:end;justify-content:flex-end}.logos span{padding:16px 24px;border:1px solid var(--line);border-radius:999px;font-size:clamp(17px,1.3vw,22px);color:#E3E0DA}
 
-/* v5: было/стало — три скруглённые колонки (стиль шаблона школы) */
-.ch:has(.cmp3){padding:28px 0 96px!important;gap:0}
-.cmp3{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr 1.45fr;gap:14px;width:100%;max-width:none}
-.cp{position:relative;border-radius:22px;background:#121214;padding:34px 34px 38px;display:flex;flex-direction:column;min-height:0}
-.cpk{font:500 13px/1.5 var(--m);letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.42)}
-.cph{margin:22px 0 0!important;font-size:clamp(34px,2.6vw,52px)!important;max-width:14ch!important}
+/* v5: было/стало — три скруглённые колонки; всё в единицах экрана --u (1/100 ширины кадра 16:9) */
+.ch:has(.cmp3){--u:min(1vw,1.78vh);padding:calc(2.2*var(--u)) 0 calc(2*var(--u))!important;gap:0}
+.cmp3{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:calc(.75*var(--u));width:100%;max-width:none}
+.cp{position:relative;border-radius:calc(1.15*var(--u));background:#121214;padding:calc(1.8*var(--u)) calc(1.8*var(--u)) calc(2*var(--u));display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.cpk{font:500 calc(.68*var(--u))/1.5 var(--m);letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.42)}
+.cph{margin:calc(1.1*var(--u)) 0 0!important;font-size:calc(2.5*var(--u))!important;line-height:1.08!important;max-width:14ch!important}
 .cpb{margin-top:auto}
-.cpt{display:flex;align-items:center;gap:16px;font:400 clamp(34px,2.5vw,48px)/1 var(--f);margin-bottom:30px}
-.cpt b{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center}.cpt b svg{width:28px;height:28px}
+.cpt{display:flex;align-items:center;gap:calc(.85*var(--u));font:400 calc(2.4*var(--u))/1 var(--f);margin-bottom:calc(1.6*var(--u))}
+.cpt b{flex:none;width:calc(2.7*var(--u));height:calc(2.7*var(--u));border-radius:50%;display:grid;place-items:center}.cpt b svg{width:55%;height:55%}
 .cpt.bad{color:#FF4D62}.cpt.bad b{background:#FF4D62}.cpt.good{color:#3BD27A}.cpt.good b{background:#3BD27A}
-.cp ol{list-style:none;margin:0;padding:0;display:grid;gap:22px}
-.cp li{display:grid;grid-template-columns:44px 1fr;gap:18px;align-items:start}
-.cp li i{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font:500 12px var(--m);font-style:normal;color:rgba(255,255,255,.55)}
-.cp li span{font-size:clamp(17px,1.25vw,22px);line-height:1.4;color:#8E8C88;padding-top:8px}.cp li w{color:#F2F0EC}
-.cp.ph{background:#121214;overflow:hidden}
-.cpp{flex:1;min-height:0;display:flex;gap:18px;align-items:flex-end;justify-content:center;margin-top:20px}
+.cp ol{list-style:none;margin:0;padding:0;display:grid;gap:calc(1.15*var(--u))}
+.cp li{display:grid;grid-template-columns:calc(2.3*var(--u)) 1fr;gap:calc(.95*var(--u));align-items:start}
+.cp li i{width:calc(2.3*var(--u));height:calc(2.3*var(--u));border-radius:50%;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font:500 calc(.62*var(--u)) var(--m);font-style:normal;color:rgba(255,255,255,.55)}
+.cp li span{font-size:calc(1.1*var(--u));line-height:1.4;color:#8E8C88;padding-top:calc(.4*var(--u))}.cp li w{color:#F2F0EC}
+.cpp{flex:1;min-height:0;display:flex;gap:calc(1*var(--u));align-items:flex-end;justify-content:center;margin-top:calc(1*var(--u))}
 .cpp figure{margin:0;flex:1;max-width:49%;display:flex;flex-direction:column;align-items:center;min-height:0;height:100%;justify-content:flex-end}
-.cpp img{max-width:100%;max-height:calc(100% - 34px);object-fit:contain;border-radius:22px;border:1px solid rgba(255,255,255,.1);display:block}
+.cpp img{max-width:100%;max-height:calc(100% - 2*var(--u));object-fit:contain;border-radius:calc(1.15*var(--u));border:1px solid rgba(255,255,255,.1);display:block}
 .cpp figure:first-child img{filter:saturate(.75) brightness(.85)}.cpp figure.new img{border-color:rgba(59,210,122,.55)}
-.cpp figcaption{margin-top:12px;font:500 12px var(--m);letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.cpp figcaption{margin-top:calc(.6*var(--u));font:500 calc(.62*var(--u)) var(--m);letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45)}
 .cpp figure.new figcaption{color:#3BD27A}
 </style>
 
