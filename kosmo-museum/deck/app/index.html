@@ -11139,6 +11139,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     ex.classList.add('full', 'fin'); openEx(id); window.__m3sel = id; ex.scrollTop = 0;
     requestAnimationFrame(() => requestAnimationFrame(() => ex.classList.remove('fin')));
     const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">листай — повернётся</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : id === 14 ? '<span class="cr">3D: Homeless_Models, CC BY 4.0</span>' : ''); ex.querySelector('.grab').after(hero); const story = id === 10 ? ps1Story(ex, hero) : STORYCFG[id] ? ps1Story(ex, hero, STORYCFG[id]) : null; me.story = story;
+    if (id === 11 && window.__dogsIn && window.__DOGS_ON) setTimeout(() => window.__dogsIn(hero), 900); /* v149: Белка и Стрелка рядом с контейнером */
     const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.1;
     const cv = R.domElement; cv.className = 'exfly'; document.body.appendChild(cv);
     const sc = new T.Scene(); sc.environment = studioEnv(T, R);
@@ -11988,6 +11989,26 @@ canvas.exfly{display:block}
             else if (c.x > -.8){ if (z.x > .5 && z.z > .9){ const k = .4; ch.scale.y *= k; ch.position.y -= (b.min.y - ch.position.y) * 0; ch.updateMatrixWorld(true); const nb = box(ch); ch.position.y += b.min.y - nb.min.y; } else if (stH) ch.position.y -= stH * .6; } }); }
       let tx, ty, tz; if (o.am){ const am = K.scene.getObjectByName(o.am); if (!am) return; const ab = new T.Box3().setFromObject(am), ac = ab.getCenter(new T.Vector3()); tx = ac.x; tz = ac.z; ty = ab.min.y; am.traverse(x => x.visible = false); } else [tx, ty, tz] = o.at;
       const m = place(T, sc, o.k, o.ry, tx, ty, tz); prep(m, 'OLD_' + o.f, ty > 1 ? 'upper' : 'lower'); K.root.add(m); }); }); })();
+})();
+</script>
+
+<script>
+/* v149: история контейнера — у капсулы на полу сидят Белка (сидит) и Стрелка (лежит); под капсулой — пол с отражением, чтобы она не висела */
+(() => {
+  const st = document.createElement('style'); st.textContent = `
+  .exhero .hfloor{position:absolute;left:-10%;right:-10%;top:66%;height:22%;z-index:1;pointer-events:none;background:radial-gradient(50% 42% at 50% 30%,rgba(120,150,210,.22),rgba(40,55,90,.10) 55%,transparent 75%);transition:opacity .5s}
+  
+  .exhero .hdog{position:absolute;bottom:auto;width:34%;height:24%;z-index:4;pointer-events:auto;transition:opacity .5s}
+  .exhero .hdog.l{left:0;top:47%;width:30%;height:24%}.exhero .hdog.r{right:-2%;top:55%;width:38%;height:20%}
+  .exhero[data-ch]:not([data-ch="0"]) .hdog,.exhero[data-ch]:not([data-ch="0"]) .hfloor{opacity:0}
+  .exhero .hdog i{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font:500 9px var(--m,ui-monospace);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);font-style:normal}`;
+  document.head.appendChild(st);
+  window.__dogsIn = hero => { if (!hero.isConnected || hero.querySelector('.hdog')) return; const mk = window.mountDog3D || window.mountDog2D; if (!mk) return;
+    const fl = document.createElement('div'); fl.className = 'hfloor'; hero.appendChild(fl);
+    const a = document.createElement('div'); a.className = 'hdog l'; const b = document.createElement('div'); b.className = 'hdog r'; hero.append(a, b);
+    try { mk(a, { pose:'sit', full:true }); } catch(e){}
+    try { const d = mk(b, { pose:'lie', full:true }); d && d.setWho && d.setWho('strelka'); d && d.setPose && setTimeout(() => d.setPose('lie'), 400); } catch(e){}
+    setTimeout(() => dispatchEvent(new Event('resize')), 300); setTimeout(() => dispatchEvent(new Event('resize')), 1500); a.insertAdjacentHTML('beforeend', '<i>Белка</i>'); b.insertAdjacentHTML('beforeend', '<i>Стрелка</i>'); };
 })();
 </script>
 </body>
