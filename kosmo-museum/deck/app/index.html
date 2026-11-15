@@ -10921,6 +10921,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       window.__claySt[14] = .5; /* палитра «макета» подхватит новые материалы */ }); })();
   /* v119: у контейнера Белки и Стрелки на макете убираем фигурки собак */
   (function noDogs(){ const K = window.__m3k; if (!K){ setTimeout(noDogs, 600); return; } const n = K.nodes[11]; if (!n) return; n.traverse(o => { if (o.isMesh && /container_[4-7]$/.test(o.name)) o.visible = false; }); })();
+  window.__m3go = id => { if (window.__m3k && window.__m3k.nodes[id]) go(id); }; /* v134: для презентации — открыть историю экспоната так же, как тапом по карте */
   window.__m3lift = id => { if (window.__m3noLift || Date.now() - tapT > 900 || !window.__m3k) return false; if (id === 22 && window.openLuno){ goLanding(id, () => openLuno(), 'vl'); return true; } if (typeof INFO === 'undefined' || !INFO[id] || typeof openEx !== 'function') return false; go(id); return true; };
   /* v113: тап по экспонату → на макете он взмывает и доворачивается, досье открывается на весь экран,
      и тот же экспонат «перелетает» с карты в студийный кадр наверху — поворот продолжается в том же ритме */
