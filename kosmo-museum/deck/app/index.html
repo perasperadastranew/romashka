@@ -1202,6 +1202,7 @@ window.M_EX = [
 </style>
 <style>/* v153 */ #obDuo .obdog{opacity:0;transform:translateY(60px);transition:opacity .6s ease,transform .8s cubic-bezier(.22,1,.36,1)} #obDuo .obdog.up{opacity:1;transform:none}</style>
 <style>/* v157: онбординг — стела смотрит вправо-вверх, логотип музея */ .obmon canvas{transform:scaleX(-1)} .obv{position:relative} .oblogo{position:absolute;left:20px;top:-25px;display:flex;align-items:center;gap:9px;z-index:3;color:#fff;pointer-events:none} .oblogo svg{width:26px;height:26px} .oblogo b{font:700 11px/1.1 var(--f,Inter);letter-spacing:.08em}</style>
+<style>/* v157: кнопки на экране отметки — равные */ #nfOv .nfbtns,.nfbtns{display:grid!important;grid-template-columns:1fr 1fr;gap:10px} .nfbtns>button{width:100%!important;min-width:0;padding:0 10px!important;white-space:nowrap;justify-content:center;text-align:center}</style>
 </head>
 <body>
 <aside class="notes" id="notes"></aside>
@@ -9411,7 +9412,8 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const rim = new THREE.DirectionalLight(0x7FA6FF, .9); rim.position.set(-300, 160, -300); scene.add(rim); const rim2 = new THREE.DirectionalLight(0x9DB2E0, .35); rim2.position.set(300, 120, -200); scene.add(rim2);
     // космос вокруг музея: звёзды под и вокруг здания, мягкое свечение под этажами
     { const n = 5200, p = new Float32Array(n * 3); for (let i = 0; i < n; i++) p.set([(Math.random() - .5) * 2200, -30 - Math.random() * 400, (Math.random() - .5) * 2200], i * 3);
-      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3)); const st = new THREE.Points(g, new THREE.PointsMaterial({ color:0xC8D4FF, size:1.4, sizeAttenuation:false, transparent:true, opacity:.75, depthWrite:false })); scene.add(st); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3)); const st = new THREE.Points(g, new THREE.PointsMaterial({ color:0xD8E2FF, size:2, sizeAttenuation:false, transparent:true, opacity:.95, depthWrite:false })); scene.add(st);
+      /* v157: звёзды заметнее — плюс редкие крупные */ { const m = 700, q = new Float32Array(m * 3); for (let i = 0; i < m; i++) q.set([(Math.random() - .5) * 2200, -30 - Math.random() * 400, (Math.random() - .5) * 2200], i * 3); const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.BufferAttribute(q, 3)); scene.add(new THREE.Points(g2, new THREE.PointsMaterial({ color:0xffffff, size:3.4, sizeAttenuation:false, transparent:true, opacity:1, depthWrite:false }))); } }
     { const cv = document.createElement('canvas'); cv.width = cv.height = 256; const g = cv.getContext('2d'), gr = g.createRadialGradient(128, 128, 0, 128, 128, 128); gr.addColorStop(0, 'rgba(90,120,200,.28)'); gr.addColorStop(.5, 'rgba(60,80,150,.08)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
       const halo = new THREE.Mesh(new THREE.PlaneGeometry(260, 260).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(cv), transparent:true, depthWrite:false })); halo.position.y = -3; scene.add(halo);
       for (const [x, z, s0, col] of [[-260, -160, 520, '120,90,200'], [300, 220, 600, '60,110,200'], [80, -380, 420, '200,90,120']]){ const c2 = document.createElement('canvas'); c2.width = c2.height = 128; const g2 = c2.getContext('2d'), gr2 = g2.createRadialGradient(64, 64, 0, 64, 64, 64); gr2.addColorStop(0, `rgba(${col},.22)`); gr2.addColorStop(1, `rgba(${col},0)`); g2.fillStyle = gr2; g2.fillRect(0, 0, 128, 128);
@@ -9493,14 +9495,22 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const MOVE = { 50:[15.9, 0.6], 17:[22.2, 12.2] };
     function moveTo(n){ const m = MOVE[+n.name.slice(3)]; if (!m || n.userData.moved) return; n.userData.moved = 1; n.updateMatrixWorld(true); const c = new THREE.Box3().setFromObject(n).getCenter(new THREE.Vector3()); const w = n.getWorldPosition(new THREE.Vector3()); const tgt = new THREE.Vector3(w.x + m[0] - c.x, w.y, w.z + m[1] - c.z); n.position.copy(n.parent.worldToLocal(tgt)); n.updateMatrixWorld(true); }
     /* v153: ряды витрин в «Доме на орбите» — развернуть на 45°, по ходу коридора */
-    let vitrDone = false; function vitr(){ if (vitrDone) return; vitrDone = true; for (const [nm, a] of [['AM_vitr_dom_l001', -Math.PI / 4], ['AM_vitr_dom_r001', Math.PI / 4]]){ const g = scene.getObjectByName(nm); if (!g) continue; const c = new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()); const pv = new THREE.Group(); pv.position.copy(g.parent.worldToLocal(c.clone())); g.parent.add(pv); pv.attach(g); pv.rotation.y += a; } }
-    function pad(n, root){ vitr(); moveTo(n); noBase(n); const b = vBox(n).isEmpty() ? new THREE.Box3().setFromObject(n) : vBox(n), c = b.getCenter(new THREE.Vector3()); let r0 = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) * .55 + .5; const d = MEX.get(+n.name.slice(3)) || {}; const nid = +n.name.slice(3);
+    let vitrDone = false; function vitr(){ if (vitrDone) return; vitrDone = true; /* v157: ряды витрин — вдоль коридора (ось X мира) */
+      for (const nm of ['AM_vitr_dom_l001', 'AM_vitr_dom_r001', 'AM_vitr_luna001']){ const g = scene.getObjectByName(nm); if (!g) continue; g.updateMatrixWorld(true);
+        const pts = []; g.traverse(o => { if (o.isMesh){ const bb = new THREE.Box3().setFromObject(o), z = bb.getSize(new THREE.Vector3()); if (z.x < .5 && z.z < .5) pts.push(bb.getCenter(new THREE.Vector3())); } }); if (pts.length < 2) continue;
+        let i0 = 0, i1 = 1, dm = 0; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++){ const d = pts[i].distanceTo(pts[j]); if (d > dm){ dm = d; i0 = i; i1 = j; } }
+        const ang = Math.atan2(pts[i1].z - pts[i0].z, pts[i1].x - pts[i0].x); const c = new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3());
+        const pv = new THREE.Group(); pv.position.copy(g.parent.worldToLocal(c.clone())); g.parent.add(pv); pv.attach(g); pv.rotation.y += ang; } }
+    /* v157: «Луна-9» крупнее — держит пропорцию первого зала */
+    const SCL = { 24:1.7 }; function scl(n){ const k = SCL[+n.name.slice(3)]; if (!k || n.userData.scl) return; n.userData.scl = 1; n.updateMatrixWorld(true); const b0 = new THREE.Box3().setFromObject(n); n.scale.multiplyScalar(k); n.updateMatrixWorld(true); const b1 = new THREE.Box3().setFromObject(n); const d = new THREE.Vector3((b0.min.x + b0.max.x - b1.min.x - b1.max.x) / 2, b0.min.y - b1.min.y, (b0.min.z + b0.max.z - b1.min.z - b1.max.z) / 2); const w = n.getWorldPosition(new THREE.Vector3()).add(d); n.position.copy(n.parent.worldToLocal(w)); n.updateMatrixWorld(true); }
+    function pad(n, root){ vitr(); scl(n); moveTo(n); noBase(n); const b = vBox(n).isEmpty() ? new THREE.Box3().setFromObject(n) : vBox(n), c = b.getCenter(new THREE.Vector3()); let r0 = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) * .55 + .5; const d = MEX.get(+n.name.slice(3)) || {}; const nid = +n.name.slice(3);
       { /* v143: у всех экспонатов — аккуратная низкая цилиндрическая подставка-«стекло» и тонкое кольцо вокруг */
-        const w = Math.min(Math.max(b.max.x - b.min.x, b.max.z - b.min.z), nid === 10 ? 1.9 : 99), pr = Math.max(.45, w * .42), h = .12;
+        const sx = b.max.x - b.min.x, sz2 = b.max.z - b.min.z, lng = Math.max(sx, sz2) > Math.min(sx, sz2) * 2.2; /* v157: вытянутые экспонаты («Мир») — подставка по короткой стороне */
+        const w = Math.min(Math.max(sx, sz2), nid === 10 ? 1.9 : 99, lng ? Math.min(sx, sz2) * 1.1 : 99), pr = Math.max(.45, w * .42), h = .12;
         const ped = new THREE.Mesh(new THREE.CylinderGeometry(pr, pr, h, 64), new THREE.MeshBasicMaterial({ color:0x9FB4D2, transparent:true, opacity:.38, depthWrite:false }));
         const ed = new THREE.LineSegments(new THREE.EdgesGeometry(ped.geometry, 30), new THREE.LineBasicMaterial({ color:0xE2EBF7, transparent:true, opacity:.95 })); ed.userData.cSkip = 1; ped.add(ed);
         ped.position.set(c.x, b.min.y + h / 2, c.z); ped.userData.floor = n.userData.floor; ped.userData.cSkip = 1; ped.traverse(o => o.raycast = () => {}); root.add(ped);
-        n.position.y += h; n.updateMatrixWorld(true); r0 = pr * 1.7; }
+        n.position.y += h; n.updateMatrixWorld(true); r0 = pr * (lng ? 1.35 : 1.7); }
       const col = new THREE.Color(HALLS[d.hall]?.color || '#9aa6bf');
       const g = new THREE.Group(); g.add(new THREE.Mesh(discG, new THREE.MeshBasicMaterial({ color:col, transparent:true, opacity:.05, depthWrite:false })), new THREE.Mesh(ringG, new THREE.MeshBasicMaterial({ color:col, transparent:true, opacity:.45, depthWrite:false, blending:THREE.AdditiveBlending })));
       g.scale.setScalar(r0); g.position.set(c.x, b.min.y + .04, c.z); g.traverse(o => o.raycast = () => {}); g.userData.floor = n.userData.floor; root.add(g); }
@@ -9987,7 +9997,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       $('#tdPass').onclick = () => showTab('pass'); $('#tfNew').onclick = () => { r.started = false; r.done = []; r.i = 0; save(r); renderTour(); renderHome(); }; return; }
     const id = ids[r.i], n = meta(id);
     box.innerHTML = `<div class="tcur" style="--hc:${n.color}"><div class="img" style="${n.big ? `background-image:url(${n.big})` : ''}"><span>${R[r.key].name} · шаг ${r.i + 1} из ${ids.length}</span></div><div class="bd"><small><i></i>${n.hall} · ${n.floor}</small><h2>${n.title}</h2><p>Иди по оранжевой дорожке на карте. У таблички приложи телефон к метке — откроется досье и упадёт отметка.</p>
-      <button class="hmcta" id="tcHere">${nfc}Я у экспоната</button><div class="hmsec"><button id="tcMap">На карте</button><button id="tcOpen">Досье</button><button id="tcAudio">Слушать</button></div></div></div>
+      <button class="hmcta" id="tcMap"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/></svg>Как пройти</button><div class="hmsec"><button id="tcAudio">Слушать</button><button id="tcOpen">Досье</button><button id="tcHere">Я на месте</button></div></div></div>
       <div class="hmst" style="margin:16px 4px 0"><div class="row"><b>Отметки маршрута</b><span>${r.done.length} из ${ids.length}</span></div><div class="hmdots">${ids.map((x, k) => `<i class="${r.done.includes(x) ? 'd' : k === r.i ? 'c' : ''}"></i>`).join('')}</div></div>
       <div class="sec" style="padding-left:8px;padding-right:8px"><h2>Маршрут</h2><span>${R[r.key].time}</span></div>
       <div class="tsteps">${ids.map((x, k) => { const m = meta(x), d = r.done.includes(x); return `<button data-k="${k}" class="${d ? 'd' : k === r.i ? 'c' : ''}"><span class="n">${d ? '✓' : k + 1}</span><div><b>${m.title}</b><span>${m.hall}</span></div>${k === r.i ? '<em>сейчас</em>' : ''}</button>`; }).join('')}</div>
@@ -11716,8 +11726,8 @@ canvas.exfly{display:block}
     { id:'coat', x:-15.2, z:58, c:'#9AA3B0', t:'Гардероб', k:'Вестибюль', p:'Бесплатный гардероб у входа. Рюкзаки и большие сумки лучше сдать.' },
     { id:'shop', x:14.2, z:62.4, c:'#FFB27A', t:'Магазин', k:'Сувениры и книги', p:'Мерч, книги, модели и значки. Заказ из приложения соберут к твоему приходу.', a:['Открыть магазин', () => window.showTab && showTab('shop')] },
     { id:'door', x:-2, z:64.2, c:'#E9ECF1', t:'Вход', k:'Главный вход', p:'Вход в музей — под монументом «Покорителям космоса». Сразу за дверями — вестибюль.' },
-    { id:'wc', x:-10.5, z:48.8, c:'#7FD1C1', t:'Туалет', k:'Коридор к залам', p:'По левую сторону коридора между вестибюлем и первым залом. Доступен для маломобильных посетителей.' },
-    { id:'wc2', x:8.5, z:48.8, c:'#7FD1C1', t:'Туалет', k:'Коридор к залам', p:'По правую сторону коридора между вестибюлем и первым залом.' },
+    { id:'wc', x:-17, z:48.6, c:'#7FD1C1', t:'Туалет', k:'Коридор к залам', p:'По левую сторону коридора между вестибюлем и первым залом. Доступен для маломобильных посетителей.' },
+    { id:'wc2', x:15, z:48.6, c:'#7FD1C1', t:'Туалет', k:'Коридор к залам', p:'По правую сторону коридора между вестибюлем и первым залом.' },
     { id:'gate', x:-2, z:52.2, c:'#8CC4FF', t:'Контроль билетов', k:'Вход в залы', p:'Турникеты перед первым залом: приложи QR из приложения или бумажный билет.' } ];
   const wait = () => { const K = window.__m3k; if (!K || !K.zones || !K.zones.vest){ setTimeout(wait, 600); return; } build(K); }; wait();
   function build(K){ const T = K.THREE, Y = (K.zones.vest.max.y || 1.33), g = new T.Group(); g.name = 'vestPOI'; K.scene.add(g);
@@ -12097,9 +12107,9 @@ canvas.exfly{display:block}
 (() => {
   const W = 'https://upload.wikimedia.org/wikipedia/commons/thumb/';
   const AR = {
-    10:[[W + 'b/be/Sputnik_asm.jpg/640px-Sputnik_asm.jpg', 'Сборка ПС-1 · 1957', 'NASA · public domain']],
-    14:[[W + '4/47/FirstSpaceWalk.png/640px-FirstSpaceWalk.png', 'Леонов в открытом космосе · 18.03.1965', 'кадр бортовой кинокамеры «Восхода-2»']],
-    22:[[W + '2/2b/Lunokhod_1.jpg/640px-Lunokhod_1.jpg', 'Луноход-1 · 1970', 'NASA NSSDC · public domain'], [W + 'a/a5/Lunokhod-mission.jpg/640px-Lunokhod-mission.jpg', 'Посадочная ступень «Луны-17»', 'NASA · public domain']]
+    10:[['g/arch/sputnik_asm.jpg', 'ПС-1 перед запуском · 1957', 'NASA NSSDC · public domain'], ['g/arch/sputnik_schema.jpg', 'Устройство ПС-1: две полусферы, батареи, вентилятор', 'Wikimedia Commons · CC BY-SA 3.0']],
+    14:[['g/arch/leonov_eva.jpg', 'Леонов в открытом космосе · 18.03.1965', 'кадр бортовой кинокамеры «Восхода-2» · public domain']],
+    22:[['g/arch/lunokhod.jpg', 'Миссия «Луны-17» и «Лунохода-1» · 1970', 'NASA · public domain']]
   };
   const st = document.createElement('style'); st.textContent = `
   .arch{margin:22px 16px 6px;padding:18px 16px 20px;border-radius:22px;background:#17140f url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");border:1px solid rgba(232,214,180,.12);position:relative;overflow:hidden}
