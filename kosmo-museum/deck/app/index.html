@@ -9510,7 +9510,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       for (const [x, z, s0, col] of [[-260, -160, 520, '120,90,200'], [300, 220, 600, '60,110,200'], [80, -380, 420, '200,90,120']]){ const c2 = document.createElement('canvas'); c2.width = c2.height = 128; const g2 = c2.getContext('2d'), gr2 = g2.createRadialGradient(64, 64, 0, 64, 64, 64); gr2.addColorStop(0, `rgba(${col},.22)`); gr2.addColorStop(1, `rgba(${col},0)`); g2.fillStyle = gr2; g2.fillRect(0, 0, 128, 128);
         const neb = new THREE.Mesh(new THREE.PlaneGeometry(s0, s0).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(c2), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending })); neb.position.set(x, -120, z); scene.add(neb); } }
     const nodes = {}, zones = {}, pins = [];
-    function size(){ const w = box.clientWidth, h = box.clientHeight, a = w / h; r.setSize(w, h, false); cam.left = -BASE_H * a / 2; cam.right = BASE_H * a / 2; cam.top = BASE_H / 2; cam.bottom = -BASE_H / 2; cam.updateProjectionMatrix(); }
+    function size(){ const w = box.clientWidth, h = box.clientHeight, a = w / h; if (!w || !h) return; /* v164: карта может грузиться скрытой */ r.setSize(w, h, false); cam.left = -BASE_H * a / 2; cam.right = BASE_H * a / 2; cam.top = BASE_H / 2; cam.bottom = -BASE_H / 2; cam.updateProjectionMatrix(); }
     new ResizeObserver(size).observe(box); size();
     let flight = null; const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     function zoomFor(b, pad = .12){ const m = new THREE.Matrix4().lookAt(VIEW, new THREE.Vector3(), new THREE.Vector3(0, 1, 0)).invert(); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
@@ -9560,7 +9560,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       for (const n of Object.values(nodes)) pad(n, root);
       const pinIds = [...new Set([...EX.map(e => e.id), ...ROUTES.full.ids])];
       let k = 0; for (const e of pinIds.map(id => ({ id }))){ if (nodes[e.id]){ const b = new THREE.Box3().setFromObject(nodes[e.id]); const p = b.getCenter(new THREE.Vector3()); p.y = b.max.y + 1; pins.push({ id:e.id, p, el:pinEl(e.id, String(++k).padStart(2, '0')) }); } }
-      const all = new THREE.Box3(); Object.values(zones).forEach(z => all.union(z)); place(all.getCenter(new THREE.Vector3())); cam.zoom = zoomFor(all, .04); cam.updateProjectionMatrix();
+      const all = new THREE.Box3(); Object.values(zones).forEach(z => all.union(z)); place(all.getCenter(new THREE.Vector3())); { const z0 = zoomFor(all, .04); cam.zoom = isFinite(z0) ? z0 : 1; } cam.updateProjectionMatrix();
       hallLabels(); routeInit();
       $('#m3load').hidden = true; window.__m3k = { THREE, scene, cam, ctl, nodes, root, box, GLTFLoader, MeshoptDecoder, r, zones, flyBox:(b, p) => flyBox(b, p) };
       if (window.__dive){ window.__dive = false; const c0 = all.getCenter(new THREE.Vector3()); place(c0.clone().add(new THREE.Vector3(0, 0, 60))); cam.zoom = .32; cam.updateProjectionMatrix();
@@ -12363,5 +12363,12 @@ window.__demoReset = () => {
 };
 </script>
 <script>/* v163: если браузер отобрал WebGL у карты — карта перезапускается */(function w(){ const K = window.__m3k; if (!K || !K.r) return setTimeout(w, 1000); K.r.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); window.__mapLost = true; if (window.parent !== window) setTimeout(() => location.reload(), 400); }); })();</script>
+<script>/* v164: в презентации карта грузится заранее, в фоне — без подвисаний на слайдах с картой */
+(function(){ if (window.parent === window) return; let pre = false;
+  const warm = () => { if (window.__m3k || pre) return; if (!window.m3start) return setTimeout(warm, 500); pre = true; window.__m3pre = true; try { m3start(); } catch(e){}
+    (function c(){ const K = window.__m3k; if (!K) return setTimeout(c, 300); try { K.r.compile(K.scene, K.cam); } catch(e){} })(); };
+  addEventListener('load', () => setTimeout(warm, 1200));
+  const hook = () => { const st = window.showTab; if (!st) return setTimeout(hook, 300); window.showTab = function(t){ const r = st.apply(this, arguments); if (t === 'map' && window.__m3pre){ window.__m3pre = false; setTimeout(() => { const K = window.__m3k; if (!K) return; if (!(window.RT && RT.on) && !window.__m3busy) K.flyBox(K.zones.utro, .1); }, 150); } return r; }; };
+  hook(); })();</script>
 </body>
 </html>
