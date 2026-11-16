@@ -301,6 +301,33 @@
 #m3hl .m3hlk,#m3hl .m3hlr{z-index:3;pointer-events:none}#m3hl .m3hlk{background:linear-gradient(#06080C 60%,transparent);padding-bottom:10px}#m3hl .m3hlr{background:linear-gradient(transparent,#06080C 45%);padding-top:10px}
 #m3hl{overflow:hidden}#m3hl .pzh{position:absolute;left:0;right:0;bottom:8px;text-align:center;z-index:3;pointer-events:none;transition:opacity .4s}#m3hl .pzh.gone{opacity:0}
 #m3s:has(#m3hlGo:not([hidden])) .pzh{opacity:0}
+
+/* «Разбери экспонат»: карточка с описанием и переключалкой (v159) */
+#vToday .xwrap{margin:0 16px;border-radius:24px;background:linear-gradient(180deg,#15161a,#101114);border:1px solid rgba(255,255,255,.07);overflow:hidden}
+#vToday .xwrap .xcard{margin:0!important;border:0!important;border-radius:0!important;background:radial-gradient(120% 90% at 50% 30%,rgba(255,107,26,.10),transparent 60%),#0d0e11!important}
+#vToday .xcard [data-hairline],#vToday .xcard svg{touch-action:pan-y!important}
+.xinfo{padding:16px 18px 18px}
+.xinfo .kick{color:#ff6b1a}
+.xinfo h3{margin:6px 0 12px;font-size:24px;line-height:1.1;font-weight:600;letter-spacing:-.02em}
+.xnums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.xnums div{padding:10px 10px 9px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.xnums b{display:block;font-size:19px;font-weight:600;letter-spacing:-.02em}.xnums small{font-size:12px;opacity:.6;font-weight:500}
+.xnums span{display:block;margin-top:2px;font:500 10px/1.25 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;opacity:.5}
+.xsum{margin:0 0 10px;font-size:15px;line-height:1.45;color:rgba(255,255,255,.78)}
+.xfacts{margin:0 0 14px;padding:0;list-style:none}.xfacts li{position:relative;padding-left:16px;margin:6px 0;font-size:13.5px;line-height:1.4;color:rgba(255,255,255,.62)}
+.xfacts li:before{content:"";position:absolute;left:2px;top:7px;width:6px;height:6px;border-radius:50%;background:#ff6b1a}
+.xact{margin-bottom:10px}.xdos{width:100%;height:46px;border-radius:23px;border:0;background:#ff6b1a;color:#fff;font:600 15px/1 inherit;cursor:pointer}
+.xnav{display:grid;grid-template-columns:52px 1fr;gap:8px}
+.xnav button{height:56px;border-radius:18px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.xnav svg{width:20px;height:20px;flex:none}
+.xnx{justify-content:space-between!important;padding:0 14px 0 16px;text-align:left}
+.xnx span{display:flex;flex-direction:column;gap:3px}.xnx i{font:500 10px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;font-style:normal;opacity:.5}.xnx b{font-size:15px;font-weight:600}
+.xnx svg{color:#ff6b1a}
+
+/* билет: докупить / поменять дату (v159) */
+.tkmore{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.tkmore button{height:48px;border-radius:24px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:500 14px/1 inherit;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.tkmore svg{color:#ff6b1a}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1218,18 +1245,22 @@ window.M_EX = [
     <section class="view" id="vToday" data-tab="today">
       <div class="hello"><div class="kick" id="todayDate"></div><h1 id="helloH">Добрый день!</h1></div>
       <div id="hmHero"></div>
+      <button class="gdbar" id="gdBar"><span class="gdic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c.8-3.6 3-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M16 4.5l4 2-4 2z"/><path d="M16 4.5V12"/></svg></span><span class="gdt"><i>Экскурсия с гидом</i><b>В 12:00 · «Главное за час»</b><em>Сбор у касс · 6 мест</em></span><span class="gdgo">Записаться</span></button>
       <div class="sec"><h2>Экспонаты</h2><span>6</span></div>
       <div class="xbig"><div class="xbc" data-open="openLuno"><img src="g/luno_big.webp" alt="«Луноход-1»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Луноход-1»</b><p>Первая машина, которая ездила по другому небесному телу</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openMir" style="--g1:#3E8BFF;--g2:#0A2A6B"><canvas class="stars"></canvas><img class="cut" src="g/mir_cut.webp" alt="Станция «Мир»" loading="lazy"><div class="xbt"><div class="kick">Дом на орбите · верхний этаж</div><b>Станция «Мир»</b><p>Пятнадцать лет на орбите и 437 суток Полякова</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openVenera" style="--g1:#FF8A2A;--g2:#6B2A05"><canvas class="stars"></canvas><img class="cut" src="g/venera_cut.webp" alt="«Венера-7»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Венера-7»</b><p>Первая мягкая посадка на другую планету</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openMars" style="--g1:#FF4A2E;--g2:#6B1205"><canvas class="stars"></canvas><img class="cut" src="g/mars_cut.webp" alt="«Марс-3»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Марс-3»</b><p>Первым сел на Марс — и успел выйти на связь</p><span class="go">3D-облёт →</span></div></div><div class="xbc ph" data-open="ex:12"><img src="g/12_1.webp" alt="«Восток»" loading="lazy"><div class="xbt"><div class="kick">Утро космической эры · зал 1</div><b>«Восток»</b><p>Шар, в котором Гагарин облетел Землю</p><span class="go">Досье →</span></div></div><div class="xbc ph" data-open="ex:11"><img src="g/11_1.webp" alt="Контейнер Белки и Стрелки" loading="lazy"><div class="xbt"><div class="kick">Утро космической эры · зал 1</div><b>Контейнер Белки и Стрелки</b><p>Первые, кто слетал на орбиту и вернулся</p><span class="go">Досье →</span></div></div></div>
       <div class="collab2" id="collabCard"><div class="cart"><i></i></div><div class="ctx"><div class="kick">Коллаборация · сейчас</div><b>Arknights × Музей</b><span class="go">Маршрут</span></div></div>
       <div class="spacecard" id="spaceCard"><div class="sat"><i></i><i></i><i></i><i></i></div><div class="tx"><div class="kick">ПС-1 · 4 октября 1957</div><b>Отправь первый спутник<br>на орбиту</b></div><span class="go">Смотреть полёт</span></div>
-      <div class="sec"><h2>Разбери экспонат</h2><span>4</span></div>
-      <div class="chips" id="xChips"><span class="chip on" data-f="vostok"><b>01</b>«Восток»</span><span class="chip" data-f="luna9"><b>02</b>«Луна-9»</span><span class="chip" data-f="lunokhod"><b>03</b>«Луноход-1»</span><span class="chip" data-f="mir"><b>04</b>«Мир»</span></div>
-      <div class="stagecard xcard">
-        <div class="stage" id="xStage"></div>
-        <div class="hint" id="xHint">Веди пальцем вправо</div>
-        <div class="ro idle" id="xRo"></div>
+      <div class="sec"><h2>Разбери экспонат</h2><span id="xCnt">1 / 5</span></div>
+      <div class="chips" id="xChips"><span class="chip on" data-f="sputnik"><b>01</b>Спутник</span><span class="chip" data-f="vostok"><b>02</b>«Восток»</span><span class="chip" data-f="luna9"><b>03</b>«Луна-9»</span><span class="chip" data-f="lunokhod"><b>04</b>«Луноход-1»</span><span class="chip" data-f="mir"><b>05</b>«Мир»</span></div>
+      <div class="xwrap">
+        <div class="stagecard xcard">
+          <div class="stage" id="xStage"></div>
+          <div class="hint" id="xHint">Веди пальцем вправо</div>
+          <div class="ro idle" id="xRo"></div>
+        </div>
+        <div class="xinfo" id="xInfo"></div>
       </div>
-      <p class="xnote" id="xNote"></p>
+      <p class="xnote" id="xNote" hidden></p>
       <div class="sec"><h2>Ещё в приложении</h2></div>
       <div class="qa">
         <div data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg><div><b>Карта и маршрут</b><i>9 залов · 3 маршрута</i></div></div>
@@ -1325,6 +1356,7 @@ window.M_EX = [
       <div class="hd"><div class="kick">Музей космонавтики</div><h1>Ещё</h1></div>
       <div class="mlist">
         <button data-m="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><span>от 500 ₽ · QR в Wallet</span></div><em>›</em></button>
+        <button data-m="guides" onclick="window.openGuides && openGuides()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c.8-3.6 3-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M16 4.5l4 2-4 2z"/><path d="M16 4.5V12"/></svg><div><b>Экскурсии с гидом</b><span>расписание и запись</span></div></button>
         <button data-m="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/></svg><div><b>Магазин и кафе</b><span>книги, мерч, «Взлёт»</span></div><em>›</em></button>
         <button data-m="quest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg><div><b>Квест коллаборации</b><span>Arknights × Музей</span></div><em>›</em></button>
         <button data-m="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg><div><b>Таймлайн</b><span>1903–2016</span></div><em>›</em></button>
@@ -1374,6 +1406,7 @@ window.M_EX = [
       <div class="tkdone off" id="vtDone">
         <div class="ticket"><div class="tkh"><div class="kick">Электронный билет · демо</div><b>Музей космонавтики</b><span id="vtDoneDate"></span></div><div class="tkcut"></div><div class="tkq"><canvas id="vtQR" width="168" height="168"></canvas><div><b id="vtDoneCnt"></b><span>Покажи код на входе. Билет сохранён в приложении.</span></div></div></div>
         <button class="cta" id="vtOk">Готово</button>
+        <div class="tkmore"><button id="vtMore"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Купить ещё билет</button><button id="vtChange">Поменять дату</button></div>
       </div>
     </div>
     <div class="ov off" id="vq">
@@ -1391,7 +1424,7 @@ window.M_EX = [
     <div class="ob off" id="ob">
       <button class="obskip" id="obSkip">Пропустить</button>
       <div class="obtrack" id="obTrack">
-        <section class="obs"><div class="obv"><div class="obmon" id="obMon"></div><div class="oblogo"><svg viewBox="0 0 24 24" fill="none" stroke="#FF6A1F" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="4.6" transform="rotate(-20 12 12)"/></svg><b>МУЗЕЙ<br>КОСМОНАВТИКИ</b></div></div><div class="obt"><div class="kick">Музей в кармане</div><h2>Космос — <em>рядом с тобой</em></h2><p>Музей — в основании монумента «Покорителям космоса». В приложении: гид по залам, живые схемы экспонатов и отметки в паспорт.</p></div></section>
+        <section class="obs"><div class="obv"><div class="obmon" id="obMon"></div><div class="oblogo"><b>МУЗЕЙ<br>КОСМОНАВТИКИ</b></div></div><div class="obt"><div class="kick">Музей в кармане</div><h2>Космос — <em>рядом с тобой</em></h2><p>Музей — в основании монумента «Покорителям космоса». В приложении: гид по залам, живые схемы экспонатов и отметки в паспорт.</p></div></section>
         <section class="obs"><div class="obv"><div class="obrt" id="obRt">
           <button data-r="short" class="on"><svg viewBox="0 0 120 40"><path d="M6 30 C30 8 46 34 64 18 S100 10 114 22" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/><circle cx="6" cy="30" r="4" fill="#fff"/><circle cx="114" cy="22" r="4" fill="currentColor"/></svg><div><b>Главное</b><span>10 экспонатов · 45 мин</span></div></button>
           <button data-r="kids"><svg viewBox="0 0 120 40"><path d="M6 24 C24 34 40 6 60 20 S98 34 114 14" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/><circle cx="6" cy="24" r="4" fill="#fff"/><circle cx="114" cy="14" r="4" fill="currentColor"/></svg><div><b>С детьми</b><span>8 экспонатов · 1 час</span></div></button>
@@ -8757,16 +8790,39 @@ Object.assign(XF, {
     say: { 'люк': 'Выходной люк — через него выходили в открытый космос', 'отсек': 'Шлюзовой отсек: из него откачивают воздух перед выходом', 'поручни': 'Поручни — держаться при выходе', 'стыковка': 'Стыковочный узел', 'космонавт': 'Космонавт в «Орлане» ждёт выхода' } },
 });
 const sayOf = (name, t) => { const s = XF[name].say; return typeof s === 'function' ? s(t) : (s[t] || t); };
-let xCur = null, xName = 'vostok';
+let xCur = null, xName = 'sputnik';
+const XORD = ['sputnik', 'vostok', 'luna9', 'lunokhod', 'mir'];
+const XMETA = {
+  sputnik: { id:10, kick:'4 октября 1957 · верхний этаж', t:'Первый спутник ПС-1' },
+  vostok: { id:12, kick:'12 апреля 1961 · верхний этаж', t:'«Восток» Гагарина' },
+  luna9: { id:24, kick:'3 февраля 1966 · нижний этаж', t:'«Луна-9»' },
+  lunokhod: { id:22, kick:'17 ноября 1970 · нижний этаж', t:'«Луноход-1»', nums:[['10,5','км','по Морю Дождей'],['11','','лунных дней работы'],['20 000+','','снимков Луны']], sum:'Первый в мире планетоход. Станция «Луна-17» доставила его в Море Дождей, и почти год им управляли с Земли пять экипажей водителей: сигнал шёл с задержкой, поэтому ехали «на шаг вперёд».', facts:['Колёса — восемь, у каждого свой мотор','Ночью грелся от изотопного источника тепла'] },
+  mir: { id:36, kick:'1986–2001 · нижний этаж', t:'Станция «Мир»' }
+};
+function xInfo(name){
+  const m = XMETA[name] || {}, inf = (typeof INFO !== 'undefined' && INFO[m.id]) || {};
+  const nums = m.nums || inf.nums || [], sum = m.sum || inf.sum || '', facts = (m.facts || inf.facts || []).slice(0, 2);
+  const k = XORD.indexOf(name), nx = XORD[(k + 1) % XORD.length], pv = XORD[(k + XORD.length - 1) % XORD.length];
+  $('#xCnt').textContent = (k + 1) + ' / ' + XORD.length;
+  $('#xInfo').innerHTML = `<div class="kick">${m.kick || ''}</div><h3>${m.t || ''}</h3>`
+    + (nums.length ? `<div class="xnums">${nums.slice(0, 3).map(([v, u, l]) => `<div><b>${v}${u ? ` <small>${u}</small>` : ''}</b><span>${l}</span></div>`).join('')}</div>` : '')
+    + `<p class="xsum">${sum}</p>` + (facts.length ? `<ul class="xfacts">${facts.map(f => `<li>${f}</li>`).join('')}</ul>` : '')
+    + `<div class="xact"><button class="xdos" id="xDos">Досье экспоната →</button></div>`
+    + `<div class="xnav"><button class="xpv" id="xPv" aria-label="Предыдущий"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><button class="xnx" id="xNx"><span><i>Следующий экспонат</i><b>${XMETA[nx].t}</b></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>`;
+  $('#xNx').onclick = () => { showX(nx); const c = document.querySelector(`#xChips .chip[data-f="${nx}"]`); c && c.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' }); };
+  $('#xPv').onclick = () => showX(pv);
+  $('#xDos').onclick = () => { if (m.id === 22 && window.openLuno) return openLuno(); if (typeof EX !== 'undefined' && EX.find(x => x.id === m.id)) openEx(m.id); };
+}
 function showX(name){
   xName = name; xCur && xCur.destroy();
   document.querySelectorAll('#xChips .chip').forEach(c => c.classList.toggle('on', c.dataset.f === name));
   $('#xHint').textContent = XF[name].hint; $('#xNote').textContent = XF[name].note;
+  try { xInfo(name); } catch (e){ console.warn(e); }
   const ro = $('#xRo');
   xCur = window.mountFig($('#xStage'), name, XF[name].label, (t) => { const idle = !t || t === 'rest'; ro.classList.toggle('idle', idle); ro.textContent = idle ? 'коснись детали' : sayOf(name, t); });
 }
 $('#xChips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c && c.dataset.f !== xName) showX(c.dataset.f); });
-showX('vostok');
+showX('sputnik');
 let exFig = null, lrFig = null;
 const EXFIG = { 12: 'vostok', 24: 'luna9' };
 let speaking = false;
@@ -9451,7 +9507,13 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     r.domElement.addEventListener('pointerup', e => { if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return; const rc = r.domElement.getBoundingClientRect();
       ndc.set((e.clientX - rc.left) / rc.width * 2 - 1, -((e.clientY - rc.top) / rc.height) * 2 + 1); ray.setFromCamera(ndc, cam);
       for (const h of ray.intersectObjects(Object.values(nodes), true)){ let o = h.object; while (o && o.userData.ex == null) o = o.parent; if (o){ if (floorGate(o.userData.ex)) return; select(o.userData.ex, false); return; } }
-      card.hidden = true; if (selected != null) glow(nodes[selected], 0); selected = null; });
+      card.hidden = true; if (selected != null) glow(nodes[selected], 0); selected = null;
+      /* v159: тап по залу (не по экспонату) — наезд в границы зала; кинозал и кафе открывают свои страницы */
+      try { const CAFE = new THREE.Box3(new THREE.Vector3(17.8, 1.3, -62.4), new THREE.Vector3(24.2, 3.3, -58.6)); let best = null, bd = 1e9; const tp = new THREE.Vector3();
+        for (const [k, b] of Object.entries(zones).concat([['cafe', CAFE]])){ if (!b || b.isEmpty()) continue; const fl = b.min.y > .9 ? 'upper' : 'lower'; if (curFloor !== 'all' && fl !== curFloor && k !== 'cafe') continue; const q = ray.ray.intersectBox(b, tp); if (q){ const d = q.distanceTo(ray.ray.origin); if (d < bd){ bd = d; best = k; } } }
+        if (best === 'kino'){ window.openKino && openKino(); return; } if (best === 'cafe'){ flyBox(CAFE, .3); setTimeout(() => window.openCafe && openCafe(), 700); return; }
+        if (best && window.__m3goHall) window.__m3goHall(best); else if (best) flyBox(zones[best], .1); } catch (_){}
+    });
     // load the maquette (meshopt-compressed)
     const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     const s = document.createElement('script'); s.src = 'kosmo_map.js'; s.onerror = () => { $('#m3load').textContent = 'не удалось загрузить карту'; };
@@ -9495,12 +9557,9 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const MOVE = { 50:[15.9, 0.6], 17:[22.2, 12.2] };
     function moveTo(n){ const m = MOVE[+n.name.slice(3)]; if (!m || n.userData.moved) return; n.userData.moved = 1; n.updateMatrixWorld(true); const c = new THREE.Box3().setFromObject(n).getCenter(new THREE.Vector3()); const w = n.getWorldPosition(new THREE.Vector3()); const tgt = new THREE.Vector3(w.x + m[0] - c.x, w.y, w.z + m[1] - c.z); n.position.copy(n.parent.worldToLocal(tgt)); n.updateMatrixWorld(true); }
     /* v153: ряды витрин в «Доме на орбите» — развернуть на 45°, по ходу коридора */
-    let vitrDone = false; function vitr(){ if (vitrDone) return; vitrDone = true; /* v157: ряды витрин — вдоль коридора (ось X мира) */
-      for (const nm of ['AM_vitr_dom_l001', 'AM_vitr_dom_r001', 'AM_vitr_luna001']){ const g = scene.getObjectByName(nm); if (!g) continue; g.updateMatrixWorld(true);
-        const pts = []; g.traverse(o => { if (o.isMesh){ const bb = new THREE.Box3().setFromObject(o), z = bb.getSize(new THREE.Vector3()); if (z.x < .5 && z.z < .5) pts.push(bb.getCenter(new THREE.Vector3())); } }); if (pts.length < 2) continue;
-        let i0 = 0, i1 = 1, dm = 0; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++){ const d = pts[i].distanceTo(pts[j]); if (d > dm){ dm = d; i0 = i; i1 = j; } }
-        const ang = Math.atan2(pts[i1].z - pts[i0].z, pts[i1].x - pts[i0].x); const c = new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3());
-        const pv = new THREE.Group(); pv.position.copy(g.parent.worldToLocal(c.clone())); g.parent.add(pv); pv.attach(g); pv.rotation.y += ang; } }
+    let vitrDone = false; function vitr(){ if (vitrDone) return; vitrDone = true; /* v159: витрины-стенды убраны с карты (не крутим группы — экспонаты остаются на местах) */
+      const vs = []; scene.traverse(o => { if (/^AM_vitr/i.test(o.name)) vs.push(o); });
+      for (const g of vs) g.traverse(o => { if (!o.isMesh && !o.isLine && !o.isLineSegments) return; let p = o, ex = false; while (p && p !== g){ if (p.userData && p.userData.ex != null || /^EX_/.test(p.name)) { ex = true; break; } p = p.parent; } if (!ex) o.visible = false; }); }
     /* v157: «Луна-9» крупнее — держит пропорцию первого зала */
     const SCL = { 24:1.7 }; function scl(n){ const k = SCL[+n.name.slice(3)]; if (!k || n.userData.scl) return; n.userData.scl = 1; n.updateMatrixWorld(true); const b0 = new THREE.Box3().setFromObject(n); n.scale.multiplyScalar(k); n.updateMatrixWorld(true); const b1 = new THREE.Box3().setFromObject(n); const d = new THREE.Vector3((b0.min.x + b0.max.x - b1.min.x - b1.max.x) / 2, b0.min.y - b1.min.y, (b0.min.z + b0.max.z - b1.min.z - b1.max.z) / 2); const w = n.getWorldPosition(new THREE.Vector3()).add(d); n.position.copy(n.parent.worldToLocal(w)); n.updateMatrixWorld(true); }
     function pad(n, root){ vitr(); scl(n); moveTo(n); noBase(n); const b = vBox(n).isEmpty() ? new THREE.Box3().setFromObject(n) : vBox(n), c = b.getCenter(new THREE.Vector3()); let r0 = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) * .55 + .5; const d = MEX.get(+n.name.slice(3)) || {}; const nid = +n.name.slice(3);
@@ -9550,7 +9609,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     }
     // ---- маршрут: шаги по экспонатам, «вы здесь», хлебные крошки по полу
     const ROUTES = {
-      short:{ name:'Главное', time:'45 мин', ids:[10, 12, 11, 14, 24, 36, 22, 15, 26, 35] },
+      short:{ name:'Главное', time:'45 мин', ids:[10, 12, 11, 24, 14, 36, 22, 15, 26, 35] },
       kids: { name:'С детьми', time:'1 час', ids:[11, 10, 12, 13, 24, 22, 15, 35] },
       full: { name:'Весь музей', time:'2 часа', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
     const ls = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(_){ return null; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){} } };
@@ -9642,6 +9701,9 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     store.set('kosmoTicket', T); $('#vtDoneDate').textContent = tkLabel(day); $('#vtDoneCnt').textContent = n + ' ' + (n === 1 ? 'билет' : n < 5 ? 'билета' : 'билетов'); qr($('#vtQR'), 7 + day.getDate() * 31 + n);
     $('#vtDone').classList.remove('off'); showTicketChip(); });
   $('#vtOk').addEventListener('click', () => { $('#vtDone').classList.add('off'); $('#vt').classList.add('off'); });
+  /* планы поменялись: докупить билет другу или выбрать другой день, не теряя текущий (v159) */
+  $('#vtMore').addEventListener('click', () => { $('#vtDone').classList.add('off'); $('#vt').classList.remove('off'); const sc = $('#vt .ovb') || $('#vt'); sc.scrollTop = 0; });
+  $('#vtChange').addEventListener('click', () => { $('#vtDone').classList.add('off'); $('#vt').classList.remove('off'); });
   $('#vtClose').addEventListener('click', () => $('#vt').classList.add('off'));
   window.openTickets = () => { renderTk(); $('#vt').classList.remove('off'); };
   function showTicketChip(){ const T = store.get('kosmoTicket'); if (!T) return; let c = $('#tkChip'); if (!c){ c = document.createElement('div'); c.className = 'tkchip'; c.id = 'tkChip'; $('#vToday .hello').after(c); c.addEventListener('click', () => { const d = new Date(T.date); $('#vtDoneDate').textContent = tkLabel(d); $('#vtDoneCnt').textContent = T.n + ' ' + (T.n === 1 ? 'билет' : T.n < 5 ? 'билета' : 'билетов'); qr($('#vtQR'), 7 + d.getDate() * 31 + T.n); $('#vt').classList.remove('off'); $('#vtDone').classList.remove('off'); }); }
@@ -9673,7 +9735,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
   $('#obRt').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll('#obRt button').forEach(x => x.classList.toggle('on', x === b));
     try { const r = JSON.parse(localStorage.getItem('kosmoRoute')) || {}; r.key = b.dataset.r; r.i = 0; r.on = true; r.done = r.done || []; localStorage.setItem('kosmoRoute', JSON.stringify(r)); } catch(_){}
     window.routeSet && window.routeSet(b.dataset.r); });
-  function obGo(i){ obI = i; $('#obTrack').style.transform = `translateX(${-i * 100}%)`; document.querySelectorAll('#obDots i').forEach((d, k) => d.classList.toggle('on', k === i)); $('#obNext').textContent = i === OBN - 1 ? 'Начать' : 'Далее';
+  function obGo(i){ obI = i; try { const sl = document.querySelectorAll('#obTrack > .obs')[i]; if (sl && sl.querySelector('#obNfc')) setTimeout(() => { if (obI === i) $('#obTry').click(); }, 450); } catch(_){} $('#obTrack').style.transform = `translateX(${-i * 100}%)`; document.querySelectorAll('#obDots i').forEach((d, k) => d.classList.toggle('on', k === i)); $('#obNext').textContent = i === OBN - 1 ? 'Начать' : 'Далее';
     $('#obCol').classList.toggle('go', i === 3); if (i === 4 && !obFig && window.mountFig){ obFig = window.mountFig($('#obFig'), 'sputnik', 'ПС-1', () => {}); }
     if (i >= 4 && !obDogR && window.mountDog2D){ const mk = window.mountDog3D || window.mountDog2D; obDogR = mk($('#obDog'), { pose:'sit' }); obDogS = mk($('#obDog2'), { pose:'sit' }); obDogS.setWho && obDogS.setWho('strelka'); }
     if (i === 5 && obDogR){ obDuoStop(); /* v153: иллюминаторы появляются по очереди снизу вверх — без «забега» */ const ds = document.querySelectorAll('#obDuo .obdog'); ds.forEach(d => d.classList.remove('up')); ds.forEach((d, k) => obDT.push(setTimeout(() => d.classList.add('up'), 120 + k * 420))); obDT.push(setTimeout(() => obSay(0), 1500)); } else obDuoStop(); }
@@ -9818,7 +9880,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const S = { q:[], i:0, t:0, playing:false, mode:'route', spd:1, rk:'short', dos:null };
   const cur = () => meta(S.q[S.i]);
   function cover(el, m, big){ el.style.setProperty('--hc', m.color); el.innerHTML = m.thumb ? `<img src="${m.thumb}" alt="">` : `<b>${big ? m.inv : m.inv.replace(/\D+/g, '').slice(-3) || '★'}</b>`; if (big && m.thumb) el.insertAdjacentHTML('beforeend', ''); }
-  const DEFR = { short:{ name:'Главное', ids:[10, 12, 11, 14, 24, 36, 22, 15, 26, 35] }, kids:{ name:'С детьми', ids:[11, 10, 12, 13, 24, 22, 15, 35] }, full:{ name:'Весь музей', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
+  const DEFR = { short:{ name:'Главное', ids:[10, 12, 11, 24, 14, 36, 22, 15, 26, 35] }, kids:{ name:'С детьми', ids:[11, 10, 12, 13, 24, 22, 15, 35] }, full:{ name:'Весь музей', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
   function routeIds(){ const R = window.ROUTES || DEFR, k = (window.RT && window.RT.key) || 'short'; S.rk = k; return (R[k] && R[k].ids) || [10, 12, 11, 14, 24]; }
   function load(id, mode){ S.mode = mode || S.mode; const ids = routeIds(); if (S.mode === 'route' && ids.includes(id)){ S.q = ids.slice(); S.i = ids.indexOf(id); } else if (S.mode === 'route' && !id){ S.q = ids.slice(); S.i = 0; } else { S.q = [id]; S.i = 0; } S.t = 0; render(true); }
   let render = function(full){ const m = cur(); const fp = $('#fp'), mp = $('#mp');
@@ -9897,7 +9959,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   new IntersectionObserver((es) => { if (es.some(e => e.isIntersecting)) mount(); }).observe($('#m3hl'));
   $('#hlChips').addEventListener('click', (e) => { const c = e.target.closest('.chip[data-h]'); if (!c) return; mount(); document.querySelectorAll('#hlChips .chip').forEach(x => x.classList.toggle('on', x === c)); window.__hlHall && window.__hlHall(c.dataset.h); window.listHall && listHall(c.dataset.h); });
   /* экскурсия со схемы: маршрут «Весь музей» (или текущий, если экспонат в нём) с выбранного экспоната, аудиогид тоже с него */
-  const RDEF = { short:[10, 12, 11, 14, 24, 36, 22, 15, 26, 35], kids:[11, 10, 12, 13, 24, 22, 15, 35], full:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] };
+  const RDEF = { short:[10, 12, 11, 24, 14, 36, 22, 15, 26, 35], kids:[11, 10, 12, 13, 24, 22, 15, 35], full:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] };
   const rget = () => { try { return JSON.parse(localStorage.getItem('kosmoRoute')) || {}; } catch (_){ return {}; } };
   const rlist = (k) => window.routeIds && window.RT && window.RT.key === k ? window.routeIds() : ((window.ROUTES || {})[k] || {}).ids || RDEF[k];
   const go = $('#m3hlGo'); let goId = null;
@@ -9914,7 +9976,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 // ===== главная + «Ещё» (v70): экскурсия первым экраном
 (() => { const $ = s => document.querySelector(s);
   const R = window.TOUR_ROUTES = window.TOUR_ROUTES || {
-    short:{ name:'Главное', time:'45 мин', note:'самое известное', ids:[10, 12, 11, 14, 24, 36, 22, 15, 26, 35] },
+    short:{ name:'Главное', time:'45 мин', note:'самое известное', ids:[10, 12, 11, 24, 14, 36, 22, 15, 26, 35] },
     kids: { name:'С детьми', time:'1 час', note:'Белка, луноход, ракеты', ids:[11, 10, 12, 13, 24, 22, 15, 35] },
     full: { name:'Весь музей', time:'2 часа', note:'оба этажа', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
   const EXM = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
@@ -9968,7 +10030,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   // «Ещё»
   document.querySelectorAll('#vMore .mlist button[data-m]').forEach(b => b.addEventListener('click', () => { const m = b.dataset.m;
     if (m === 'ticket') return window.openTickets && openTickets(); if (m === 'timeline') return window.openTimeline && openTimeline(); if (m === 'quest') return window.openQuest && openQuest();
-    if (m === 'guide') return window.openGuide && openGuide(); if (m === 'help') return window.openOnboarding && openOnboarding(); if (m === 'bg') return; showTab(m); }));
+    if (m === 'guide') return window.openGuide && openGuide(); if (m === 'help') return window.openOnboarding && openOnboarding(); if (m === 'bg' || m === 'guides') return; showTab(m); }));
   { const tg = $('#bgTg'); tg && tg.parentElement.addEventListener('click', () => { const on = !tg.classList.contains('on'); tg.classList.toggle('on', on); try { if (on){ typeof pickPreset === 'function' && pickPreset(0); startSound(); toast('Фон станции включён'); } else { stopSound(); toast('Фон станции выключен'); } } catch(_){} }); }
   { const d = new Date(); const fd = $('#factDate'); fd && (fd.textContent = d.toLocaleDateString('ru-RU', { day:'numeric', month:'long' })); }
   renderHome();
@@ -12162,6 +12224,98 @@ canvas.exfly{display:block}
     for (let k = 0; k <= Math.round(L / 1.6); k++){ const zz = z0 + (z1 - z0) * k / Math.round(L / 1.6); g.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x + sx * W / 2, y, zz), new T.Vector3(x + sx * W / 2, y + .55, zz)]), lm)); } }
   const dash = new T.Mesh(new T.PlaneGeometry(.12, L), new T.MeshBasicMaterial({ color:0xFFB27A, transparent:true, opacity:.55 })); dash.rotation.x = -Math.PI / 2; dash.position.set(x, y + .05, (z0 + z1) / 2); g.add(dash);
   g.traverse(o => { o.userData.cSkip = 1; o.raycast = () => {}; });
+})();
+</script>
+<script>
+/* горизонтальные ленты тянутся мышью (в презентации и на компьютере) v159 */
+(() => { const sel = '.xbig, .chips, .hscroll, .xrail'; let st = null;
+  document.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button !== 0) return; const el = e.target.closest(sel); if (!el || el.scrollWidth <= el.clientWidth + 4) return; st = { el, x:e.clientX, sl:el.scrollLeft, moved:false }; }, true);
+  addEventListener('pointermove', e => { if (!st) return; const dx = e.clientX - st.x; if (!st.moved && Math.abs(dx) > 6){ st.moved = true; st.el.style.scrollSnapType = 'none'; st.el.style.cursor = 'grabbing'; } if (st.moved) st.el.scrollLeft = st.sl - dx; }, true);
+  addEventListener('pointerup', () => { if (!st) return; const s0 = st; st = null; s0.el.style.cursor = ''; if (!s0.moved) return; const kill = ev => { ev.stopPropagation(); ev.preventDefault(); }; addEventListener('click', kill, true); setTimeout(() => { removeEventListener('click', kill, true); s0.el.style.scrollSnapType = ''; }, 60); }, true);
+})();
+</script>
+<script>
+/* v159: страницы-шторки — экскурсии с гидом, кинозал, кафе */
+(() => {
+  const css = document.createElement('style'); css.textContent = `
+  .gdbar{display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:14px 16px 4px;padding:14px 14px 14px 14px;border-radius:22px;border:1px solid rgba(255,107,26,.35);background:linear-gradient(120deg,rgba(255,107,26,.16),rgba(255,107,26,.04) 60%),#121317;color:#fff;text-align:left;cursor:pointer;font:inherit}
+  .gdbar .gdic{flex:none;width:44px;height:44px;border-radius:14px;background:rgba(255,107,26,.18);color:#ff8a4a;display:flex;align-items:center;justify-content:center}.gdbar .gdic svg{width:22px;height:22px}
+  .gdbar .gdt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.gdbar i{font:500 10px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:#ff8a4a}
+  .gdbar b{font-size:15px;font-weight:600}.gdbar em{font-style:normal;font-size:12px;opacity:.6}
+  .gdbar .gdgo{flex:none;height:34px;padding:0 14px;border-radius:17px;background:#ff6b1a;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center}
+  .shtp{position:absolute;inset:0;z-index:60;background:#0A0B0D;color:#fff;transform:translateY(100%);transition:transform .45s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
+  .shtp.on{transform:none}
+  .shtp .sht{display:flex;align-items:center;gap:10px;padding:max(54px,calc(env(safe-area-inset-top,0px) + 44px)) 16px 10px}
+  .shtp .sht button{width:40px;height:40px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .shtp .shb{flex:1;overflow-y:auto;padding:4px 16px 40px}
+  .shtp .hero{position:relative;border-radius:24px;padding:20px 18px;margin-bottom:16px;overflow:hidden;background:radial-gradient(120% 120% at 100% 0,rgba(255,107,26,.35),transparent 55%),#14151a;border:1px solid rgba(255,255,255,.07)}
+  .shtp .hero .kick{color:#ff8a4a}.shtp .hero h2{margin:8px 0 8px;font-size:30px;line-height:1.05;font-weight:600;letter-spacing:-.02em}.shtp .hero p{margin:0;font-size:14.5px;line-height:1.45;color:rgba(255,255,255,.72)}
+  .shtp .day{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none}.shtp .day button{flex:none;height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(255,255,255,.12);background:none;color:#fff;font:500 13px inherit;cursor:pointer}.shtp .day button.on{background:#fff;color:#0A0B0D}
+  .shtp .ses{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;padding:14px;border-radius:18px;background:#14151a;border:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+  .shtp .ses .tm{font-size:19px;font-weight:600;letter-spacing:-.02em}.shtp .ses b{display:block;font-size:15px;font-weight:600}.shtp .ses span{display:block;margin-top:3px;font-size:12px;opacity:.6;line-height:1.35}
+  .shtp .ses button{height:34px;padding:0 13px;border-radius:17px;border:0;background:#ff6b1a;color:#fff;font:600 12.5px inherit;cursor:pointer;white-space:nowrap}.shtp .ses button.ok{background:rgba(127,209,193,.16);color:#7FD1C1}
+  .shtp .note{margin:14px 2px 0;font-size:12px;opacity:.45;line-height:1.4}
+  .shtp .grp{width:100%;height:50px;margin-top:10px;border-radius:25px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:500 14.5px inherit;cursor:pointer}`;
+  document.head.appendChild(css);
+  const host = () => document.getElementById('dev') || document.querySelector('.tabs')?.parentElement || document.body;
+  let el = null;
+  function sheet(kick, html){ el && el.remove(); el = document.createElement('div'); el.className = 'shtp'; el.innerHTML = `<div class="sht"><button aria-label="Закрыть"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="kick">${kick}</div></div><div class="shb">${html}</div>`; host().appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on'))); el.querySelector('.sht button').onclick = close;
+    el.addEventListener('click', e => { const b = e.target.closest('.ses button'); if (b && !b.classList.contains('ok')){ b.classList.add('ok'); b.textContent = 'Вы записаны ✓'; } const d = e.target.closest('.day button'); if (d){ el.querySelectorAll('.day button').forEach(x => x.classList.toggle('on', x === d)); } }); return el; }
+  function close(){ if (!el) return; const e = el; e.classList.remove('on'); setTimeout(() => e.remove(), 450); el = null; }
+  const ses = (t, b, s, btn) => `<div class="ses"><div class="tm">${t}</div><div><b>${b}</b><span>${s}</span></div><button>${btn || 'Записаться'}</button></div>`;
+  const days = '<div class="day"><button class="on">Сегодня</button><button>Завтра</button><button>Сб</button><button>Вс</button></div>';
+  window.openGuides = () => sheet('Экскурсии с гидом', `<div class="hero"><div class="kick">Живой рассказ</div><h2>Экскурсия<br>с гидом</h2><p>Приложение не заменяет экскурсовода — оно помогает попасть к нему: расписание, запись в один тап и напоминание, к какому залу подойти.</p></div>${days}`
+    + ses('12:00', '«Главное за час»', 'Обзорная · сбор у касс · 6 мест') + ses('13:30', 'Белка, Стрелка и другие', 'Для детей 6–10 лет · верхний этаж · 4 места') + ses('15:00', 'Лунная программа', 'Тематическая · нижний этаж · 9 мест') + ses('17:00', 'Как устроен «Мир»', 'Тематическая · у станции «Мир» · 12 мест')
+    + '<button class="grp">Заказать экскурсию для группы</button><p class="note">Демо-расписание: в прототипе запись не отправляется. Напоминание придёт за 15 минут — с дорожкой до места сбора.</p>');
+  window.openKino = () => sheet('Кинозал · верхний этаж', `<div class="hero"><div class="kick">Сейчас в кинозале</div><h2>Кинозал<br>музея</h2><p>Документальные фильмы, лекции и встречи с космонавтами. Места бронируются по билету в музей.</p></div>${days}`
+    + ses('11:00', '«Первый в космосе»', 'Документальный · 30 мин · 6+', 'Место') + ses('13:00', 'Лекция «Как летает спутник»', 'Научный сотрудник музея · 45 мин', 'Место') + ses('15:30', '«Луноход-1»: 301 день на Луне', 'Документальный · 40 мин · 6+', 'Место') + ses('18:00', 'Встреча с космонавтом', 'По пятницам · вход по записи', 'Место')
+    + '<p class="note">Демо-расписание кинозала: настоящее приходит из афиши музея. Перед сеансом — пуш с дорожкой от текущего места.</p>');
+  window.openCafe = () => { window.showTab && showTab('shop'); setTimeout(() => document.querySelector('#shSeg [data-s=cafe]')?.click(), 60); };
+  document.getElementById('gdBar')?.addEventListener('click', () => openGuides());
+})();
+</script>
+<script>
+/* v159: второй мостик (от конференц-зала), лестница из конференц-зала вниз, пандус к «Луноходу», подсветка лестниц с подписями */
+(function w(){ const K = window.__m3k; if (!K || !K.root || !K.zones || !K.zones.dom || !K.root.getObjectByName('Stairs_L') || !K.scene.getObjectByName('cafeBridge')) return setTimeout(w, 800); const T = K.THREE;
+  if (K.scene.getObjectByName('v159paths')) return; const g = new T.Group(); g.name = 'v159paths'; K.scene.add(g);
+  const fillM = new T.MeshStandardMaterial({ color:0xdfe6f2, transparent:true, opacity:.10, roughness:.3, metalness:.2, depthWrite:false });
+  const lineM = new T.LineBasicMaterial({ color:0xdfe6f2, transparent:true, opacity:.7 });
+  const accM = new T.MeshBasicMaterial({ color:0xFFB27A, transparent:true, opacity:.55, depthWrite:false });
+  const L = (a, b) => g.add(new T.Line(new T.BufferGeometry().setFromPoints([a, b]), lineM));
+  const box = (cx, cy, cz, sx, sy, sz) => { const m = new T.Mesh(new T.BoxGeometry(sx, sy, sz), fillM); m.position.set(cx, cy, cz); g.add(m); const e = new T.LineSegments(new T.EdgesGeometry(m.geometry), lineM); e.position.copy(m.position); g.add(e); };
+  /* мостик: вдоль z, от края «Дома на орбите» до платформы */
+  function bridge(x, z0, z1, y, W){ const len = Math.abs(z1 - z0), zc = (z0 + z1) / 2; const d = new T.Mesh(new T.BoxGeometry(W, .08, len), fillM); d.position.set(x, y, zc); g.add(d);
+    for (const sx of [-1, 1]){ for (const h of [.06, .55]) L(new T.Vector3(x + sx * W / 2, y + h, z0), new T.Vector3(x + sx * W / 2, y + h, z1)); const n = Math.round(len / 1.6); for (let k = 0; k <= n; k++){ const z = z0 + (z1 - z0) * k / n; L(new T.Vector3(x + sx * W / 2, y, z), new T.Vector3(x + sx * W / 2, y + .55, z)); } }
+    const dash = new T.Mesh(new T.PlaneGeometry(.12, len), accM); dash.rotation.x = -Math.PI / 2; dash.position.set(x, y + .05, zc); g.add(dash); }
+  /* лестница: ступени вдоль оси dir ('x' или 'z'), сверху (a, yTop) вниз до (b, yBot) */
+  function stairs(axis, a, b, c0, c1, yTop, yBot, n){ const st = (b - a) / n, dh = (yTop - yBot) / n, w = Math.abs(c1 - c0), cc = (c0 + c1) / 2;
+    for (let k = 0; k < n; k++){ const p = a + st * (k + .5), hgt = yTop - dh * (k + 1) - yBot + .04, cy = yBot + hgt / 2; axis === 'x' ? box(p, cy, cc, Math.abs(st), hgt, w) : box(cc, cy, p, w, hgt, Math.abs(st)); }
+    for (const c of [c0, c1]){ const A = axis === 'x' ? new T.Vector3(a, yTop + .55, c) : new T.Vector3(c, yTop + .55, a), B = axis === 'x' ? new T.Vector3(b, yBot + .55, c) : new T.Vector3(c, yBot + .55, b); L(A, B); } }
+  function ramp(axis, a, b, c0, c1, yTop, yBot){ const len = Math.abs(b - a), w = Math.abs(c1 - c0), cc = (c0 + c1) / 2, ang = Math.atan2(yTop - yBot, len);
+    const m = new T.Mesh(new T.BoxGeometry(axis === 'x' ? Math.hypot(len, yTop - yBot) : w, .06, axis === 'x' ? w : Math.hypot(len, yTop - yBot)), fillM); m.position.set(axis === 'x' ? (a + b) / 2 : cc, (yTop + yBot) / 2, axis === 'x' ? cc : (a + b) / 2);
+    if (axis === 'x') m.rotation.z = Math.sign(b - a) * -ang * -1; else m.rotation.x = Math.sign(b - a) * ang; g.add(m); const e = new T.LineSegments(new T.EdgesGeometry(m.geometry), lineM); e.position.copy(m.position); e.rotation.copy(m.rotation); g.add(e);
+    for (const c of [c0, c1]) L(axis === 'x' ? new T.Vector3(a, yTop + .55, c) : new T.Vector3(c, yTop + .55, a), axis === 'x' ? new T.Vector3(b, yBot + .55, c) : new T.Vector3(c, yBot + .55, b));
+    const dash = new T.Mesh(new T.PlaneGeometry(axis === 'x' ? Math.hypot(len, yTop - yBot) : .12, axis === 'x' ? .12 : Math.hypot(len, yTop - yBot)), accM); dash.rotation.copy(m.rotation); dash.rotateX(-Math.PI / 2); dash.position.copy(m.position); dash.position.y += .05; g.add(dash); }
+  const yU = K.zones.dom.min.y + .02, yL = (K.zones.mezhdu ? K.zones.mezhdu.min.y : .3) + .02;
+  bridge(8.8, K.zones.dom.min.z, -58.4, yU, 2.2);
+  /* лестница из конференц-зала влево-вниз на нижний этаж + площадка к «Сотрудничеству» */
+  stairs('x', 5.3, 0.6, -60.4, -58.4, yU, yL, 8); box(-0.6, yL - .02, -57.4, 2.4, .04, 4.2);
+  /* пандус к «Луноходу»: рядом с лестницей, с верхнего этажа вниз */
+  ramp('x', -16.9, -24.2, -20.3, -18.9, yU, yL);
+  g.traverse(o => { o.userData.cSkip = 1; o.raycast = () => {}; });
+  /* подсветка существующих лестниц */
+  const SL = K.root.getObjectByName('Stairs_L'), SR = K.root.getObjectByName('Stairs_R');
+  const tags = [];
+  const host = document.getElementById('m3pins');
+  const tag = (txt, v) => { if (!host) return; const el = document.createElement('div'); el.className = 'm3lab m3stair'; el.innerHTML = `<i style="background:#DFE6F2"></i>${txt}`; host.appendChild(el); tags.push({ el, v }); };
+  if (SL){ const b = new T.Box3().setFromObject(SL), c = b.getCenter(new T.Vector3()); tag('Лестница · к «Луноходу»', new T.Vector3(c.x, b.max.y + .6, c.z)); }
+  if (SR){ const b = new T.Box3().setFromObject(SR), c = b.getCenter(new T.Vector3()); tag('Лестница вниз', new T.Vector3(c.x, b.max.y + .6, c.z)); }
+  tag('Лестница вниз', new T.Vector3(3, yU + 1.2, -59.4)); tag('Пандус', new T.Vector3(-20.5, yU + .9, -19.6));
+  const st = document.createElement('style'); st.textContent = '.m3stair{opacity:.85;font-size:10.5px!important}.m3stair i{border-radius:2px!important}'; document.head.appendChild(st);
+  const v = new T.Vector3(), wrap = document.getElementById('m3');
+  (function loop(){ requestAnimationFrame(loop); if (!wrap || !wrap.offsetParent) return; const w = K.box.clientWidth, h = K.box.clientHeight, show = K.cam.zoom > 1.6;
+    for (const t of tags){ v.copy(t.v).project(K.cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; t.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`; t.el.style.display = show && x > 10 && x < w - 10 && y > 60 && y < h - 20 ? '' : 'none'; } })();
 })();
 </script>
 </body>
