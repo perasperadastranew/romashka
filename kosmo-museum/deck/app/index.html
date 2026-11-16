@@ -9667,12 +9667,15 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     function dots(poly, group, mat){ for (let k = 0; k < poly.length - 1; k++){ const a = poly[k], b = poly[k + 1], L = a.distanceTo(b), n = Math.max(1, Math.floor(L / 1.05));
         for (let j = 1; j < n; j++){ const m = new THREE.Mesh(dotG, mat); m.position.lerpVectors(a, b, j / n); m.position.y += .05; m.renderOrder = 3; group.add(m); } } }
     const ids = () => ROUTES[RT.key].ids.filter(id => nodes[id]);
+    const dashG = new THREE.PlaneGeometry(1.1, .34).rotateX(-Math.PI / 2);
+    function dashes(poly, group, mat){ for (let k = 0; k < poly.length - 1; k++){ const a = poly[k], b = poly[k + 1], L = a.distanceTo(b); if (L < .01) continue; const n = Math.max(1, Math.round(L / 1.9)), ang = Math.atan2(-(b.z - a.z), b.x - a.x);
+        for (let j = 0; j < n; j++){ const m = new THREE.Mesh(dashG, mat); m.position.lerpVectors(a, b, (j + .5) / n); m.position.y += .06; m.rotation.y = ang; m.renderOrder = 3; group.add(m); } } } /* v165: пунктир вместо точек */
     function entry(){ const z = zones.vest; if (!z) return null; const c = z.getCenter(new THREE.Vector3()); c.y = z.max.y + .08; return c; }
     function routeDraw(){ crumbs.clear(); const list = ids(); pts = [entry(), ...list.map(exPos)].filter(Boolean);
       for (let k = 0; k < pts.length - 1; k++) dots(path(pts[k], pts[k + 1]), crumbs, dimM); crumbs.visible = RT.on; }
     function routeGo(i, fly){ const list = ids(); RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
-      const id = list[RT.i], from = RT.i === 0 ? pts[0] : pts[RT.i], to = pts[RT.i + 1];
-      leg.clear(); legPts = path(from, to); { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dots(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
+      const id = list[RT.i], from = RT.i <= 1 ? pts[0] : pts[RT.i], to = pts[RT.i + 1]; /* v165: первые шаги — дорожка от входа */
+      leg.clear(); legPts = path(from, to); { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
       select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); if (fly) flyBox(b, .18);
       let L = 0; for (let k = 0; k < legPts.length - 1; k++) L += legPts[k].distanceTo(legPts[k + 1]);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {};
@@ -9695,7 +9698,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       ctl.update();
       const w = box.clientWidth, h = box.clientHeight;
       if (you.visible){ const t = (now % 1600) / 1600; const rg = you.getObjectByName('ring'); rg.scale.setScalar(1 + t * 1.6); rg.material.opacity = 1 - t; }
-      leg.children.forEach((m, k) => { m.material = ((now / 90 - k) % 8 + 8) % 8 < 2.2 ? hotM : dimM; });
+      /* v165: ровный пунктир */
       const placed = []; for (const Lb of labels){ v.copy(Lb.p).project(cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; Lb.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = cam.zoom < 3.4 && (Lb.k !== 'vest' || cam.zoom < 1.3) && (curFloor === 'all' || HALLS[Lb.k]?.floor === curFloor); const bx = [x - 55, y - 12, x + 55, y + 12]; if (vis && placed.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) vis = false; if (vis) placed.push(bx); Lb.el.style.opacity = vis ? 1 : 0; Lb.el.style.pointerEvents = vis ? 'auto' : 'none'; }
       const rIds = RT.on ? ids() : [];
       for (const P of pins){ v.copy(P.p).project(cam); P.el.classList.toggle('done', RT.done.includes(P.id)); P.el.classList.toggle('inroute', rIds.includes(P.id)); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; P.el.style.transform = `translate(${x}px, ${y}px)`; P.el.classList.toggle('on', P.id === selected); P.el.style.opacity = (curFloor !== 'all' && floorOfId(P.id) !== curFloor) ? 0 : (cam.zoom > 1.6 && x > -20 && x < w + 20 && y > -20 && y < h + 20) ? 1 : 0; }
