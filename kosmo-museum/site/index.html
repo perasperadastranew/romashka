@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 /* v2: анонс выставки, равные кнопки, без дублей «Как добраться» */
 .snbtns{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
-.snbtns button{height:54px!important;padding:0 12px!important;line-height:1.15!important;width:100%}
+.snbtns button{height:50px!important;padding:0 10px!important;line-height:1!important;width:100%;white-space:nowrap}
 .snsl.ann .annp{display:inline-block;margin-top:8px;font:500 13px var(--f);color:rgba(255,255,255,.8)}
 </style></head><body>
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Музей космонавтики: сайт</title>
@@ -312,7 +312,7 @@ button.snex{border:0;background:none;padding:0;text-align:left;color:inherit;cur
     <div class="snsl ann"><img src="g/mir_big.webp" alt="Станция «Мир»"><div class="cap"><small>Новое · приложение-гид</small><b>Музей в кармане</b><span class="annp">Карта, экскурсия и истории экспонатов →</span></div></div>
     <div class="sndots"><i class="on"></i><i></i></div>
   </section>
-  <section class="sninfo"><h1 class="vh">Музей космонавтики</h1><span class="snpill" id="snOpen"><i></i>Сегодня открыто</span><div class="snbtns"><button class="p" data-buy>Купить билет · 500 ₽</button><button class="s" id="snRoute">Как<br>добраться</button></div></section>
+  <section class="sninfo"><h1 class="vh">Музей космонавтики</h1><span class="snpill" id="snOpen"><i></i>Сегодня открыто</span><div class="snbtns"><button class="p" data-buy>Купить билет</button><button class="s" id="snRoute">Как добраться</button></div></section>
   <div class="sntiles">
     <button data-buy><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg>Билеты и цены</button>
     <button data-go="app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>Гид<br>в&nbsp;телефоне</button>
