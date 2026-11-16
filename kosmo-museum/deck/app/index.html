@@ -9685,6 +9685,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     dogs[k] && dogs[k].setMood('joy', 2200); dogs[1 - k] && dogs[1 - k].setMood('listen', 2200); if (dogs[1 - k] && dogs[1 - k].look) dogs[1 - k].look(k ? .5 : -.5, 0);
     obDT.push(setTimeout(() => { els[k] && els[k].classList.remove('say'); dogs[1 - k] && dogs[1 - k].look && dogs[1 - k].look(0, 0); }, 2600)); obDT.push(setTimeout(() => obSay(1 - k), 3200)); }
   function obClose(){ const dive = obI === OBN - 1; $('#ob').classList.toggle('dive', dive); $('#ob').classList.add('off'); if (dive){ window.__dive = true; showTab('map'); } store.set('kosmoOnboarded', 1); obMini && obMini.destroy(); obFig && obFig.destroy && obFig.destroy(); obDuoStop(); obDogR && obDogR.destroy(); obDogS && obDogS.destroy(); obMini = obFig = obDogR = obDogS = null; }
+  window.__obNav = { get: () => [obI, OBN], go: i => obGo(i) }; /* v158: презентация листает онбординг стрелками */
   window.openOnboarding = () => { $('#ob').classList.remove('off'); obGo(0); if (!obMini && window.mountMonument) obMini = mountMonument($('#obMon')); };
   $('#obNext').addEventListener('click', () => obI < OBN - 1 ? obGo(obI + 1) : obClose());
   $('#obSkip').addEventListener('click', obClose);
