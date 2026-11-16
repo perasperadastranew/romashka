@@ -328,6 +328,20 @@
 .tkmore{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
 .tkmore button{height:48px;border-radius:24px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:500 14px/1 inherit;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
 .tkmore svg{color:#ff6b1a}
+
+/* v160: история листается с «фиксацией» на главах — колесо и палец доводят до ближайшей главы, важные шаги не проскакивают */
+#vEx:has(.psteps){scroll-snap-type:y proximity}
+.psteps .pst{scroll-snap-align:start;scroll-snap-stop:always}
+
+/* v160: крестик «завершить» у мини-плеера */
+.mpx{position:absolute;top:-9px;right:-6px;width:24px;height:24px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#1c1f28;color:rgba(255,255,255,.75);display:grid;place-items:center;cursor:pointer;z-index:2;padding:0}
+.mpx svg{width:12px;height:12px}
+
+/* v160: полный плеер листается целиком — текст рассказа доступен скроллом; устаревшие карточки «Как запускали» в досье ПС-1 убраны (их заменила история со схемами) */
+#fp.on{overflow-y:auto!important;scrollbar-width:none}
+#fp > *{flex-shrink:0}
+#fp .fptx{flex:none!important;overflow:visible!important;-webkit-mask-image:none!important;mask-image:none!important;padding-bottom:12px!important}
+#vEx .ps1s{display:none!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1465,7 +1479,7 @@ window.M_EX = [
       <button class="mpb" id="mpPrev" aria-label="Предыдущий экспонат"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6h2v12H7zM20 6v12l-9-6z"/></svg></button>
       <button class="mpb pp" id="mpPP" aria-label="Пауза"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
       <button class="mpb" id="mpNext" aria-label="Следующий экспонат"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6h2v12h-2zM4 6v12l9-6z"/></svg></button>
-      <div class="mpbar"><i id="mpBar"></i></div></div>
+      <div class="mpbar"><i id="mpBar"></i></div><button class="mpx" id="mpX" aria-label="Завершить аудиоэкскурсию"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>
     <div class="fp" id="fp" aria-label="Аудиогид">
       <div class="fph"><button class="ib" id="fpDown" aria-label="Свернуть"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="kick" id="fpK">Аудиогид · маршрут</div><button class="fpspd" id="fpSpd">1×</button></div>
       <div class="fpcov" id="fpCov"></div>
@@ -9511,13 +9525,13 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       /* v159: тап по залу (не по экспонату) — наезд в границы зала; кинозал и кафе открывают свои страницы */
       try { const CAFE = new THREE.Box3(new THREE.Vector3(17.8, 1.3, -62.4), new THREE.Vector3(24.2, 3.3, -58.6)); let best = null, bd = 1e9; const tp = new THREE.Vector3();
         for (const [k, b] of Object.entries(zones).concat([['cafe', CAFE]])){ if (!b || b.isEmpty()) continue; const fl = b.min.y > .9 ? 'upper' : 'lower'; if (curFloor !== 'all' && fl !== curFloor && k !== 'cafe') continue; const q = ray.ray.intersectBox(b, tp); if (q){ const d = q.distanceTo(ray.ray.origin); if (d < bd){ bd = d; best = k; } } }
-        if (best === 'kino'){ window.openKino && openKino(); return; } if (best === 'cafe'){ flyBox(CAFE, .3); setTimeout(() => window.openCafe && openCafe(), 700); return; }
+        if (best === 'kino'){ flyBox(zones.kino, .15); setTimeout(() => window.openKino && openKino(), 900); return; } if (best === 'cafe'){ flyBox(CAFE, .3); setTimeout(() => window.openCafe && openCafe(), 700); return; }
         if (best && window.__m3goHall) window.__m3goHall(best); else if (best) flyBox(zones[best], .1); } catch (_){}
     });
     // load the maquette (meshopt-compressed)
     const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     const s = document.createElement('script'); s.src = 'kosmo_map.js'; s.onerror = () => { $('#m3load').textContent = 'не удалось загрузить карту'; };
-    s.onload = () => { const bin = Uint8Array.from(atob(window.MAPGLB), c => c.charCodeAt(0)).buffer; loader.parse(bin, '', g => { const root = g.scene; scene.add(root); root.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+    s.onload = () => { const bin = window.__MAPBIN || (() => { const b = atob(window.MAPGLB), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u.buffer; })(); loader.parse(bin, '', g => { const root = g.scene; scene.add(root); root.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
       darken(root);
       for (const n of root.children) if (/^EX_\d+$/.test(n.name)){ const b = new THREE.Box3().setFromObject(n), c = b.getCenter(new THREE.Vector3()); c.y = b.min.y; const k = .72; n.position.sub(c).multiplyScalar(k).add(c); n.scale.multiplyScalar(k); n.updateMatrixWorld(true); }
       for (const h of glowHolders){ h.userData.floor = h.userData.floorOf.userData.floor || (h.userData.top > 1 ? 'upper' : 'lower'); root.add(h); }
@@ -9529,8 +9543,8 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       hallLabels(); routeInit();
       $('#m3load').hidden = true; window.__m3k = { THREE, scene, cam, ctl, nodes, root, box, GLTFLoader, MeshoptDecoder, r, zones, flyBox:(b, p) => flyBox(b, p) };
       if (window.__dive){ window.__dive = false; const c0 = all.getCenter(new THREE.Vector3()); place(c0.clone().add(new THREE.Vector3(0, 0, 60))); cam.zoom = .32; cam.updateProjectionMatrix();
-        setTimeout(() => flyTo(c0, zoomFor(all, .04), 1600), 120); setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 1900); }
-      else setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, e => { console.error('MAPERR', e && e.stack || e); $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
+        try { r.compile(scene, cam); } catch(_){} setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => flyTo(c0, zoomFor(all, .04), 1600))), 200); setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 1900); }
+      else setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, e => { console.error('MAPERR', e && e.stack || e); $('#m3load').textContent = 'не удалось загрузить карту'; }); }; if (window.MAPGLB) setTimeout(s.onload, 0); else document.head.appendChild(s);
     // ---- тёмная карта: пол, стены и залы перекрашиваем, у залов — светящийся контур цвета зала
     const FLOOR = new THREE.Color(0x151A23);
     const M = (c) => new THREE.MeshStandardMaterial({ color:c, roughness:.92, metalness:0 });
@@ -9625,7 +9639,10 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const floorOf = (p) => p.y > .9 ? 'upper' : 'lower';
     function stairsPt(){ const b = new THREE.Box3().setFromObject(scene.getObjectByName('Stairs_L') || new THREE.Object3D()); if (b.isEmpty()) return null; const c = b.getCenter(new THREE.Vector3()); c.y = .38; return c; }
     const ortho = (a, b) => { if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) return [a, b]; const m = new THREE.Vector3(b.x, a.y, a.z); return [a, m, b]; };
-    function path(a, b){ if (floorOf(a) === floorOf(b)) return ortho(a, b); const s = stairsPt(); if (!s) return ortho(a, b); const s1 = s.clone(); s1.y = a.y; const s2 = s.clone(); s2.y = b.y; return [...ortho(a, s1), s2, ...ortho(s2, b).slice(1)]; }
+    /* v160: от входа — сначала через турникеты в зал по оси коридора, потом вдоль зала и вбок к экспонату: дорожка не выходит за стены */
+    const zfirst = (a, b) => { if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) return [a, b]; return [a, new THREE.Vector3(a.x, a.y, b.z), b]; };
+    function path(a, b){ if (a.z > 50 && zones.vest){ const g0 = new THREE.Vector3(-2, a.y, a.z), g1 = new THREE.Vector3(-2, a.y, 50.5); const head = [a, g0, g1]; const r = floorOf(g1) === floorOf(b) ? zfirst(g1, b) : (() => { const s = stairsPt(); if (!s) return zfirst(g1, b); const s1 = s.clone(); s1.y = g1.y; const s2 = s.clone(); s2.y = b.y; return [...zfirst(g1, s1), s2, ...ortho(s2, b).slice(1)]; })(); return [...head.slice(0, -1), ...r]; }
+      if (floorOf(a) === floorOf(b)) return ortho(a, b); const s = stairsPt(); if (!s) return ortho(a, b); const s1 = s.clone(); s1.y = a.y; const s2 = s.clone(); s2.y = b.y; return [...ortho(a, s1), s2, ...ortho(s2, b).slice(1)]; }
     function dots(poly, group, mat){ for (let k = 0; k < poly.length - 1; k++){ const a = poly[k], b = poly[k + 1], L = a.distanceTo(b), n = Math.max(1, Math.floor(L / 1.05));
         for (let j = 1; j < n; j++){ const m = new THREE.Mesh(dotG, mat); m.position.lerpVectors(a, b, j / n); m.position.y += .05; m.renderOrder = 3; group.add(m); } } }
     const ids = () => ROUTES[RT.key].ids.filter(id => nodes[id]);
@@ -9735,7 +9752,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
   $('#obRt').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll('#obRt button').forEach(x => x.classList.toggle('on', x === b));
     try { const r = JSON.parse(localStorage.getItem('kosmoRoute')) || {}; r.key = b.dataset.r; r.i = 0; r.on = true; r.done = r.done || []; localStorage.setItem('kosmoRoute', JSON.stringify(r)); } catch(_){}
     window.routeSet && window.routeSet(b.dataset.r); });
-  function obGo(i){ obI = i; try { const sl = document.querySelectorAll('#obTrack > .obs')[i]; if (sl && sl.querySelector('#obNfc')) setTimeout(() => { if (obI === i) $('#obTry').click(); }, 450); } catch(_){} $('#obTrack').style.transform = `translateX(${-i * 100}%)`; document.querySelectorAll('#obDots i').forEach((d, k) => d.classList.toggle('on', k === i)); $('#obNext').textContent = i === OBN - 1 ? 'Начать' : 'Далее';
+  function obGo(i){ obI = i; /* v160: карту грузим заранее, пока листают онбординг, — переход в неё без подлагивания */ if (i >= 1 && !window.MAPGLB && !window.__mapPre){ window.__mapPre = 1; const sc = document.createElement('script'); sc.src = 'kosmo_map.js'; sc.onload = () => { const dec = () => { try { const b = atob(window.MAPGLB), u = new Uint8Array(b.length); for (let k = 0; k < b.length; k++) u[k] = b.charCodeAt(k); window.__MAPBIN = u.buffer; } catch(_){} }; (window.requestIdleCallback || setTimeout)(dec, { timeout:1500 }); }; document.head.appendChild(sc); } try { const sl = document.querySelectorAll('#obTrack > .obs')[i]; if (sl && sl.querySelector('#obNfc')) setTimeout(() => { if (obI === i) $('#obTry').click(); }, 450); } catch(_){} $('#obTrack').style.transform = `translateX(${-i * 100}%)`; document.querySelectorAll('#obDots i').forEach((d, k) => d.classList.toggle('on', k === i)); $('#obNext').textContent = i === OBN - 1 ? 'Начать' : 'Далее';
     $('#obCol').classList.toggle('go', i === 3); if (i === 4 && !obFig && window.mountFig){ obFig = window.mountFig($('#obFig'), 'sputnik', 'ПС-1', () => {}); }
     if (i >= 4 && !obDogR && window.mountDog2D){ const mk = window.mountDog3D || window.mountDog2D; obDogR = mk($('#obDog'), { pose:'sit' }); obDogS = mk($('#obDog2'), { pose:'sit' }); obDogS.setWho && obDogS.setWho('strelka'); }
     if (i === 5 && obDogR){ obDuoStop(); /* v153: иллюминаторы появляются по очереди снизу вверх — без «забега» */ const ds = document.querySelectorAll('#obDuo .obdog'); ds.forEach(d => d.classList.remove('up')); ds.forEach((d, k) => obDT.push(setTimeout(() => d.classList.add('up'), 120 + k * 420))); obDT.push(setTimeout(() => obSay(0), 1500)); } else obDuoStop(); }
@@ -9879,7 +9896,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const ico = { play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', pause:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' };
   const S = { q:[], i:0, t:0, playing:false, mode:'route', spd:1, rk:'short', dos:null };
   const cur = () => meta(S.q[S.i]);
-  function cover(el, m, big){ el.style.setProperty('--hc', m.color); el.innerHTML = m.thumb ? `<img src="${m.thumb}" alt="">` : `<b>${big ? m.inv : m.inv.replace(/\D+/g, '').slice(-3) || '★'}</b>`; if (big && m.thumb) el.insertAdjacentHTML('beforeend', ''); }
+  const CVR = { 10:'g/cover_10.webp', 12:'g/cover_12.webp', 36:'g/cover_36.webp' }; /* v160: обложки плеера — наши рендеры */
+  function cover(el, m, big){ el.style.setProperty('--hc', m.color); const src = (CVR[m.id] && (big || true)) ? CVR[m.id] : m.thumb; el.innerHTML = src ? `<img src="${src}" alt="" style="object-fit:cover;width:100%;height:100%">` : `<b>${big ? m.inv : m.inv.replace(/\D+/g, '').slice(-3) || '★'}</b>`; if (big && m.thumb) el.insertAdjacentHTML('beforeend', ''); }
   const DEFR = { short:{ name:'Главное', ids:[10, 12, 11, 24, 14, 36, 22, 15, 26, 35] }, kids:{ name:'С детьми', ids:[11, 10, 12, 13, 24, 22, 15, 35] }, full:{ name:'Весь музей', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
   function routeIds(){ const R = window.ROUTES || DEFR, k = (window.RT && window.RT.key) || 'short'; S.rk = k; return (R[k] && R[k].ids) || [10, 12, 11, 14, 24]; }
   function load(id, mode){ S.mode = mode || S.mode; const ids = routeIds(); if (S.mode === 'route' && ids.includes(id)){ S.q = ids.slice(); S.i = ids.indexOf(id); } else if (S.mode === 'route' && !id){ S.q = ids.slice(); S.i = 0; } else { S.q = [id]; S.i = 0; } S.t = 0; render(true); }
@@ -9917,6 +9935,9 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   $('#fpPrev').onclick = () => go(-1); $('#fpNext').onclick = () => go(1);
   $('#fpB15').onclick = () => { S.t = Math.max(0, S.t - 15); tick(0); }; $('#fpF15').onclick = () => { S.t = Math.min(cur().dur - .1, S.t + 15); tick(0); };
   $('#mp').onclick = () => { $('#fp').classList.add('on'); render(true); };
+  /* v160: завершить аудиоэкскурсию прямо из мини-плеера */
+  PL.stop = () => { S.playing = false; try { render(false); } catch(_){} $('#mp').classList.remove('on', 'playing'); app.classList.remove('hasmp'); $('#fp').classList.remove('on'); S.q = []; S.i = 0; S.t = 0; window.toast && toast('Аудиоэкскурсия завершена'); };
+  $('#mpX').onclick = e => { e.stopPropagation(); PL.stop(); };
   $('#fpDown').onclick = () => $('#fp').classList.remove('on');
   $('#fpSpd').onclick = () => { S.spd = S.spd === 1 ? 1.5 : S.spd === 1.5 ? 2 : 1; $('#fpSpd').textContent = S.spd + '×'; };
   $('#fpGo').onclick = () => { const id = cur().id; $('#fp').classList.remove('on'); if (typeof EX !== 'undefined' && EX.find(x => x.id === id) && typeof openEx === 'function'){ setTimeout(() => openEx(id), 250); } else { typeof showTab === 'function' && showTab('map'); setTimeout(() => window.m3select && m3select(id, true), 700); } };
@@ -11265,7 +11286,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       const rotNow = rot0 + 1.6 * e + ex.scrollTop * .0035 + dragA; /* v118: скролл крутит медленнее */ /* докручивается в полёте, дальше — только от скролла и пальца */
       if (mode === 'fly'){ cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none'; R.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix();
         const to = slot(); const x = from0.x + (to.x - from0.x) * e, y = from0.y + (to.y - from0.y) * e - Math.sin(Math.PI * e) * H * .05, s = from0.s + (to.s - from0.s) * e;
-        holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); if (story && story.poses){ /* v131: к позе героя — разворот по часовой стрелке, лицом к зрителю */ const p0 = story.poses[0][0], qT = new T.Quaternion().setFromEuler(new T.Euler(p0[0], p0[1], p0[2], p0[3] || 'XYZ')); if (!me.yw){ const a0 = new T.Euler().setFromQuaternion(q0, 'YXZ'), aT = new T.Euler().setFromQuaternion(qT, 'YXZ'); let dl = aT.y - a0.y; while (dl > Math.PI) dl -= Math.PI * 2; while (dl < -Math.PI) dl += Math.PI * 2; if (id === 14 && dl < 0) dl += Math.PI * 2; /* v149: «Беркут» разворачивается вправо, к кадру героя */ me.yw = { y0:a0.y, dl, r0:new T.Quaternion().setFromEuler(new T.Euler(a0.x, 0, a0.z, 'YXZ')), rT:new T.Quaternion().setFromEuler(new T.Euler(aT.x, 0, aT.z, 'YXZ')) }; } const Y = me.yw; qa.setFromAxisAngle(yA, Y.y0 + Y.dl * e).multiply(qb.copy(Y.r0).slerp(Y.rT, e)); if (story.rig) rigAt(story.rig[0], story.rig[0], 1, now); BN && Object.values(BN).forEach(o => o.b.quaternion.slerp(o.q, 1 - e)); } else qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
+        holder.position.copy(wAt(x, y, W, H)); holder.scale.setScalar(wSize(s, H)); if (story && story.poses){ /* v131: к позе героя — разворот по часовой стрелке, лицом к зрителю */ const p0 = story.poses[0][0], qT = new T.Quaternion().setFromEuler(new T.Euler(p0[0], p0[1], p0[2], p0[3] || 'XYZ')); if (!me.yw){ const a0 = new T.Euler().setFromQuaternion(q0, 'YXZ'), aT = new T.Euler().setFromQuaternion(qT, 'YXZ'); let dl = aT.y - a0.y; while (dl > Math.PI) dl -= Math.PI * 2; while (dl < -Math.PI) dl += Math.PI * 2; if (id === 14 && dl > 0) dl -= Math.PI * 2; /* v160: «Беркут» — по часовой стрелке (вид сверху), к кадру героя */ me.yw = { y0:a0.y, dl, r0:new T.Quaternion().setFromEuler(new T.Euler(a0.x, 0, a0.z, 'YXZ')), rT:new T.Quaternion().setFromEuler(new T.Euler(aT.x, 0, aT.z, 'YXZ')) }; } const Y = me.yw; qa.setFromAxisAngle(yA, Y.y0 + Y.dl * e).multiply(qb.copy(Y.r0).slerp(Y.rT, e)); if (story.rig) rigAt(story.rig[0], story.rig[0], 1, now); BN && Object.values(BN).forEach(o => o.b.quaternion.slerp(o.q, 1 - e)); } else qa.copy(q0).slerp(pose(rotNow), e); holder.quaternion.copy(qa);
         if (k >= 1){ mode = 'dock'; hero.prepend(cv); cv.style.cssText = ''; sq.copy(holder.quaternion); } }
       if (mode === 'dock'){ const r = hero.getBoundingClientRect(); const w = r.width, h = r.height; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
         if (story){ if (rollEnd == null) rollEnd = rot0 + 1.6; const F = story.f(), PLn = story.poses ? story.poses.length : PS1POSE.length, i0 = Math.min(PLn - 1, Math.floor(F)), i1 = Math.min(PLn - 1, i0 + 1), u = F - i0, sm = u * u * (3 - 2 * u);
@@ -12279,8 +12300,8 @@ canvas.exfly{display:block}
 /* v159: второй мостик (от конференц-зала), лестница из конференц-зала вниз, пандус к «Луноходу», подсветка лестниц с подписями */
 (function w(){ const K = window.__m3k; if (!K || !K.root || !K.zones || !K.zones.dom || !K.root.getObjectByName('Stairs_L') || !K.scene.getObjectByName('cafeBridge')) return setTimeout(w, 800); const T = K.THREE;
   if (K.scene.getObjectByName('v159paths')) return; const g = new T.Group(); g.name = 'v159paths'; K.scene.add(g);
-  const fillM = new T.MeshStandardMaterial({ color:0xdfe6f2, transparent:true, opacity:.10, roughness:.3, metalness:.2, depthWrite:false });
-  const lineM = new T.LineBasicMaterial({ color:0xdfe6f2, transparent:true, opacity:.7 });
+  const fillM = new T.MeshStandardMaterial({ color:0xdfe6f2, transparent:true, opacity:.24, roughness:.3, metalness:.2, depthWrite:false });
+  const lineM = new T.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:.95 });
   const accM = new T.MeshBasicMaterial({ color:0xFFB27A, transparent:true, opacity:.55, depthWrite:false });
   const L = (a, b) => g.add(new T.Line(new T.BufferGeometry().setFromPoints([a, b]), lineM));
   const box = (cx, cy, cz, sx, sy, sz) => { const m = new T.Mesh(new T.BoxGeometry(sx, sy, sz), fillM); m.position.set(cx, cy, cz); g.add(m); const e = new T.LineSegments(new T.EdgesGeometry(m.geometry), lineM); e.position.copy(m.position); g.add(e); };
@@ -12298,20 +12319,21 @@ canvas.exfly{display:block}
     for (const c of [c0, c1]) L(axis === 'x' ? new T.Vector3(a, yTop + .55, c) : new T.Vector3(c, yTop + .55, a), axis === 'x' ? new T.Vector3(b, yBot + .55, c) : new T.Vector3(c, yBot + .55, b));
     const dash = new T.Mesh(new T.PlaneGeometry(axis === 'x' ? Math.hypot(len, yTop - yBot) : .12, axis === 'x' ? .12 : Math.hypot(len, yTop - yBot)), accM); dash.rotation.copy(m.rotation); dash.rotateX(-Math.PI / 2); dash.position.copy(m.position); dash.position.y += .05; g.add(dash); }
   const yU = K.zones.dom.min.y + .02, yL = (K.zones.mezhdu ? K.zones.mezhdu.min.y : .3) + .02;
-  bridge(8.8, K.zones.dom.min.z, -58.4, yU, 2.2);
+  /* v160: конференц-зал убран — на платформе только кафе «Взлёт»; второй мостик не нужен */
+  K.root.traverse(o => { if (/^AM_conference/.test(o.name)) o.visible = false; });
   /* лестница из конференц-зала влево-вниз на нижний этаж + площадка к «Сотрудничеству» */
-  stairs('x', 5.3, 0.6, -60.4, -58.4, yU, yL, 8); box(-0.6, yL - .02, -57.4, 2.4, .04, 4.2);
+  stairs('x', 5.3, -0.7, -61.2, -58.0, yU, yL, 9); box(-1.9, yL - .02, -57.6, 2.6, .04, 4.6);
   /* пандус к «Луноходу»: рядом с лестницей, с верхнего этажа вниз */
-  ramp('x', -16.9, -24.2, -20.3, -18.9, yU, yL);
+  /* v160: вместо пандуса — лестница с края верхнего этажа к залу «Луны и планет», с площадкой до зала */
   g.traverse(o => { o.userData.cSkip = 1; o.raycast = () => {}; });
   /* подсветка существующих лестниц */
   const SL = K.root.getObjectByName('Stairs_L'), SR = K.root.getObjectByName('Stairs_R');
   const tags = [];
   const host = document.getElementById('m3pins');
   const tag = (txt, v) => { if (!host) return; const el = document.createElement('div'); el.className = 'm3lab m3stair'; el.innerHTML = `<i style="background:#DFE6F2"></i>${txt}`; host.appendChild(el); tags.push({ el, v }); };
-  if (SL){ const b = new T.Box3().setFromObject(SL), c = b.getCenter(new T.Vector3()); tag('Лестница · к «Луноходу»', new T.Vector3(c.x, b.max.y + .6, c.z)); }
+  if (SL){ const b = new T.Box3().setFromObject(SL), c = b.getCenter(new T.Vector3()); tag('Лестница к «Луноходу»', new T.Vector3(c.x, b.max.y + .6, c.z)); }
   if (SR){ const b = new T.Box3().setFromObject(SR), c = b.getCenter(new T.Vector3()); tag('Лестница вниз', new T.Vector3(c.x, b.max.y + .6, c.z)); }
-  tag('Лестница вниз', new T.Vector3(3, yU + 1.2, -59.4)); tag('Пандус', new T.Vector3(-20.5, yU + .9, -19.6));
+  tag('Лестница на нижний этаж', new T.Vector3(2.3, yU + 1.2, -59.6));
   const st = document.createElement('style'); st.textContent = '.m3stair{opacity:.85;font-size:10.5px!important}.m3stair i{border-radius:2px!important}'; document.head.appendChild(st);
   const v = new T.Vector3(), wrap = document.getElementById('m3');
   (function loop(){ requestAnimationFrame(loop); if (!wrap || !wrap.offsetParent) return; const w = K.box.clientWidth, h = K.box.clientHeight, show = K.cam.zoom > 1.6;
