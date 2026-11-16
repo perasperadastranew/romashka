@@ -620,7 +620,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 <section class="ch" data-cap="Зачем" data-wide="1">
 <div class="kick">Зачем</div><h2>770 тысяч посетителей —<br><em>у каждого свой маршрут</em></h2><div class="split"><div class="nums v"><div class="num"><b>770+ тыс.</b><span>посещений за 2025 год</span></div><div class="num"><b>×3</b><span>рост потока с 2013 года</span></div><div class="num"><b>2 · 8</b><span>этажа · зала</span></div></div><div class="fan"><figure class="" style="--w:210px"><img src="img/scr/map.webp" alt="Карта" decoding="async"><figcaption>Карта</figcaption></figure><figure class="mid" style="--w:230px"><img src="img/scr/tour.webp" alt="Экскурсия" decoding="async"><figcaption>Экскурсия</figcaption></figure><figure class="mid" style="--w:230px"><img src="img/scr/st10m_2.webp" alt="История" decoding="async"><figcaption>История</figcaption></figure><figure class="" style="--w:210px"><img src="img/scr/pass.webp" alt="Паспорт" decoding="async"><figcaption>Паспорт</figcaption></figure></div></div><p class="note">⚠ Цифры уточняем у музея · Цифры посещаемости: <a href="https://www.mos.ru/news/item/138734073/" target="_blank" rel="noopener">mos.ru, май 2024</a></p>
 </section>
-<section class="ch" data-act="tour" data-cap="Экскурсия">
+<section class="ch" data-act="tourAuto" data-cap="Экскурсия">
 <div class="kick">Во время визита</div><h2>Экскурсия: <em>один</em> следующий шаг</h2><ul class="pts"><li><b>Не список из 29 экспонатов,</b> а один шаг: что, где, на каком этаже</li><li><b>«На карте»</b> — оранжевая дорожка до экспоната</li><li><b>«Слушать»</b> — аудиогид всего маршрута</li></ul><div class="try"><button class="btn" data-run="tour">Экскурсия</button><button class="btn" data-run="tourpre">Выбор маршрута</button></div>
 </section>
 <section class="ch" data-cap="Экскурсия по шагам" data-wide="1">
@@ -719,7 +719,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
   // управление прототипом
   const W = () => { try { return F.contentWindow; } catch(_){ return null; } };
   const OV = ['ob', 'vtl', 'vq', 'vt', 'vl', 'v3', 'vg', 'vEx', 'vc', 'vs'];
-  function reset(w){ const d = w.document; w.nfcClose && w.nfcClose(); OV.forEach(id => { const el = d.getElementById(id); el && el.classList.add('off'); }); const fp = d.getElementById('fp'); fp && fp.classList.remove('on'); }
+  function reset(w){ try { ACT._run++; } catch(e){} const d = w.document; w.nfcClose && w.nfcClose(); OV.forEach(id => { const el = d.getElementById(id); el && el.classList.add('off'); }); const fp = d.getElementById('fp'); fp && fp.classList.remove('on'); }
   const tst = (w, s) => { if (!w.tourState) return; const r = w.tourState(); Object.assign(r, { key:'short', on:true }, s); w.tourSave(r); w.badgeUpd && w.badgeUpd(); };
   const LIVE = { started:true, i:3, done:[10, 12, 11] }, FRESH = { started:false, i:0, done:[] };
   const ACT = {
@@ -743,6 +743,14 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
     pass(w){ reset(w); w.showTab && w.showTab('pass'); },
     quest(w){ reset(w); w.openQuest && w.openQuest(); },
     tickets(w){ reset(w); w.openTickets && w.openTickets(); },
+    tourAuto(w){ reset(w); const d = w.document; let c = d.getElementById('autoCur'); if (!c){ c = d.createElement('div'); c.id = 'autoCur'; c.style.cssText = 'position:fixed;z-index:99999;left:50%;top:70%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none;transition:left .7s cubic-bezier(.3,.7,.2,1),top .7s cubic-bezier(.3,.7,.2,1),transform .15s'; d.body.appendChild(c); }
+      const my = ++ACT._run; const ok = () => ACT._run === my;
+      const tap = (sel, cb) => { if (!ok()) return; const el = typeof sel === 'function' ? sel() : d.querySelector(sel); if (!el){ cb && setTimeout(cb, 300); return; } const r = el.getBoundingClientRect(); c.style.left = (r.left + r.width / 2) + 'px'; c.style.top = (r.top + r.height / 2) + 'px';
+        setTimeout(() => { if (!ok()) return; c.style.transform = 'scale(.7)'; setTimeout(() => { c.style.transform = ''; el.click(); cb && setTimeout(cb, 2600); }, 160); }, 800); };
+      const btn = re => () => [...d.querySelectorAll('button')].find(b => b.offsetParent && re.test(b.textContent));
+      w.showTab && w.showTab('tour');
+      setTimeout(() => tap(btn(/Начать/), () => tap('#tcHere', () => setTimeout(() => tap('#nfNext', () => tap('#tcMap', () => setTimeout(() => tap('.tab[data-t="pass"]', () => setTimeout(() => ok() && ACT.tourAuto(w), 4000)), 3000))), 2200))), 1200); },
+    _run: 0,
     story10(w){ ACT.story(w, 10); }, luno(w){ reset(w); w.showTab && w.showTab('map'); setTimeout(() => { try { w.nfcPlay(22, () => {}); } catch(e){} setTimeout(() => { try { w.nfcClose && w.nfcClose(); } catch(e){} w.openLuno && w.openLuno(); }, 5200); }, 500); }, story14(w){ ACT.story(w, 14); },
     story(w, id){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); let n = 0; const t = setInterval(() => { n++; if (w.__m3k && w.__m3k.nodes && w.__m3k.nodes[id] && w.__m3go){ clearInterval(t); setTimeout(() => w.__m3go(id), 700); } else if (n > 40) clearInterval(t); }, 250); },
     echo(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); let n = 0; const t = setInterval(() => { n++; if (w.__m3goHall){ clearInterval(t); setTimeout(() => w.__m3goHall('vest'), 600); } else if (n > 40) clearInterval(t); }, 250); } };
