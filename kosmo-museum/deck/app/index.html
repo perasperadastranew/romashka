@@ -342,6 +342,27 @@
 #fp > *{flex-shrink:0}
 #fp .fptx{flex:none!important;overflow:visible!important;-webkit-mask-image:none!important;mask-image:none!important;padding-bottom:12px!important}
 #vEx .ps1s{display:none!important}
+
+/* v162: стили шторок и плашки гида — в head, без вспышки */
+  .gdbar{display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:14px 16px 4px;padding:14px 14px 14px 14px;border-radius:22px;border:1px solid rgba(255,107,26,.35);background:linear-gradient(120deg,rgba(255,107,26,.16),rgba(255,107,26,.04) 60%),#121317;color:#fff;text-align:left;cursor:pointer;font:inherit}
+  .gdbar .gdic{flex:none;width:44px;height:44px;border-radius:14px;background:rgba(255,107,26,.18);color:#ff8a4a;display:flex;align-items:center;justify-content:center}.gdbar .gdic svg{width:22px;height:22px}
+  .gdbar .gdt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.gdbar i{font:500 10px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:#ff8a4a}
+  .gdbar b{font-size:15px;font-weight:600}.gdbar em{font-style:normal;font-size:12px;opacity:.6}
+  .gdbar .gdgo{flex:none;height:34px;padding:0 14px;border-radius:17px;background:#ff6b1a;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center}
+  .shtp{position:absolute;inset:0;z-index:60;background:#0A0B0D;color:#fff;transform:translateY(100%);transition:transform .45s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
+  .shtp.on{transform:none}
+  .shtp .sht{display:flex;align-items:center;gap:10px;padding:max(54px,calc(env(safe-area-inset-top,0px) + 44px)) 16px 10px}
+  .shtp .sht button{width:40px;height:40px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .shtp .shb{flex:1;overflow-y:auto;padding:4px 16px 40px}
+  .shtp .hero{position:relative;border-radius:24px;padding:20px 18px;margin-bottom:16px;overflow:hidden;background:radial-gradient(120% 120% at 100% 0,rgba(255,107,26,.35),transparent 55%),#14151a;border:1px solid rgba(255,255,255,.07)}
+  .shtp .hero .kick{color:#ff8a4a}.shtp .hero h2{margin:8px 0 8px;font-size:30px;line-height:1.05;font-weight:600;letter-spacing:-.02em}.shtp .hero p{margin:0;font-size:14.5px;line-height:1.45;color:rgba(255,255,255,.72)}
+  .shtp .day{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none}.shtp .day button{flex:none;height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(255,255,255,.12);background:none;color:#fff;font:500 13px inherit;cursor:pointer}.shtp .day button.on{background:#fff;color:#0A0B0D}
+  .shtp .ses{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;padding:14px;border-radius:18px;background:#14151a;border:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+  .shtp .ses .tm{font-size:19px;font-weight:600;letter-spacing:-.02em}.shtp .ses b{display:block;font-size:15px;font-weight:600}.shtp .ses span{display:block;margin-top:3px;font-size:12px;opacity:.6;line-height:1.35}
+  .shtp .ses button{height:34px;padding:0 13px;border-radius:17px;border:0;background:#ff6b1a;color:#fff;font:600 12.5px inherit;cursor:pointer;white-space:nowrap}.shtp .ses button.ok{background:rgba(127,209,193,.16);color:#7FD1C1}
+  .shtp .note{margin:14px 2px 0;font-size:12px;opacity:.45;line-height:1.4}
+  .shtp .grp{width:100%;height:50px;margin-top:10px;border-radius:25px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:500 14.5px inherit;cursor:pointer}
+.gdbar svg{width:22px;height:22px}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1259,7 +1280,7 @@ window.M_EX = [
     <section class="view" id="vToday" data-tab="today">
       <div class="hello"><div class="kick" id="todayDate"></div><h1 id="helloH">Добрый день!</h1></div>
       <div id="hmHero"></div>
-      <button class="gdbar" id="gdBar"><span class="gdic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c.8-3.6 3-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M16 4.5l4 2-4 2z"/><path d="M16 4.5V12"/></svg></span><span class="gdt"><i>Экскурсия с гидом</i><b>В 12:00 · «Главное за час»</b><em>Сбор у касс · 6 мест</em></span><span class="gdgo">Записаться</span></button>
+      <button class="gdbar" id="gdBar"><span class="gdic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c.8-3.6 3-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M16 4.5l4 2-4 2z"/><path d="M16 4.5V12"/></svg></span><span class="gdt"><i>Экскурсия с гидом</i><b>В 12:00 · «Главное за час»</b><em>Сбор у касс · 6 мест</em></span><span class="gdgo">Записаться</span></button>
       <div class="sec"><h2>Экспонаты</h2><span>6</span></div>
       <div class="xbig"><div class="xbc" data-open="openLuno"><img src="g/luno_big.webp" alt="«Луноход-1»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Луноход-1»</b><p>Первая машина, которая ездила по другому небесному телу</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openMir" style="--g1:#3E8BFF;--g2:#0A2A6B"><canvas class="stars"></canvas><img class="cut" src="g/mir_cut.webp" alt="Станция «Мир»" loading="lazy"><div class="xbt"><div class="kick">Дом на орбите · верхний этаж</div><b>Станция «Мир»</b><p>Пятнадцать лет на орбите и 437 суток Полякова</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openVenera" style="--g1:#FF8A2A;--g2:#6B2A05"><canvas class="stars"></canvas><img class="cut" src="g/venera_cut.webp" alt="«Венера-7»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Венера-7»</b><p>Первая мягкая посадка на другую планету</p><span class="go">3D-облёт →</span></div></div><div class="xbc sp" data-open="openMars" style="--g1:#FF4A2E;--g2:#6B1205"><canvas class="stars"></canvas><img class="cut" src="g/mars_cut.webp" alt="«Марс-3»" loading="lazy"><div class="xbt"><div class="kick">Луна и планеты · нижний этаж</div><b>«Марс-3»</b><p>Первым сел на Марс — и успел выйти на связь</p><span class="go">3D-облёт →</span></div></div><div class="xbc ph" data-open="ex:12"><img src="g/12_1.webp" alt="«Восток»" loading="lazy"><div class="xbt"><div class="kick">Утро космической эры · зал 1</div><b>«Восток»</b><p>Шар, в котором Гагарин облетел Землю</p><span class="go">Досье →</span></div></div><div class="xbc ph" data-open="ex:11"><img src="g/11_1.webp" alt="Контейнер Белки и Стрелки" loading="lazy"><div class="xbt"><div class="kick">Утро космической эры · зал 1</div><b>Контейнер Белки и Стрелки</b><p>Первые, кто слетал на орбиту и вернулся</p><span class="go">Досье →</span></div></div></div>
       <div class="collab2" id="collabCard"><div class="cart"><i></i></div><div class="ctx"><div class="kick">Коллаборация · сейчас</div><b>Arknights × Музей</b><span class="go">Маршрут</span></div></div>
@@ -12258,25 +12279,7 @@ canvas.exfly{display:block}
 <script>
 /* v159: страницы-шторки — экскурсии с гидом, кинозал, кафе */
 (() => {
-  const css = document.createElement('style'); css.textContent = `
-  .gdbar{display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:14px 16px 4px;padding:14px 14px 14px 14px;border-radius:22px;border:1px solid rgba(255,107,26,.35);background:linear-gradient(120deg,rgba(255,107,26,.16),rgba(255,107,26,.04) 60%),#121317;color:#fff;text-align:left;cursor:pointer;font:inherit}
-  .gdbar .gdic{flex:none;width:44px;height:44px;border-radius:14px;background:rgba(255,107,26,.18);color:#ff8a4a;display:flex;align-items:center;justify-content:center}.gdbar .gdic svg{width:22px;height:22px}
-  .gdbar .gdt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.gdbar i{font:500 10px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:#ff8a4a}
-  .gdbar b{font-size:15px;font-weight:600}.gdbar em{font-style:normal;font-size:12px;opacity:.6}
-  .gdbar .gdgo{flex:none;height:34px;padding:0 14px;border-radius:17px;background:#ff6b1a;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center}
-  .shtp{position:absolute;inset:0;z-index:60;background:#0A0B0D;color:#fff;transform:translateY(100%);transition:transform .45s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
-  .shtp.on{transform:none}
-  .shtp .sht{display:flex;align-items:center;gap:10px;padding:max(54px,calc(env(safe-area-inset-top,0px) + 44px)) 16px 10px}
-  .shtp .sht button{width:40px;height:40px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .shtp .shb{flex:1;overflow-y:auto;padding:4px 16px 40px}
-  .shtp .hero{position:relative;border-radius:24px;padding:20px 18px;margin-bottom:16px;overflow:hidden;background:radial-gradient(120% 120% at 100% 0,rgba(255,107,26,.35),transparent 55%),#14151a;border:1px solid rgba(255,255,255,.07)}
-  .shtp .hero .kick{color:#ff8a4a}.shtp .hero h2{margin:8px 0 8px;font-size:30px;line-height:1.05;font-weight:600;letter-spacing:-.02em}.shtp .hero p{margin:0;font-size:14.5px;line-height:1.45;color:rgba(255,255,255,.72)}
-  .shtp .day{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none}.shtp .day button{flex:none;height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(255,255,255,.12);background:none;color:#fff;font:500 13px inherit;cursor:pointer}.shtp .day button.on{background:#fff;color:#0A0B0D}
-  .shtp .ses{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;padding:14px;border-radius:18px;background:#14151a;border:1px solid rgba(255,255,255,.07);margin-bottom:8px}
-  .shtp .ses .tm{font-size:19px;font-weight:600;letter-spacing:-.02em}.shtp .ses b{display:block;font-size:15px;font-weight:600}.shtp .ses span{display:block;margin-top:3px;font-size:12px;opacity:.6;line-height:1.35}
-  .shtp .ses button{height:34px;padding:0 13px;border-radius:17px;border:0;background:#ff6b1a;color:#fff;font:600 12.5px inherit;cursor:pointer;white-space:nowrap}.shtp .ses button.ok{background:rgba(127,209,193,.16);color:#7FD1C1}
-  .shtp .note{margin:14px 2px 0;font-size:12px;opacity:.45;line-height:1.4}
-  .shtp .grp{width:100%;height:50px;margin-top:10px;border-radius:25px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:500 14.5px inherit;cursor:pointer}`;
+  const css = document.createElement('style'); css.textContent = ``;
   document.head.appendChild(css);
   const host = () => document.getElementById('dev') || document.querySelector('.tabs')?.parentElement || document.body;
   let el = null;
