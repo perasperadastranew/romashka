@@ -736,7 +736,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
     home(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('today'); }, homelive(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('today'); },
     tour(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('tour'); }, tourpre(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('tour'); },
     nfc(w){ reset(w); tst(w, { started:true, i:4, done:[10, 12, 11, 14] }); w.showTab && w.showTab('tour'); setTimeout(() => w.nfcPlay && w.nfcPlay(24, null, { loop:true, badge:true, n:5, total:10 }), 400); },
-    onboarding(w){ reset(w); w.openOnboarding && w.openOnboarding(); },
+    onboarding(w){ const d = w.document, ob = d.getElementById('ob'); if (ob){ ob.style.transition = 'none'; ob.classList.remove('dive'); } reset(w); w.openOnboarding && w.openOnboarding(); if (ob) setTimeout(() => { ob.style.transition = ''; }, 80); },
     map(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('scheme'); }, map3d(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); },
     find(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); setTimeout(() => { w.m3floor && w.m3floor('all', true); w.m3select && w.m3select(22, true); }, 900); },
     dossier(w){ reset(w); w.openEx && w.openEx(10); },
