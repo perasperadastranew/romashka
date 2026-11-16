@@ -11215,8 +11215,10 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       return o; } } };
   function ps1Story(ex, hero, cfg){ cfg = cfg || {}; const w = document.createElement('div'); w.className = 'psw'; hero.before(w); w.appendChild(hero); hero.classList.add('stk');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
-    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><span class="mouse"><i></i></span><em>листай</em>`; hero.appendChild(sd); }
-    const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn">${n} / ${String(CH.length).padStart(2, '0')}</div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st);
+    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><span class="swp"><i></i></span><em>листай вбок</em>`; hero.appendChild(sd); }
+    const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn"><button class="pa" data-d="-1" aria-label="Назад">‹</button>${n} / ${String(CH.length).padStart(2, '0')}<button class="pa" data-d="1" aria-label="Дальше">›</button></div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st); /* v167: главы листаются вбок */
+    st.addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
+    hero.addEventListener('click', e => { if (e.target.closest('button, a, .hsd')) return; if (Math.round(st.scrollLeft / Math.max(1, st.clientWidth)) === 0) st.scrollTo({ left:st.clientWidth, behavior:'smooth' }); });
     ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
     /* v136: реплика Белки — сразу после истории */
     const bel = () => { const d = ex.querySelector('.dfc'); if (!d) return false; w.after(d); d.classList.add('afterst'); return true; }; /* v136: Белка — сразу после истории */ if (!bel()) setTimeout(bel, 350);
@@ -11249,8 +11251,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       if (ch === 5){ for (let i = 0; i < 4; i++){ const q = ((t / 1600) + i / 4) % 1; o += `<circle cx="${cx}" cy="${cy}" r="${r * (1.15 + q * 2.4)}" stroke="#8CC4FF" stroke-width="1.2" fill="none" opacity="${(1 - q) * .8}"/>`; } o += tx(cx, cy - r * 3.8, '«бип-бип»', 'ac big', 'middle') + tx(cx, cy - r * 3.8 + 18, '20,005 и 40,002 МГц', '', 'middle'); }
       if (ch === 6){ o += `<defs><radialGradient id="psg"><stop offset="0" stop-color="#FFB27A" stop-opacity=".75"/><stop offset="1" stop-color="#FF6A1F" stop-opacity="0"/></radialGradient></defs><circle cx="${cx}" cy="${cy}" r="${r * 2.6}" fill="url(#psg)"/>`  + tx(cx, cy + r * 3, '4 января 1958 · ≈ 1440 витков', 'ac', 'middle'); }
       svg.innerHTML = o; }
-    const f = () => { let v = 0; steps.forEach((s, i) => { if (!i) return; const b = s.getBoundingClientRect(); v += Math.max(0, Math.min(1, (innerHeight * .78 - b.top) / (innerHeight * .34))); }); return v; };
-    let cc = -1; return { f, scale:() => k, ch:() => ch, update(cx, cy, r, W, H, t){ let c = 0; steps.forEach((s, i) => { const b = s.getBoundingClientRect(); if (i > 0 && b.top < innerHeight * .7) c = i; }); if (c !== cc){ cc = c; steps.forEach((s, i) => s.classList.toggle('on', i === c)); }
+    const f = () => Math.max(0, Math.min(CH.length, st.scrollLeft / Math.max(1, st.clientWidth))); /* v167: прогресс — по горизонтали */
+    let cc = -1; return { f, scale:() => k, ch:() => ch, update(cx, cy, r, W, H, t){ const c = Math.round(f()); if (c !== cc){ cc = c; steps.forEach((s, i) => s.classList.toggle('on', i === c)); }
       /* v125: схема главы появляется, только когда спутник почти встал в её позу */
       const fv = f(), o2 = Math.min(CH.length, Math.floor(fv + .08)); if (o2 !== ch || hero.dataset.ch === undefined){ ch = o2; hero.dataset.ch = o2; svg.classList.remove('fi'); requestAnimationFrame(() => svg.classList.add('fi')); }
       ex.classList.toggle('instory', w.getBoundingClientRect().bottom > innerHeight * .9); k += (PS1SC[ch] - k) * .08; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); if (cfg.draw){ const dd = Math.abs(f() - ch), op = ch ? Math.max(0, Math.min(1, 1 - (dd - .03) / .08)) : 1; svg.innerHTML = op > .01 ? `<g opacity="${op.toFixed(2)}">` + cfg.draw({ L, F, A, tx, ch }, cx, cy, r, W, H, t) + '</g>' : ''; } /* v130: схема видна, только когда скафандр стоит в позе главы */ else { draw(cx, cy, r, W, H, t); /* v137: схема Спутника гаснет, пока модель переходит в следующую главу — не спорит со спутником */ const dd = Math.abs(f() - ch); svg.style.opacity = ch ? Math.max(0, Math.min(1, 1 - (dd - .03) / .1)).toFixed(2) : 1; } }, poses:cfg.pose || null, rig:cfg.rig || null, rad:cfg.rad || .995, center:cfg.center !== false }; }
@@ -12274,7 +12276,7 @@ canvas.exfly{display:block}
 </script>
 <script>
 /* горизонтальные ленты тянутся мышью (в презентации и на компьютере) v159 */
-(() => { const sel = '.xbig, .chips, .hscroll, .xrail'; let st = null;
+(() => { const sel = '.xbig, .chips, .hscroll, .xrail, .psteps'; let st = null;
   document.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button !== 0) return; const el = e.target.closest(sel); if (!el || el.scrollWidth <= el.clientWidth + 4) return; st = { el, x:e.clientX, sl:el.scrollLeft, moved:false }; }, true);
   addEventListener('pointermove', e => { if (!st) return; const dx = e.clientX - st.x; if (!st.moved && Math.abs(dx) > 6){ st.moved = true; st.el.style.scrollSnapType = 'none'; st.el.style.cursor = 'grabbing'; } if (st.moved) st.el.scrollLeft = st.sl - dx; }, true);
   addEventListener('pointerup', () => { if (!st) return; const s0 = st; st = null; s0.el.style.cursor = ''; if (!s0.moved) return; const kill = ev => { ev.stopPropagation(); ev.preventDefault(); }; addEventListener('click', kill, true); setTimeout(() => { removeEventListener('click', kill, true); s0.el.style.scrollSnapType = ''; }, 60); }, true);
@@ -12374,5 +12376,21 @@ window.__demoReset = () => {
   addEventListener('load', () => setTimeout(warm, 1200));
   const hook = () => { const st = window.showTab; if (!st) return setTimeout(hook, 300); window.showTab = function(t){ const r = st.apply(this, arguments); if (t === 'map' && window.__m3pre){ window.__m3pre = false; setTimeout(() => { const K = window.__m3k; if (!K) return; if (!(window.RT && RT.on) && !window.__m3busy) K.flyBox(K.zones.utro, .1); }, 150); } return r; }; };
   hook(); })();</script>
+<style>/* v167: главы истории — горизонтальная карусель */
+#vEx:has(.psteps){scroll-snap-type:none}
+#vEx.full .psw{height:100vh;height:100svh}
+#vEx.full .psw .exhero.stk{position:relative}
+#vEx.full .psteps{position:absolute;left:0;right:0;bottom:0;margin:0;z-index:3;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;pointer-events:auto;padding-bottom:24px;overscroll-behavior-x:contain}
+#vEx.full .psteps::-webkit-scrollbar{display:none}
+#vEx.full .psteps .pst,#vEx.full .psteps .pst.p0{flex:0 0 100%;height:auto;scroll-snap-align:center;scroll-snap-stop:always;align-items:flex-end;padding:0 12px}
+#vEx.full .psteps .pst .pc{position:relative;bottom:auto;margin-top:0}
+#vEx.full .pst:not(.on) .pc{transform:none}
+#vEx.full .pst .pn{justify-content:space-between}
+#vEx.full .pst .pa{width:30px;height:30px;border-radius:50%;border:1px solid rgba(140,196,255,.22);background:rgba(140,196,255,.06);color:#8CC4FF;font:400 18px/1 Inter,system-ui,sans-serif;display:grid;place-items:center;cursor:pointer;padding:0 0 2px}
+#vEx.full .pst:last-child .pa[data-d="1"]{visibility:hidden}
+#vEx .exhero .sdesc .swp{width:34px;height:20px;position:relative}
+#vEx .exhero .sdesc .swp i{position:absolute;left:4px;top:5px;width:10px;height:10px;border-right:1.5px solid #fff;border-top:1.5px solid #fff;transform:rotate(45deg);animation:swpA 1.6s ease-in-out infinite}
+@keyframes swpA{0%,100%{left:4px;opacity:.4}50%{left:18px;opacity:1}}
+</style>
 </body>
 </html>
