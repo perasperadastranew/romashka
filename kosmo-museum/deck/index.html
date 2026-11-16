@@ -379,6 +379,8 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 /* механики возвращения */
 .chips{display:flex;flex-wrap:wrap;gap:10px;max-width:60ch;margin-top:8px}.chips span{padding:9px 16px;border-radius:999px;background:rgba(10,11,14,.55);border:1px solid rgba(255,255,255,.18);font-size:calc(1.05*var(--u));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
+.thc p{font-size:calc(1.9*var(--u));line-height:1.35;color:#C9C6C0;margin:0}.thc b{display:block;margin-top:calc(1.2*var(--u));font:400 calc(4*var(--u))/1 var(--f);color:#FF8A4A;letter-spacing:-.01em}
+
 .sz{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:calc(3*var(--u));width:100%;margin-top:calc(2*var(--u));align-items:end}
 .sz .szc .c4{grid-template-columns:1fr 1fr!important;margin:0!important}
 .szm{margin:0;display:flex;flex-direction:column;gap:10px;align-self:stretch;justify-content:flex-end;min-height:0}.szm img{max-height:calc(40*var(--u));width:100%;object-fit:contain;border-radius:calc(2*var(--u));background:#050608}.szm figcaption{font-size:calc(1*var(--u));color:#B8B5AF}
@@ -697,7 +699,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 <div class="kick">Вывод</div><h1 class="big2">Дизайн — это управление<br><em>поведением пользователя</em></h1><p class="lead" style="max-width:56ch">Если делать это грамотно, выигрывают все: музей получает вовлечённых гостей и выручку, а посетитель — понятный и запоминающийся визит</p><div class="qz"><span>Вопрос залу</span><b>Если бы у музея был один цифровой продукт на этот год — что бы вы выбрали: билет, карту или истории экспонатов?</b></div>
 </section>
 <section class="ch" data-cap="Спасибо" data-wide="1">
-<h1 class="giant">Спасибо!</h1><div class="thx"><p class="lead">Вопросы, идеи, нужен похожий проект — присоединяйтесь, пишите в Telegram</p><div class="qr big"><img src="img/qr_tg.svg" alt="QR Telegram"><span>@suchkowww</span></div></div>
+<h1 class="giant">Спасибо!</h1><div class="thx"><div class="thc"><p>Вопросы, идеи, нужен похожий проект?<br>Пишите в Telegram</p><b>@suchkowww</b></div><div class="qr big"><img src="img/qr_tg.svg" alt="QR Telegram"></div></div>
 </section>
     <div class="bar"><button class="btn nb" id="prev" aria-label="Предыдущий слайд">←</button><button class="btn nb" id="next" aria-label="Следующий слайд">→</button><span class="cnt" id="cnt">1 / 1</span><div class="prog"><i id="prog"></i></div><span class="keys">← → или пробел</span></div>
   </main>
