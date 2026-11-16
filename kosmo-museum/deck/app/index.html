@@ -9693,7 +9693,8 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     $('#rtHere').addEventListener('click', () => { const id = ids()[RT.i]; if (!RT.done.includes(id)){ RT.done.push(id); ls.set('kosmoRoute', RT); typeof toast === 'function' && toast('Отмечено · отметка в паспорте'); } if (RT.i < ids().length - 1) setTimeout(() => routeGo(RT.i + 1, true), 500); else routeGo(RT.i, false); });
     $('#rtOpen').addEventListener('click', () => { const id = ids()[RT.i]; window.LANDING && window.LANDING[id] ? window[window.LANDING[id]]() : INFO[id] ? openEx(id) : window.open3d && [10, 12, 36].includes(id) ? open3d({ id, title:(MEX.get(id) || {}).title }) : toast('Досье скоро появится'); });
     const v = new THREE.Vector3();
-    function loop(now){ requestAnimationFrame(loop); if (window.__mapView === 'scheme' || $('#vHall').classList.contains('hide') || document.hidden || !$('#vHall').offsetParent) return;
+    const vExEl = document.getElementById('vEx');
+    function loop(now){ requestAnimationFrame(loop); if (window.__mapView === 'scheme' || $('#vHall').classList.contains('hide') || document.hidden || !$('#vHall').offsetParent) return; if (vExEl && !vExEl.classList.contains('off') && vExEl.classList.contains('full') && !document.querySelector('canvas.exfly')) return; /* v166: пока открыта история — карта под ней не рисуется */
       if (flight){ const k = Math.min(1, (now - flight.t0) / flight.dur), e = ease(k); place(flight.from.clone().lerp(flight.to, e)); cam.zoom = flight.z0 + (flight.z1 - flight.z0) * e; cam.updateProjectionMatrix(); if (k >= 1) flight = null; }
       ctl.update();
       const w = box.clientWidth, h = box.clientHeight;
