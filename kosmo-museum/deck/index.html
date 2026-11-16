@@ -379,6 +379,8 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 /* механики возвращения */
 .chips{display:flex;flex-wrap:wrap;gap:10px;max-width:60ch;margin-top:8px}.chips span{padding:9px 16px;border-radius:999px;background:rgba(10,11,14,.55);border:1px solid rgba(255,255,255,.18);font-size:calc(1.05*var(--u));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
+.nfcbg[src*=nfc_hand]{top:9%;height:80%;object-position:50% 30%}
+.nfcw:has(img[src*=nfc_hand])::after{background:linear-gradient(180deg,rgba(7,8,11,.95) 0,rgba(7,8,11,.6) 20%,rgba(7,8,11,0) 40%)}
 .thc p{font-size:calc(1.9*var(--u));line-height:1.35;color:#C9C6C0;margin:0}.thc b{display:block;margin-top:calc(1.2*var(--u));font:400 calc(4*var(--u))/1 var(--f);color:#FF8A4A;letter-spacing:-.01em}
 
 .sz{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:calc(3*var(--u));width:100%;margin-top:calc(2*var(--u));align-items:end}
@@ -627,7 +629,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 <div class="kick">Во время визита</div><h2>Экспонат пройден —<br><em>маршрут ведёт дальше</em></h2><p class="phlead">Посетитель не выбирает из списка: приложение всегда знает, где он сейчас и куда идти. Отметка у таблички — и на экране уже следующий экспонат, дорожка от текущего места и рассказ в мини-плеере</p><div class="fl4"><figure><img src="img/scr/flow1.webp" alt=""><figcaption><i>01</i><b>Шаг маршрута</b><span>что, где, на каком этаже</span></figcaption></figure><figure><img src="img/scr/flow2.webp" alt=""><figcaption><i>02</i><b>Приложил телефон</b><span>отметка в паспорте</span></figcaption></figure><figure><img src="img/scr/flow3.webp" alt=""><figcaption><i>03</i><b>Сразу следующий шаг</b><span>«Восток» Гагарина · шаг 2 из 10</span></figcaption></figure><figure><img src="img/scr/flow4.webp" alt=""><figcaption><i>04</i><b>Дорожка и рассказ</b><span>мини-плеер ведёт дальше</span></figcaption></figure></div>
 </section>
 <section class="ch" data-cap="NFC у экспоната" data-wide="1">
-<div class="nfcw"><img class="nfcbg" src="img/nfc_luno.webp" alt="Табличка с NFC-меткой у скафандра «Беркут» и телефон"><div class="nfct"><div class="kick">У таблички</div><h2>Приложил телефон —<br><em>отметка и рассказ</em></h2></div><div class="nfcs"><div><i>01</i><b>Подошёл</b><span>на табличке знак метки</span></div><div><i>02</i><b>Приложил телефон</b><span>приложение открывать не нужно</span></div><div><i>03</i><b>Отметка</b><span>вибрация и счётчик маршрута</span></div><div><i>04</i><b>История «Лунохода»</b><span>открывается сразу — дальше следующий шаг</span></div></div><p class="nfcn">NFC-метка под табличкой и QR для телефонов без NFC. Метка не следит за человеком, а музею даёт статистику по экспонатам</p></div>
+<div class="nfcw"><img class="nfcbg" src="img/nfc_hand.webp" alt="Рука подносит телефон с карточкой «Лунохода-1» к табличке с NFC-меткой"><div class="nfct"><div class="kick">У таблички</div><h2>Приложил телефон —<br><em>отметка и рассказ</em></h2></div><div class="nfcs"><div><i>01</i><b>Подошёл</b><span>на табличке знак метки</span></div><div><i>02</i><b>Приложил телефон</b><span>приложение открывать не нужно</span></div><div><i>03</i><b>Отметка</b><span>вибрация и счётчик маршрута</span></div><div><i>04</i><b>История «Лунохода»</b><span>открывается сразу — дальше следующий шаг</span></div></div><p class="nfcn">NFC-метка под табличкой и QR для телефонов без NFC. Метка не следит за человеком, а музею даёт статистику по экспонатам</p></div>
 </section>
 <section class="ch" data-act="luno" data-cap="Луноход-1">
 <div class="kick">Сразу после метки</div><h2>Отметка —<br>и сразу <em>в историю</em></h2><ul class="pts"><li><b>Метка у «Лунохода»</b> ставит отметку в паспорт</li><li><b>Сразу открывается</b> 3D-история: Море Дождей, 10,5 км, 11 лунных дней</li><li><b>Дальше</b> кнопка ведёт к следующему экспонату маршрута</li></ul><div class="try"><button class="btn" data-run="luno">Приложить телефон</button></div>
@@ -743,13 +745,16 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
     pass(w){ reset(w); w.showTab && w.showTab('pass'); },
     quest(w){ reset(w); w.openQuest && w.openQuest(); },
     tickets(w){ reset(w); w.openTickets && w.openTickets(); },
-    tourAuto(w){ reset(w); const d = w.document; let c = d.getElementById('autoCur'); if (!c){ c = d.createElement('div'); c.id = 'autoCur'; c.style.cssText = 'position:fixed;z-index:99999;left:50%;top:70%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none;transition:left .7s cubic-bezier(.3,.7,.2,1),top .7s cubic-bezier(.3,.7,.2,1),transform .15s'; d.body.appendChild(c); }
-      const my = ++ACT._run; const ok = () => ACT._run === my;
-      const tap = (sel, cb) => { if (!ok()) return; const el = typeof sel === 'function' ? sel() : d.querySelector(sel); if (!el){ cb && setTimeout(cb, 300); return; } const r = el.getBoundingClientRect(); c.style.left = (r.left + r.width / 2) + 'px'; c.style.top = (r.top + r.height / 2) + 'px';
-        setTimeout(() => { if (!ok()) return; c.style.transform = 'scale(.7)'; setTimeout(() => { c.style.transform = ''; el.click(); cb && setTimeout(cb, 2600); }, 160); }, 800); };
+    tourAuto(w){ reset(w); const d = w.document; const AUTO = /[?&]auto(=|&|$)/.test(location.search);
+      ACT._steps = null; ACT._si = 0;
+      if (!AUTO){ w.showTab && w.showTab('today'); return; } /* обычная версия: кликаешь сам */
+      let c = d.getElementById('autoCur'); if (!c){ c = d.createElement('div'); c.id = 'autoCur'; c.style.cssText = 'position:fixed;z-index:99999;left:50%;top:70%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none;transition:left .6s cubic-bezier(.3,.7,.2,1),top .6s cubic-bezier(.3,.7,.2,1),transform .15s'; d.body.appendChild(c); }
       const btn = re => () => [...d.querySelectorAll('button')].find(b => b.offsetParent && re.test(b.textContent));
-      w.showTab && w.showTab('today');
-      setTimeout(() => tap('.tab[data-t="tour"]', () => tap(btn(/Начать/), () => tap('#tcHere', () => setTimeout(() => tap('#nfNext', () => tap('#tcMap', () => setTimeout(() => tap('.tab[data-t="pass"]', () => setTimeout(() => tap('.tab[data-t="today"]', () => setTimeout(() => ok() && ACT.tourAuto(w), 2500)), 2500)), 3000))), 2200)))), 1400); },
+      const tap = sel => { const el = typeof sel === 'function' ? sel() : d.querySelector(sel); if (!el) return; const r = el.getBoundingClientRect(); c.style.left = (r.left + r.width / 2) + 'px'; c.style.top = (r.top + r.height / 2) + 'px'; setTimeout(() => { c.style.transform = 'scale(.7)'; setTimeout(() => { c.style.transform = ''; el.click(); }, 160); }, 650); };
+      /* авто-версия: каждое нажатие стрелки — следующий тап сценария, после последнего — следующий слайд */
+      ACT._steps = ['.tab[data-t="tour"]', btn(/Начать/), '#tcHere', '#nfNext', '#tcMap', '.tab[data-t="pass"]', '.tab[data-t="today"]'].map(s => () => tap(s));
+      w.showTab && w.showTab('today'); },
+    _steps: null, _si: 0,
     _run: 0,
     story10(w){ ACT.story(w, 10); }, luno(w){ reset(w); w.showTab && w.showTab('map'); setTimeout(() => { try { w.nfcPlay(22, () => {}); } catch(e){} setTimeout(() => { try { w.nfcClose && w.nfcClose(); } catch(e){} w.openLuno && w.openLuno(); }, 5200); }, 500); }, story14(w){ ACT.story(w, 14); },
     story(w, id){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); let n = 0; const t = setInterval(() => { n++; if (w.__m3k && w.__m3k.nodes && w.__m3k.nodes[id] && w.__m3go){ clearInterval(t); setTimeout(() => w.__m3go(id), 700); } else if (n > 40) clearInterval(t); }, 250); },
@@ -773,6 +778,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
   addEventListener('hashchange', () => { const h = /^#s(\d+)$/.exec(location.hash); if (h) go(+h[1] - 1); });
   document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) go(+g.dataset.go); const r = e.target.closest('[data-run]'); if (r){ curAct = null; run(r.dataset.run); } });
   addEventListener('keydown', e => { if (e.target.closest && e.target.closest('input,textarea')) return;
+    { if (ACT._steps && chs[cur] && chs[cur].dataset.act === 'tourAuto' && ['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key) && ACT._si < ACT._steps.length){ e.preventDefault(); ACT._steps[ACT._si++](); return; } }
     { const ob = chs[cur] && chs[cur].dataset.act === 'onboarding' && W() && W().__obNav; if (ob){ const [i, n] = ob.get(); if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)){ const od = W().document.getElementById('ob'); const open = od && !od.classList.contains('off'); if (open && i < n - 1){ e.preventDefault(); ob.go(i + 1); return; } if (open && i === n - 1){ e.preventDefault(); const b = W().document.getElementById('obNext'); b && b.click(); return; } } if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key) && i > 0){ e.preventDefault(); ob.go(i - 1); return; } } }
     if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)){ e.preventDefault(); go(cur + 1); }
     if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)){ e.preventDefault(); go(cur - 1); } });
