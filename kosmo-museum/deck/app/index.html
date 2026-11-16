@@ -1201,6 +1201,7 @@ window.M_EX = [
 #mvSeg{display:none!important}
 </style>
 <style>/* v153 */ #obDuo .obdog{opacity:0;transform:translateY(60px);transition:opacity .6s ease,transform .8s cubic-bezier(.22,1,.36,1)} #obDuo .obdog.up{opacity:1;transform:none}</style>
+<style>/* v157: онбординг — стела смотрит вправо-вверх, логотип музея */ .obmon canvas{transform:scaleX(-1)} .obv{position:relative} .oblogo{position:absolute;left:20px;top:-25px;display:flex;align-items:center;gap:9px;z-index:3;color:#fff;pointer-events:none} .oblogo svg{width:26px;height:26px} .oblogo b{font:700 11px/1.1 var(--f,Inter);letter-spacing:.08em}</style>
 </head>
 <body>
 <aside class="notes" id="notes"></aside>
@@ -1389,7 +1390,7 @@ window.M_EX = [
     <div class="ob off" id="ob">
       <button class="obskip" id="obSkip">Пропустить</button>
       <div class="obtrack" id="obTrack">
-        <section class="obs"><div class="obv"><div class="obmon" id="obMon"></div></div><div class="obt"><div class="kick">Музей в кармане</div><h2>Космос — <em>рядом с тобой</em></h2><p>Музей — в основании монумента «Покорителям космоса». В приложении: гид по залам, живые схемы экспонатов и отметки в паспорт.</p></div></section>
+        <section class="obs"><div class="obv"><div class="obmon" id="obMon"></div><div class="oblogo"><svg viewBox="0 0 24 24" fill="none" stroke="#FF6A1F" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="4.6" transform="rotate(-20 12 12)"/></svg><b>МУЗЕЙ<br>КОСМОНАВТИКИ</b></div></div><div class="obt"><div class="kick">Музей в кармане</div><h2>Космос — <em>рядом с тобой</em></h2><p>Музей — в основании монумента «Покорителям космоса». В приложении: гид по залам, живые схемы экспонатов и отметки в паспорт.</p></div></section>
         <section class="obs"><div class="obv"><div class="obrt" id="obRt">
           <button data-r="short" class="on"><svg viewBox="0 0 120 40"><path d="M6 30 C30 8 46 34 64 18 S100 10 114 22" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/><circle cx="6" cy="30" r="4" fill="#fff"/><circle cx="114" cy="22" r="4" fill="currentColor"/></svg><div><b>Главное</b><span>10 экспонатов · 45 мин</span></div></button>
           <button data-r="kids"><svg viewBox="0 0 120 40"><path d="M6 24 C24 34 40 6 60 20 S98 34 114 14" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/><circle cx="6" cy="24" r="4" fill="#fff"/><circle cx="114" cy="14" r="4" fill="currentColor"/></svg><div><b>С детьми</b><span>8 экспонатов · 1 час</span></div></button>
