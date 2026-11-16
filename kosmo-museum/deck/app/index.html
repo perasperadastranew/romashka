@@ -194,7 +194,7 @@
 .nfink{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:12px 0 0 -3px;border-radius:50%;background:#E5520F;opacity:0}
 .nfov.p5 .nfink{animation:nfink .5s .33s ease-out forwards}
 @keyframes nfink{0%{opacity:.9;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.4)}}
-.nfcnt{position:absolute;left:0;right:0;bottom:44px;text-align:center;font:500 13px var(--f);color:#C9CED8;opacity:0;transition:opacity .3s}.nfcnt b{font:600 30px var(--f);color:#fff;display:block;letter-spacing:-.02em}
+.nfcnt{position:absolute;left:0;right:0;bottom:-30px;text-align:center;font:500 13px var(--f);color:#C9CED8;opacity:0;transition:opacity .3s}.nfcnt b{font:600 30px var(--f);color:#fff;display:block;letter-spacing:-.02em}
 .nfov.p5 .nfcnt{opacity:1;transition-delay:.5s}
 /* значок */
 .nfbadge{position:absolute;left:50%;top:40px;width:300px;margin-left:-150px;text-align:center;opacity:0;transform:scale(.4) rotateY(180deg);transition:all .7s cubic-bezier(.2,1.4,.4,1)}
@@ -8666,7 +8666,7 @@ function notes(t){ const n = NOTES[t]; $('#notes').innerHTML = `<div class="k">�
   $('#noteBtn').addEventListener('click', () => NOTE_ACT[t]()); $('#notes').querySelectorAll('.map span[data-t]').forEach(s => s.addEventListener('click', () => showTab(s.dataset.t))); }
 const NOTE_ACT = { tour: () => window.tourHere && tourHere(), more: () => window.openTickets && openTickets(), siteNow: () => setMode('new'), siteNew: () => openSiteTicket(), shop: () => document.querySelector('#shSeg [data-s=cafe]').click(), today: () => showPush(), map: () => openEx(12), sounds: () => { pickPreset(0); startSound(); }, pass: () => grantStamp() };
 let curTab = 'today';
-function showTab(t){ if (t === 'ticket'){ window.openTickets && openTickets(); return; }
+function showTab(t){ if (t === 'ticket'){ window.openTickets && openTickets(); return; } { const sc = document.querySelector('.scr'); if (sc) sc.scrollTop = 0; } /* v155: новая вкладка открывается сверху */
   curTab = t; closeEx(); document.querySelectorAll('.view[data-tab]').forEach(v => v.classList.toggle('hide', v.dataset.tab !== t)); const tb = (t === 'shop' || t === 'sounds') ? 'more' : t;
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === tb)); NOTES[t] && notes(t); if (t === 'today') window.renderHome && renderHome(); if (t === 'tour') window.renderTour && renderTour(); if (t === 'map'){ window.m3start && m3start(); setTimeout(() => window.playHallTour && playHallTour(), 400); } }
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) showTab(b.dataset.t); });
@@ -9423,7 +9423,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]){ const c = new THREE.Vector3(x, y, z).applyMatrix4(m); x0 = Math.min(x0, c.x); x1 = Math.max(x1, c.x); y0 = Math.min(y0, c.y); y1 = Math.max(y1, c.y); }
       const a = box.clientWidth / box.clientHeight; return THREE.MathUtils.clamp(Math.min(BASE_H * a / ((x1 - x0) * (1 + pad * 2)), BASE_H / ((y1 - y0) * (1 + pad * 2))), ctl.minZoom, ctl.maxZoom); }
     function flyTo(t, z, dur = 1000){ flight = { from:ctl.target.clone(), to:t.clone(), z0:cam.zoom, z1:z, t0:performance.now(), dur }; }
-    const flyBox = (b, pad) => flyTo(b.getCenter(new THREE.Vector3()), zoomFor(b, pad));
+    const flyBox = (b, pad) => { if (!b || b.isEmpty()) return; const z = zoomFor(b, pad), c = b.getCenter(new THREE.Vector3()); if (!isFinite(z) || !isFinite(c.x)) return; flyTo(c, z); }; /* v155: пустая рамка не роняет камеру в NaN */
     // pins for exhibits that have a dossier in the app
     const floorGate = id => { const f = floorOfId(id); if (f && f !== 'all' && f !== curFloor && !(curFloor === 'all' && f === 'upper')){ m3floor(f); return true; } return false; }; /* v152: сначала этаж, потом экспонат */
     const pinEl = (id, n) => { const el = document.createElement('button'); el.className = 'm3pin'; el.innerHTML = `<b>${n}</b>`; el.addEventListener('click', ev => { ev.stopPropagation(); if (floorGate(id)) return; select(id, true); }); $('#m3pins').appendChild(el); return el; };
@@ -9565,7 +9565,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     function routeGo(i, fly){ const list = ids(); RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
       const id = list[RT.i], from = RT.i === 0 ? pts[0] : pts[RT.i], to = pts[RT.i + 1];
       leg.clear(); legPts = path(from, to); { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dots(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
-      select(id, false); const b = new THREE.Box3().setFromPoints(legPts).expandByScalar(3); if (fly) flyBox(b, .18);
+      select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); if (fly) flyBox(b, .18);
       let L = 0; for (let k = 0; k < legPts.length - 1; k++) L += legPts[k].distanceTo(legPts[k + 1]);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {};
       window.__hlRoute && window.__hlRoute(list, RT.i);
@@ -9604,7 +9604,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     $('#m3sx').addEventListener('click', () => { $('#m3srch').hidden = true; $('#m3q').value = ''; });
     $('#m3q').addEventListener('input', e => draw(e.target.value));
     $('#m3sl').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#m3srch').hidden = true; const id = +b.dataset.id; const d = window.M_EX.find(x => x[0] === id), f = H[d[3]]?.floor; window.m3floor && m3floor(f || 'all', true); window.m3select && m3select(id, true); }); }
-  $('#m3seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) window.m3floor && m3floor(b.dataset.f, true); });
+  $('#m3seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) window.m3floor && m3floor(b.dataset.f); }); /* v155: при смене этажа камера подлетает к нему */
 }
 // ---------- Билеты, квест коллаборации, онбординг
 {
@@ -9857,7 +9857,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const hp = document.createElement('div'); hp.className = 'hpsheet'; hp.innerHTML = '<div class="hpc"><div class="hpi"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 30v-6a16 16 0 0 1 32 0v6"/><rect x="6" y="28" width="9" height="13" rx="3"/><rect x="33" y="28" width="9" height="13" rx="3"/></svg></div><b>Наденьте наушники</b><p>В залах тихо — рассказ лучше слушать в наушниках. Или включите текст: он подсвечивается по ходу рассказа.</p><button class="pr" data-a="go">Наушники надел</button><button data-a="txt">Читать текстом</button></div>';
   app.appendChild(hp); let hpCb = null;
   hp.addEventListener('click', e => { const b = e.target.closest('button'); if (!b && e.target !== hp) return; hp.classList.remove('on'); LS.set('kosmoHP', 1); const cb = hpCb; hpCb = null; if (b && b.dataset.a === 'txt'){ S.spd = 1; $('#fp').classList.add('on'); render(true); } cb && cb(); });
-  const needHP = cb => { if (LS.get('kosmoHP', 0)) return false; hpCb = cb; hp.classList.add('on'); return true; };
+  const needHP = cb => { if (LS.get('kosmoHP', 0) || window.parent !== window) return false; /* v155: в презентации (iframe) не показываем — лист перекрывал слайды */ hpCb = cb; hp.classList.add('on'); return true; };
   ['toggle', 'play', 'openFull'].forEach(k => { const f = PL[k]; PL[k] = (...a) => { if (needHP(() => f(...a))) return; f(...a); }; });
   const pp0 = $('#fpPP').onclick; $('#fpPP').onclick = () => { if (!S.playing && needHP(pp0)) return; pp0(); };
   /* 2. Скачать маршрут для офлайна */
@@ -10048,7 +10048,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     at(tEnd, () => set('p7'));
     if (opt.loop) at(tEnd + 2600, () => { if (ov === o) nfcPlay(id, after, opt); });
     const done = (open) => { const keep = opt.loop; close(); if (!keep){ after && after(); if (open) setTimeout(() => window.openStop && openStop(id), 120); } };
-    o.querySelector('#nfOpen').onclick = () => done(true); o.querySelector('#nfNext').onclick = () => done(false);
+    o.querySelector('#nfOpen').onclick = () => done(true); o.querySelector('#nfNext').onclick = () => { done(false); [60, 400].forEach(t => setTimeout(() => { const sc = document.querySelector('.scr'); if (sc) sc.scrollTop = 0; }, t)); };
     o.querySelector('.nfskip').onclick = () => done(false); };
 })();
 
