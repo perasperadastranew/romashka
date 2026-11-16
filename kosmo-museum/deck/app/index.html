@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru">
-<head>
+<head><script>/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0B0D"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Музей в кармане">
@@ -9957,7 +9957,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   $('#fpB15').onclick = () => { S.t = Math.max(0, S.t - 15); tick(0); }; $('#fpF15').onclick = () => { S.t = Math.min(cur().dur - .1, S.t + 15); tick(0); };
   $('#mp').onclick = () => { $('#fp').classList.add('on'); render(true); };
   /* v160: завершить аудиоэкскурсию прямо из мини-плеера */
-  PL.stop = () => { S.playing = false; try { render(false); } catch(_){} $('#mp').classList.remove('on', 'playing'); app.classList.remove('hasmp'); $('#fp').classList.remove('on'); S.q = []; S.i = 0; S.t = 0; window.toast && toast('Аудиоэкскурсия завершена'); };
+  PL.stop = (quiet) => { S.playing = false; try { render(false); } catch(_){} $('#mp').classList.remove('on', 'playing'); app.classList.remove('hasmp'); $('#fp').classList.remove('on'); S.q = []; S.i = 0; S.t = 0; try { localStorage.removeItem('kosmoPL'); } catch(_){} if (!quiet) window.toast && toast('Аудиоэкскурсия завершена'); };
   $('#mpX').onclick = e => { e.stopPropagation(); PL.stop(); };
   $('#fpDown').onclick = () => $('#fp').classList.remove('on');
   $('#fpSpd').onclick = () => { S.spd = S.spd === 1 ? 1.5 : S.spd === 1.5 ? 2 : 1; $('#fpSpd').textContent = S.spd + '×'; };
@@ -12345,5 +12345,23 @@ canvas.exfly{display:block}
     for (const t of tags){ v.copy(t.v).project(K.cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; t.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`; t.el.style.display = show && x > 10 && x < w - 10 && y > 60 && y < h - 20 ? '' : 'none'; } })();
 })();
 </script>
+<script>
+/* v163: полный сброс демо — каждый слайд презентации стартует с чистого приложения */
+window.__demoReset = () => {
+  try { const K = window.__m3k; if (window.__mapLost || (K && K.r && K.r.getContext().isContextLost())){ location.reload(); return; } } catch(_){}
+  try { ['kosmoTicket','kosmoQuest','kosmoRoute','kosmoPL','kosmoOff'].forEach(k => localStorage.removeItem(k)); } catch(_){}
+  try { window.PL && PL.stop && PL.stop(true); } catch(_){}
+  try { const R = window.RT; if (R){ R.on = false; R.started = false; R.i = 0; R.done = []; R.key = 'short'; } } catch(_){}
+  try { const K = window.__m3k; if (K){ const lg = K.scene.getObjectByName('routeLeg'); lg && (lg.visible = false); } } catch(_){}
+  try { document.getElementById('tkCard')?.remove(); document.getElementById('tkChip')?.remove(); document.getElementById('vtDone')?.classList.add('off'); document.getElementById('vt')?.classList.add('off'); } catch(_){}
+  try { document.querySelectorAll('.shtp').forEach(x => x.remove()); document.querySelectorAll('.on[class*=sheet],.hlscrim.on,.m3info.on').forEach(x => x.classList.remove('on')); } catch(_){}
+  try { window.closeEx && closeEx(); } catch(_){}
+  try { window.showTab && showTab('today'); } catch(_){}
+  try { window.renderHome && renderHome(); window.renderTour && renderTour(); window.renderPass && renderPass(); } catch(_){}
+  try { document.querySelectorAll('.scr,.view,#vEx').forEach(x => x.scrollTop = 0); } catch(_){}
+  try { const b = document.getElementById('passBadge'); b && (b.hidden = true); } catch(_){}
+};
+</script>
+<script>/* v163: если браузер отобрал WebGL у карты — карта перезапускается */(function w(){ const K = window.__m3k; if (!K || !K.r) return setTimeout(w, 1000); K.r.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); window.__mapLost = true; if (window.parent !== window) setTimeout(() => location.reload(), 400); }); })();</script>
 </body>
 </html>
