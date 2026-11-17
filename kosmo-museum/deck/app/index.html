@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru">
-<head><script>/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
+<head><script>/* v168: действия с картой до её загрузки ждут в очереди */window.__m3when=function(f){if(window.__m3ready)return f();(window.__m3q=window.__m3q||[]).push(f)};/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0B0D"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Музей в кармане">
@@ -39,7 +39,7 @@
 .mp.playing .eqi{display:inline-flex}.eqi{display:none;gap:2px;align-items:flex-end;height:9px;margin-right:6px}.eqi s{width:2px;background:var(--ac);border-radius:1px;animation:eq .9s ease-in-out infinite}.eqi s:nth-child(2){animation-delay:-.3s}.eqi s:nth-child(3){animation-delay:-.6s}
 @keyframes eq{0%,100%{height:3px}50%{height:9px}}
 .scr.hasmp .view::after{content:'';display:block;height:70px}
-#vEx .aud{display:block}
+#vEx .aud{display:block}#vEx .aud[hidden],#vEx .aud:empty{display:none} /* v168: пустой блок аудио не рисуется */
 .fp{position:absolute;inset:0;z-index:24;background:radial-gradient(120% 60% at 50% 0%,color-mix(in srgb,var(--hc,#F0B898) 34%,#15171d),#0d0f14 70%);display:flex;flex-direction:column;padding:58px 22px 30px;transform:translateY(100%);transition:transform .5s cubic-bezier(.32,.72,0,1);overflow:hidden}
 .fp.on{transform:none}
 .fph{display:flex;align-items:center;justify-content:space-between;gap:10px}.fph .kick{text-align:center;flex:1}
@@ -8872,7 +8872,7 @@ function speak(e, inf, btn){
     let acc = 0, cur = 0; for (let k = 0; k < lines.length; k++){ acc += lines[k].length; if (f * tot <= acc){ cur = k; break; } } ls.forEach((p, k) => { p.classList.toggle('on', k === cur); p.classList.toggle('done', k < cur); });
     if (f >= 1){ clearInterval(auT); speaking = false; btn.classList.remove('on'); } }, 250); }
 const mono = (n) => n.split(' ').map(w => w[0]).join('');
-function openEx(id){ const e = EX.find(x => x.id === id); const inf = INFO[id] || {}; const pics = e.photos.length ? e.photos : [];
+function openEx(id){ const e = EX.find(x => x.id === id); if (!e){ const L = window.LANDING && window.LANDING[id]; if (L && window[L]) window[L](); return; } /* v168: нет досье — открываем 3D-страницу или ничего */ const inf = INFO[id] || {}; const pics = e.photos.length ? e.photos : [];
   if (speaking){ clearInterval(auT); speaking = false; }
   $('#vEx').innerHTML = `<div class="grab"></div><div class="top"><button class="ib" id="back" aria-label="Закрыть"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="kick"><span class="dtab">Досье · ${e.inv}</span></div></div>
     ${inf.fig ? `<div class="stagecard xcard hero"><div class="stage" id="exStage"></div><div class="hint">${(XF[inf.fig]||{}).hint || 'Веди пальцем вправо'}</div><div class="ro idle" id="exRo"></div></div>` : `<div class="ph"><img src="thumbs/${id}.webp" alt="${e.title}" onerror="this.parentNode.classList.add('noimg');this.parentNode.dataset.t='${(e.short || e.title).replace(/[«»]/g, '')}';this.remove()"></div>`}
@@ -9531,7 +9531,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       const ri = window.RT && RT.on ? ids().indexOf(id) : -1; if (ri >= 0){ $('#m3h').textContent = `Шаг ${ri + 1} из ${ids().length} · ${SHORT[d.hall] || H.name || ''}`; } $('#m3next').hidden = !(ri >= 0 && ri === RT.i && ri < ids().length - 1);
       card.hidden = false;
       if (fly){ const b = new THREE.Box3().setFromObject(n); const c = b.getCenter(new THREE.Vector3()); flyTo(c, Math.max(cam.zoom, 4.2)); } }
-    window.m3select = select;
+    window.m3select = (...a) => window.__m3ready ? select(...a) : window.__m3when(() => select(...a)); /* v168: до загрузки карты — в очередь */
     // floors and halls
     window.m3floor = (f, nofly) => { document.querySelectorAll('#m3seg button').forEach(b => b.classList.toggle('on', b.dataset.f === f)); setFloor(f); if (nofly) return;
       const b = new THREE.Box3(); for (const [k, z] of Object.entries(zones)) if (f === 'all' || HALLS[k]?.floor === f) b.union(z); if (!b.isEmpty()) flyBox(b, f === 'all' ? .04 : .08); };
@@ -9544,7 +9544,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       for (const h of ray.intersectObjects(Object.values(nodes), true)){ let o = h.object; while (o && o.userData.ex == null) o = o.parent; if (o){ if (floorGate(o.userData.ex)) return; select(o.userData.ex, false); return; } }
       card.hidden = true; if (selected != null) glow(nodes[selected], 0); selected = null;
       /* v159: тап по залу (не по экспонату) — наезд в границы зала; кинозал и кафе открывают свои страницы */
-      try { const CAFE = new THREE.Box3(new THREE.Vector3(12.8, 1.3, -62.4), new THREE.Vector3(19.2, 3.3, -58.6)); let best = null, bd = 1e9; const tp = new THREE.Vector3();
+      try { const CAFE = new THREE.Box3(new THREE.Vector3(5.6, 1.3, -62.4), new THREE.Vector3(12.0, 3.3, -58.6)); let best = null, bd = 1e9; const tp = new THREE.Vector3();
         for (const [k, b] of Object.entries(zones).concat([['cafe', CAFE]])){ if (!b || b.isEmpty()) continue; const fl = b.min.y > .9 ? 'upper' : 'lower'; if (curFloor !== 'all' && fl !== curFloor && k !== 'cafe') continue; const q = ray.ray.intersectBox(b, tp); if (q){ const d = q.distanceTo(ray.ray.origin); if (d < bd){ bd = d; best = k; } } }
         if (best === 'kino'){ flyBox(zones.kino, .15); setTimeout(() => window.openKino && openKino(), 900); return; } if (best === 'cafe'){ flyBox(CAFE, .3); setTimeout(() => window.openCafe && openCafe(), 700); return; }
         if (best && window.__m3goHall) window.__m3goHall(best); else if (best) flyBox(zones[best], .1); } catch (_){}
@@ -9564,8 +9564,8 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       hallLabels(); routeInit();
       $('#m3load').hidden = true; window.__m3k = { THREE, scene, cam, ctl, nodes, root, box, GLTFLoader, MeshoptDecoder, r, zones, flyBox:(b, p) => flyBox(b, p) };
       if (window.__dive){ window.__dive = false; const c0 = all.getCenter(new THREE.Vector3()); place(c0.clone().add(new THREE.Vector3(0, 0, 60))); cam.zoom = .32; cam.updateProjectionMatrix();
-        try { r.compile(scene, cam); } catch(_){} setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => flyTo(c0, zoomFor(all, .04), 1600))), 200); setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 1900); }
-      else setTimeout(() => { window.__m3auto = true; RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, e => { console.error('MAPERR', e && e.stack || e); $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
+        try { r.compile(scene, cam); } catch(_){} setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => flyTo(c0, zoomFor(all, .04), 1600))), 200); setTimeout(() => { window.__m3auto = true; const Q = window.__m3q || []; window.__m3q = null; window.__m3ready = true; if (Q.length){ const run = () => Q.forEach(f => { try { f(); } catch(e){ console.warn(e); } }); run(); setTimeout(run, 1100); /* повтор — после вступительного облёта */ } else RT.on ? routeGo(RT.i, true) : flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 1900); }
+      else setTimeout(() => { window.__m3auto = true; const Q = window.__m3q || []; window.__m3q = null; window.__m3ready = true; if (Q.length){ const run = () => Q.forEach(f => { try { f(); } catch(e){ console.warn(e); } }); run(); setTimeout(run, 1100); /* повтор — после вступительного облёта */ } else RT.on ? routeGo(RT.i, true) : zones.utro && flyBox(zones.utro, .1); setTimeout(() => window.__m3auto = false, 50); }, 700); }, e => { console.error('MAPERR', e && e.stack || e); $('#m3load').textContent = 'не удалось загрузить карту'; }); }; document.head.appendChild(s);
     // ---- тёмная карта: пол, стены и залы перекрашиваем, у залов — светящийся контур цвета зала
     const FLOOR = new THREE.Color(0x151A23);
     const M = (c) => new THREE.MeshStandardMaterial({ color:c, roughness:.92, metalness:0 });
@@ -9637,7 +9637,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const floorOfId = (id) => nodes[id]?.userData.floor || 'all';
     const labels = [], SHORT = { utro:'Утро эры', tvortsy:'Творцы', dom:'Дом на орбите', luna:'Луна и планеты', mezhdu:'Сотрудничество', chelovechestvu:'Человечеству', park:'Космический парк', vest:'Вход · кассы' };
     function hallLabels(){
-      const CAFE = new THREE.Box3(new THREE.Vector3(12.8, 1.3, -62.4), new THREE.Vector3(19.2, 3.3, -58.6)); /* v150: кафе «Взлёт» — подпись на карте */
+      const CAFE = new THREE.Box3(new THREE.Vector3(5.6, 1.3, -62.4), new THREE.Vector3(12.0, 3.3, -58.6)); /* v150: кафе «Взлёт» — подпись на карте */
       for (const [k, b] of Object.entries(zones).concat([['cafe', CAFE]])){ const H = k === 'cafe' ? { color:'#FFB27A', name:'Кафе «Взлёт»' } : HALLS[k]; if (!H || k === 'kino') continue; const el = document.createElement('div'); el.className = 'm3lab';
         el.innerHTML = `<i style="background:${H.color}"></i>${SHORT[k] || H.name}`; el.addEventListener('click', () => flyBox(b, .1)); $('#m3pins').appendChild(el);
         const c = b.getCenter(new THREE.Vector3()); let p = null, best = 1e9; for (const x of [b.min.x, b.max.x]) for (const z of [b.min.z, b.max.z]){ const q = new THREE.Vector3(x, b.max.y + .5, z), y = q.clone().project(cam).y * -1; if (y < best){ best = y; p = q; } } p.lerp(new THREE.Vector3(c.x, b.max.y + .5, c.z), .22); labels.push({ p, el, k }); } /* v109: подпись — у дальнего угла зала */
@@ -9673,7 +9673,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     function entry(){ const z = zones.vest; if (!z) return null; const c = z.getCenter(new THREE.Vector3()); c.y = z.max.y + .08; return c; }
     function routeDraw(){ crumbs.clear(); const list = ids(); pts = [entry(), ...list.map(exPos)].filter(Boolean);
       for (let k = 0; k < pts.length - 1; k++) dots(path(pts[k], pts[k + 1]), crumbs, dimM); crumbs.visible = RT.on; }
-    function routeGo(i, fly){ const list = ids(); RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
+    function routeGo(i, fly){ const list = ids(); if (!list.length || !zones.vest){ setTimeout(() => routeGo(i, fly), 400); return; } /* v168: карта ещё грузится — ждём */ if (pts.length < list.length + 1) routeDraw(); /* v168: карта только загрузилась — сначала строим маршрут */ RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
       const id = list[RT.i], from = RT.i <= 1 ? pts[0] : pts[RT.i], to = pts[RT.i + 1]; /* v165: первые шаги — дорожка от входа */
       leg.clear(); legPts = path(from, to); { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
       select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); if (fly) flyBox(b, .18);
@@ -9852,7 +9852,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     $('#cfMenu').innerHTML = MENU.filter(m => mcat === 'all' || m[0] === mcat).map(m => `<div class="mi"><div class="ph" style="background:radial-gradient(circle at 50% 30%,#2a2f38,#14161A)">${svg(m[5], m[6])}</div><div><b>${m[2]}</b><span>${m[3]}</span></div><strong>${rub(m[4])}</strong></div>`).join(''); }
   $('#cfCats').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ mcat = b.dataset.c; renderMenu(); } });
   $('#shSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll('#shSeg button').forEach(x => x.classList.toggle('on', x === b)); $('#shShop').hidden = b.dataset.s !== 'shop'; $('#shCafe').hidden = b.dataset.s !== 'cafe'; renderShop(); });
-  $('#cafeMap').addEventListener('click', () => { showTab('map'); setTimeout(() => window.m3floor && m3floor('lower'), 900); });
+  $('#cafeMap').addEventListener('click', () => { showTab('map'); window.__m3when(() => { const K = window.__m3k; window.m3floor && m3floor('upper', true); const T = K.THREE; setTimeout(() => K.flyBox(new T.Box3(new T.Vector3(1, 1.3, -64), new T.Vector3(14, 3.3, -50)), .2), 250); }); }); /* v168: кафе — на верхнем этаже, на платформе с мостиком */
   // checkout
   let opt = 'pick';
   function renderCart(){ $('#vcList').innerHTML = Object.entries(cart).map(([i, c]) => `<div class="tkr"><div><b>${P[i][2]}</b><span>${rub(P[i][4])}</span></div><div class="step"><button data-k="${i}" data-d="-1" aria-label="Меньше">−</button><i>${c}</i><button data-k="${i}" data-d="1" aria-label="Больше">+</button></div><em>${rub(P[i][4] * c)}</em></div>`).join('');
@@ -9896,7 +9896,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const upd = () => { const mid = body.getBoundingClientRect().top + body.clientHeight * .7; let cur = null; items.forEach(it => { const r = it.getBoundingClientRect(); if (r.top < mid){ it.classList.add('vis'); cur = it; } }); document.querySelectorAll('#tlDec button').forEach(b => b.classList.toggle('on', cur && b.dataset.d === cur.dataset.dec)); };
     body.addEventListener('scroll', upd, { passive:true });
     $('#tlDec').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const it = items.find(x => x.dataset.dec === b.dataset.d); body.scrollTo({ top:it.offsetTop - 60, behavior:'smooth' }); });
-    $('#tl').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (!b) return; const id = +b.dataset.id; $('#vtl').classList.add('off'); showTab('map'); setTimeout(() => { const d = window.M_EX.find(x => x[0] === id), f = window.M_HALLS[d?.[3]]?.floor; window.m3floor && m3floor(f || 'all', true); window.m3select && m3select(id, true); }, 900); });
+    $('#tl').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (!b) return; const id = +b.dataset.id; $('#vtl').classList.add('off'); showTab('map'); setTimeout(() => window.__m3when(() => { const d = window.M_EX.find(x => x[0] === id), f = window.M_HALLS[d?.[3]]?.floor; window.m3floor && m3floor(f || 'all', true); window.m3select && m3select(id, true); }), 400); });
     window.openTimeline = () => { $('#vtl').classList.remove('off'); body.scrollTop = 0; setTimeout(upd, 60); };
     $('#vtlClose').addEventListener('click', () => $('#vtl').classList.add('off'));  }
   window.openLanding = (u) => { const f = $('#vlFrame'); if (!f.src.endsWith(u)) f.src = u; else try { f.contentWindow.__go(0); f.contentWindow.dispatchEvent(new Event('resize')); } catch(e){} $('#vl').classList.remove('off'); };
@@ -10419,7 +10419,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 
   /* --- «Ещё»: удобства + доступность */
   { const ml = document.querySelectorAll('#vMore .mlist'); const first = ml[0];
-    if (first){ first.insertAdjacentHTML('beforeend', `<button data-x="am"><div><b>Часы и удобства</b><span>кафе, гардероб, лифт, бесплатные дни</span></div><em>›</em></button>`); first.querySelector('[data-x="am"]').onclick = openAm; }
+    if (first){ first.insertAdjacentHTML('beforeend', `<button data-x="am"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><b>Часы и удобства</b><span>кафе, гардероб, лифт, бесплатные дни</span></div><em>›</em></button>`); first.querySelector('[data-x="am"]').onclick = openAm; }
     const last = ml[ml.length - 1];
     last && last.insertAdjacentHTML('beforebegin', `<div class="sec" style="padding:18px 20px 0"><h2>Доступность</h2><span>тихий зал и удобный режим</span></div><div class="mlist" id="a11yList">
       <button data-x="spd"><div><b>Скорость аудиогида</b><span>медленнее или быстрее рассказ</span></div><b class="val" id="a11ySpd">1×</b></button>
@@ -10737,7 +10737,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   fab.onclick = () => tk() ? showQR() : window.openTickets && openTickets();
   const dev = document.getElementById('dev') || document.querySelector('.tabs')?.parentElement; dev && dev.appendChild(fab);
   /* прячем под открытыми экранами; на карте — только иконка, чтобы не наезжать на заголовок */
-  setInterval(() => { const cover = document.querySelector('#vEx:not(.off), .ov:not(.off), #vtl:not(.off)'); fab.classList.toggle('hid', !!cover); fab.classList.toggle('icon', typeof curTab !== 'undefined' && curTab === 'map'); }, 300);
+  setInterval(() => { const cover = document.querySelector('#vEx:not(.off), .ov:not(.off), #vtl:not(.off)'); fab.classList.toggle('hid', !!cover); const vv = [...document.querySelectorAll('.scr > .view:not(.hide)')].find(x => x.offsetParent !== null), sc = vv && vv.scrollTop > 40; fab.classList.toggle('icon', (typeof curTab !== 'undefined' && curTab === 'map') || !!sc); }, 300); /* v168: при прокрутке — только иконка, не наезжает на контент */
   const refresh = () => { renderFab(); renderHome(); };
   refresh();
   const pay = document.getElementById('vtPay'); pay && pay.addEventListener('click', () => setTimeout(refresh, 50));
@@ -11741,18 +11741,18 @@ canvas.exfly{display:block}
 .mvtog button{height:32px;padding:0 13px;border-radius:999px;border:0;background:none;color:rgba(255,255,255,.62);font:500 13px var(--f,system-ui);cursor:pointer;display:flex;align-items:center;gap:6px}
 .mvtog button.on{background:#fff;color:#0A0B0D}
 /* список экспонатов */
-.mlist{position:absolute;left:0;right:0;top:var(--mtop,112px);bottom:0;overflow-y:auto;padding:4px 0 calc(170px + env(safe-area-inset-bottom,0px));background:var(--scr,#0A0B0D);z-index:7;scrollbar-width:none}
-.mlist[hidden]{display:none}
-.mlist .mh{display:flex;align-items:center;gap:8px;margin:18px 16px 8px;font:500 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55)}
-.mlist .mh i{width:8px;height:8px;border-radius:50%}
-.mlist .mh span{margin-left:auto;letter-spacing:.04em}
-.mlist .mr{display:flex;align-items:center;gap:12px;margin:0 12px;padding:8px;border-radius:16px;cursor:pointer}
-.mlist .mr:active{background:rgba(255,255,255,.05)}
-.mlist .mr img,.mlist .mr .ph0{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none;background:color-mix(in srgb,var(--hc,#888) 30%,#16191e)}
-.mlist .mr .t{flex:1;min-width:0}.mlist .mr b{display:block;font:500 15px/1.25 var(--f,system-ui)}.mlist .mr small{display:block;font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
-.mlist .mr em{font-style:normal;font:500 10.5px ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:8px;background:rgba(255,138,76,.14);color:#FF8A4C;flex:none}
-.mlist .mr em.dn{background:rgba(120,220,160,.14);color:#8fe3b0}
-.mlist .mr .go{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);flex:none;color:#fff}
+#vHall .mlist{position:absolute;left:0;right:0;top:var(--mtop,112px);bottom:0;overflow-y:auto;padding:4px 0 calc(170px + env(safe-area-inset-bottom,0px));background:var(--scr,#0A0B0D);z-index:7;scrollbar-width:none}
+#vHall .mlist[hidden]{display:none}
+#vHall .mlist .mh{display:flex;align-items:center;gap:8px;margin:18px 16px 8px;font:500 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+#vHall .mlist .mh i{width:8px;height:8px;border-radius:50%}
+#vHall .mlist .mh span{margin-left:auto;letter-spacing:.04em}
+#vHall .mlist .mr{display:flex;align-items:center;gap:12px;margin:0 12px;padding:8px;border-radius:16px;cursor:pointer}
+#vHall .mlist .mr:active{background:rgba(255,255,255,.05)}
+#vHall .mlist .mr img,#vHall .mlist .mr .ph0{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none;background:color-mix(in srgb,var(--hc,#888) 30%,#16191e)}
+#vHall .mlist .mr .t{flex:1;min-width:0}.mlist .mr b{display:block;font:500 15px/1.25 var(--f,system-ui)}.mlist .mr small{display:block;font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+#vHall .mlist .mr em{font-style:normal;font:500 10.5px ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:8px;background:rgba(255,138,76,.14);color:#FF8A4C;flex:none}
+#vHall .mlist .mr em.dn{background:rgba(120,220,160,.14);color:#8fe3b0}
+#vHall .mlist .mr .go{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);flex:none;color:#fff}
 /* плеер экскурсии */
 .mplay{position:absolute;left:10px;right:10px;bottom:calc(72px + max(24px,env(safe-area-inset-bottom,0px)));z-index:9;border-radius:22px;background:rgba(18,20,24,.9);border:1px solid rgba(255,255,255,.1);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);padding:10px 10px 10px 12px;box-shadow:0 14px 40px rgba(0,0,0,.5)}
 .mplay .mppb{display:flex;gap:3px;margin:0 2px 9px}.mplay .mppb i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.14)}.mplay .mppb i.d{background:#8fe3b0}.mplay .mppb i.c{background:#FF8A4C}
@@ -11950,9 +11950,9 @@ canvas.exfly{display:block}
     ex.addEventListener('click', e => { const a = e.target.closest('.ar'); if (a){ if (!list.length) return; idx = (idx + +a.dataset.d + list.length) % list.length; showEx(); window.__m3noLift = true; window.m3select && m3select(list[idx], true); setTimeout(() => window.__m3noLift = false, 50); return; }
       if (e.target.closest('.nm') && idx >= 0 && window.openEx) openEx(list[idx]); });
     /* какой зал показать сразу: текущий шаг экскурсии, иначе «Утро эры» */
-    const start = () => { let k = 'utro'; try { const r = window.tourState && tourState(); const R = window.TOUR_ROUTES || {}; if (r && r.started){ const id = ((R[r.key] || {}).ids || [])[r.i || 0]; const d = (window.M_EX || []).find(x => x[0] === id); if (d && H[d[3]]) k = d[3]; } } catch (er){} goHall(k); };
+    const start = () => { if (window.__m3q && window.__m3q.length) return; /* v168: карту открыли ради конкретного места — зал не перебивает */ let k = 'utro'; try { const r = window.tourState && tourState(); const R = window.TOUR_ROUTES || {}; if (r && r.started){ const id = ((R[r.key] || {}).ids || [])[r.i || 0]; const d = (window.M_EX || []).find(x => x[0] === id); if (d && H[d[3]]) k = d[3]; } } catch (er){} goHall(k); };
     const unsel = () => { const x = document.querySelector('#m3 .exc .exx'), cc = document.querySelector('#m3 .exc'); if (cc && cc.offsetParent && +getComputedStyle(cc).opacity > .3 && x) x.click(); };
-    setTimeout(() => { start(); [500, 1200].forEach(t => setTimeout(unsel, t)); }, 300); /* сразу после открытия — без всплывшей карточки */
+    setTimeout(() => { const busy = window.__m3q && window.__m3q.length; start(); if (!busy) [500, 1200].forEach(t => setTimeout(unsel, t)); }, 300); /* сразу после открытия — без всплывшей карточки */
     const st = window.showTab; if (st) window.showTab = function(t){ const r = st.apply(this, arguments); if (t === 'map' && !hall) setTimeout(start, 400); return r; };
     /* выбрали экспонат на карте вручную — листалка подхватывает его зал */
     setInterval(() => { const id = window.__m3sel; if (id == null || !hall || hall === 'all') return; const d = (window.M_EX || []).find(x => x[0] === id); if (!d) return; if (d[3] !== hall){ hall = d[3]; list = exOf(hall); row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.h === hall)); } const i = list.indexOf(id); if (i >= 0 && i !== idx){ idx = i; showEx(); } }, 500);
@@ -12332,8 +12332,9 @@ canvas.exfly{display:block}
   K.root.traverse(o => { if (/^AM_conference/.test(o.name)) o.visible = false; });
   /* лестница из конференц-зала влево-вниз на нижний этаж + площадка к «Сотрудничеству» */
   /* v162: кафе «Взлёт» и мостик сдвинуты левее, на место конференц-зала; лестница — с края платформы прямо в зал «Сотрудничество» на нижнем этаже */
-  { const DX = -5, cafe = K.root.getObjectByName('OLD_cafe'), br = K.scene.getObjectByName('cafeBridge'); if (cafe && !cafe.userData.v162){ cafe.userData.v162 = 1; const w0 = cafe.getWorldPosition(new T.Vector3()); w0.x += DX; cafe.position.copy(cafe.parent.worldToLocal(w0)); } if (br && !br.userData.v162){ br.userData.v162 = 1; br.position.x += DX; } }
-  stairs('z', -58.2, -51.4, 10.1, 12.7, yU, yL, 10);
+  { const DX = -12.2 /* v168: кафе и мостик — на месте бывшего конференц-зала */, cafe = K.root.getObjectByName('OLD_cafe'), br = K.scene.getObjectByName('cafeBridge'); if (cafe && !cafe.userData.v162){ cafe.userData.v162 = 1; const w0 = cafe.getWorldPosition(new T.Vector3()); w0.x += DX; cafe.position.copy(cafe.parent.worldToLocal(w0)); } if (br && !br.userData.v162){ br.userData.v162 = 1; br.position.x += -9.5; /* v168: мостик — в просвете между экспонатами нижнего зала */ } }
+  /* v168: лестница — с левого края платформы: площадка, затем вниз в зал «Международное сотрудничество» */
+  box(2.2, yU - .04, -57.45, 3.4, .08, 2.5); stairs('z', -56.2, -51.6, .6, 3.0, yU, yL, 10);
   /* пандус к «Луноходу»: рядом с лестницей, с верхнего этажа вниз */
   /* v160: вместо пандуса — лестница с края верхнего этажа к залу «Луны и планет», с площадкой до зала */
   g.traverse(o => { o.userData.cSkip = 1; o.raycast = () => {}; });
@@ -12344,7 +12345,7 @@ canvas.exfly{display:block}
   const tag = (txt, v) => { if (!host) return; const el = document.createElement('div'); el.className = 'm3lab m3stair'; el.innerHTML = `<i style="background:#DFE6F2"></i>${txt}`; host.appendChild(el); tags.push({ el, v }); };
   if (SL){ const b = new T.Box3().setFromObject(SL), c = b.getCenter(new T.Vector3()); tag('Лестница к «Луноходу»', new T.Vector3(c.x, b.max.y + .6, c.z)); }
   if (SR){ const b = new T.Box3().setFromObject(SR), c = b.getCenter(new T.Vector3()); tag('Лестница вниз', new T.Vector3(c.x, b.max.y + .6, c.z)); }
-  tag('Лестница вниз', new T.Vector3(11.4, yU + 1.2, -57));
+  tag('Лестница вниз', new T.Vector3(1.8, yU + 1.2, -57.4));
   const st = document.createElement('style'); st.textContent = '.m3stair{opacity:.85;font-size:10.5px!important}.m3stair i{border-radius:2px!important}'; document.head.appendChild(st);
   const v = new T.Vector3(), wrap = document.getElementById('m3');
   (function loop(){ requestAnimationFrame(loop); if (!wrap || !wrap.offsetParent) return; const w = K.box.clientWidth, h = K.box.clientHeight, show = K.cam.zoom > 1.6;
@@ -12366,6 +12367,8 @@ window.__demoReset = () => {
   try { window.renderHome && renderHome(); window.renderTour && renderTour(); window.renderPass && renderPass(); } catch(_){}
   try { document.querySelectorAll('.scr,.view,#vEx').forEach(x => x.scrollTop = 0); } catch(_){}
   try { const b = document.getElementById('passBadge'); b && (b.hidden = true); } catch(_){}
+  try { document.getElementById('push')?.classList.remove('on'); } catch(_){}
+  try { typeof showX === 'function' && showX('sputnik'); document.querySelectorAll('.xbig,.chips,#xChips').forEach(x => x.scrollLeft = 0); } catch(_){} /* v168: витрина «Разбери экспонат» — снова со Спутника */
 };
 </script>
 <script>/* v163: если браузер отобрал WebGL у карты — карта перезапускается */(function w(){ const K = window.__m3k; if (!K || !K.r) return setTimeout(w, 1000); K.r.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); window.__mapLost = true; if (window.parent !== window) setTimeout(() => location.reload(), 400); }); })();</script>
@@ -12391,6 +12394,19 @@ window.__demoReset = () => {
 #vEx .exhero .sdesc .swp{width:34px;height:20px;position:relative}
 #vEx .exhero .sdesc .swp i{position:absolute;left:4px;top:5px;width:10px;height:10px;border-right:1.5px solid #fff;border-top:1.5px solid #fff;transform:rotate(45deg);animation:swpA 1.6s ease-in-out infinite}
 @keyframes swpA{0%,100%{left:4px;opacity:.4}50%{left:18px;opacity:1}}
+</style>
+<script>/* v168: корневой контейнер никогда не прокручивается (иначе из-под низа выезжают скрытые шторки) */
+(function(){ const s = document.querySelector('.scr'); if (s) s.addEventListener('scroll', () => { if (s.scrollTop || s.scrollLeft){ s.scrollTop = 0; s.scrollLeft = 0; } }, { passive:true }); })();</script>
+<style>/* v168: подписи коллабораций в паспорте переносятся, а не вылезают */
+.pst.collab span{white-space:normal!important;text-align:center;font-size:11px;line-height:1.25;max-width:96px;overflow-wrap:anywhere}
+</style>
+<style>/* v168: тост не наезжает на корзину */
+.scr:has(#cartBar:not(.off)) .toast{bottom:176px}
+</style>
+<script>/* v168: демо-пуш «Факт дня» прячется, как только открыт любой экран поверх */
+setInterval(() => { const p = document.getElementById('push'); if (p && p.classList.contains('on') && document.querySelector('.ov:not(.off), #vEx:not(.off), .shtp, #fp.on, #vtl:not(.off)')) p.classList.remove('on'); }, 250);</script>
+<style>/* v168: атрибут hidden всегда прячет (поля доставки при самовывозе, кнопка схем вне лендингов) */
+.shipf[hidden],.stpill[hidden]{display:none!important}
 </style>
 </body>
 </html>
