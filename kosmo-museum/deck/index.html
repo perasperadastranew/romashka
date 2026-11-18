@@ -728,7 +728,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
   function reset(w){ try { ACT._run++; ACT._steps = null; ACT._si = 0; } catch(e){} const d = w.document; try { w.__demoReset && w.__demoReset(); } catch(e){} try { d.getElementById('autoCur')?.remove(); ['kosmoTicket','kosmoQuest','kosmoRoute'].forEach(k => w.localStorage.removeItem(k)); const R = w.RT; if (R){ R.on = false; R.started = false; R.i = 0; R.done = []; } d.querySelectorAll('.shtp').forEach(x => x.remove()); d.querySelectorAll('[class*=sheet].on,.hlscrim.on,.m3info.on').forEach(x => x.classList.remove('on')); d.querySelectorAll('.scr, .view, #vEx').forEach(x => { try { x.scrollTop = 0; } catch(_){} }); d.getElementById('tkCard')?.remove(); w.renderHome && w.renderHome(); } catch(e){} w.nfcClose && w.nfcClose(); OV.forEach(id => { const el = d.getElementById(id); el && el.classList.add('off'); }); const fp = d.getElementById('fp'); fp && fp.classList.remove('on'); }
   const tst = (w, s) => { if (!w.tourState) return; const r = w.tourState(); Object.assign(r, { key:'short', on:true }, s); w.tourSave(r); w.badgeUpd && w.badgeUpd(); };
   const LIVE = { started:true, i:3, done:[10, 12, 11] }, FRESH = { started:false, i:0, done:[] };
-  const ACT = {
+  const ACT = window.__ACT = {
     today(w){ reset(w); w.showTab && w.showTab('today'); },
     home(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('today'); }, homelive(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('today'); },
     tour(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('tour'); }, tourpre(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('tour'); },
@@ -799,3 +799,34 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
   document.getElementById('story').addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(cur + (dx < 0 ? 1 : -1)); sx = null; });
 })();
 </script>
+<style>
+#tourStart{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:rgba(6,7,10,.72);backdrop-filter:blur(6px)}
+#tourStart button{font:600 22px/1 Inter,system-ui,sans-serif;color:#fff;background:#FF6A1F;border:0;border-radius:999px;padding:22px 34px;cursor:pointer;box-shadow:0 12px 40px rgba(255,106,31,.35)}
+#tourStart small{display:block;margin-top:14px;font:400 14px Inter,system-ui,sans-serif;color:#8B93A0;text-align:center}
+#tourBar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:8999;display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:999px;background:rgba(20,22,28,.82);border:1px solid rgba(255,255,255,.1);font:500 13px Inter,system-ui,sans-serif;color:#C9CED6;opacity:.25;transition:opacity .3s}
+#tourBar:hover{opacity:1}
+#tourBar button{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#fff;font-size:13px;cursor:pointer}
+#tourBar span{min-width:54px;text-align:center}
+</style><script>/* v28: озвученный показ */
+(function(){ if (!/[?&]tour/.test(location.search)) return;
+  const VO = {"1": [], "17": [0.1586, 0.3218, 0.4851, 0.5808, 0.7284, 0.8807, 0.9184]};
+  const chs = () => [...document.querySelectorAll('section.ch')], idx = () => chs().findIndex(s => s.classList.contains('on'));
+  const key = () => window.dispatchEvent(new KeyboardEvent('keydown', { key:'ArrowRight', bubbles:true }));
+  let run = 0, a = null, paused = false, started = false, last = -1;
+  const bar = document.createElement('div'); bar.id = 'tourBar'; bar.innerHTML = '<button id="tbPlay" title="Пауза">❚❚</button><span id="tbN"></span><button id="tbNext" title="Следующий слайд">▶▶</button>';
+  const st = document.createElement('div'); st.id = 'tourStart'; st.innerHTML = '<div><button>▶ Смотреть с озвучкой</button><small>≈ 15 минут · звук включён</small></div>';
+  document.body.append(bar, st);
+  function next(){ const A = window.__ACT; if (A && A._steps) A._si = A._steps.length; key(); }
+  function play(){ const my = ++run, i = idx(), n = i + 1; last = i; document.getElementById('tbN').textContent = n + ' / ' + chs().length; if (a){ a.pause(); a = null; }
+    const v = VO[n], act = (chs()[i] && chs()[i].dataset.act) || ''; const settle = /^story/.test(act) ? 3200 : act === 'luno' ? 900 : act ? 1600 : 600;
+    setTimeout(() => { if (my !== run) return;
+      if (!v){ setTimeout(() => { if (my === run && !paused) next(); }, 3500); return; }
+      a = new Audio('vo/' + String(n).padStart(2, '0') + '.mp3'); let fired = 0; const au = a; if (/[?&]mute/.test(location.search)) au.muted = true;
+      au.addEventListener('timeupdate', () => { if (my !== run || !au.duration) return; while (fired < v.length && au.currentTime >= v[fired] * au.duration - .2){ fired++; key(); } });
+      au.addEventListener('ended', () => { if (my !== run) return; while (fired < v.length){ fired++; key(); } setTimeout(() => { if (my === run && !paused) next(); }, 1300); });
+      if (!paused) au.play().catch(() => {}); }, settle); }
+  setInterval(() => { if (!started) return; const i = idx(); if (i !== last) play(); }, 250);
+  st.querySelector('button').onclick = () => { st.remove(); started = true; play(); };
+  document.getElementById('tbPlay').onclick = e => { paused = !paused; e.currentTarget.textContent = paused ? '▶' : '❚❚'; if (a){ paused ? a.pause() : a.play().catch(() => {}); } else if (!paused) play(); };
+  document.getElementById('tbNext').onclick = () => { paused = false; document.getElementById('tbPlay').textContent = '❚❚'; next(); };
+})();</script>
