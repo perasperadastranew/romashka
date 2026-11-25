@@ -64,7 +64,7 @@ body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
 .more .pp b{display:block;font:500 15px var(--f)}.more .pp small{display:block;font:400 12.5px/1.35 var(--f);color:var(--mu);margin-top:2px}
 .more .cta{margin-top:26px}
 </style>
-<style>/* v162: без полосы прокрутки в презентации */html,body{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}</style><style>/* v197: подпись сверху в одну строку и в приложении (рядом с крестиком) */.top .kick{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.top{gap:12px}</style></head>
+<style>/* v162: без полосы прокрутки в презентации */html,body{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}</style><style>/* v197: подпись сверху в одну строку и в приложении (рядом с крестиком) */.top .kick{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.top{gap:12px}</style><style>/* v200: сумеречное небо на старте */</style></head>
 <body>
 <div class="stage" id="stage">
   <div class="load" id="load">загружаю ракету…</div>
@@ -107,7 +107,7 @@ const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRat
 const scene = new THREE.Scene(); scene.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .15;
 const cam = new THREE.PerspectiveCamera(30, 1, .01, 5000);
 const key = new THREE.DirectionalLight(0xffe2c0, 1.5); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -.0005; scene.add(key, key.target);
-const fill = new THREE.DirectionalLight(0x8fb0ff, .8), hemi = new THREE.HemisphereLight(0x3a4c70, 0x1a1510, .5); scene.add(fill, hemi);
+const fill = new THREE.DirectionalLight(0xff9a5a, .8), hemi = new THREE.HemisphereLight(0x3a4c70, 0x1a1510, .5); scene.add(fill, hemi);
 const fireL = new THREE.PointLight(0xffa050, 0, 0, 1.6); scene.add(fireL);
 const composer = new EffectComposer(r); composer.addPass(new RenderPass(scene, cam)); composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), .6, .45, 1.6)); composer.addPass(new OutputPass());
 /* v188: «киношный» слой поверх кадра — лёгкий хроматизм к краям, тёплые света и холодные тени, виньетка, зерно */
@@ -164,10 +164,10 @@ loader.parse(Uint8Array.from(atob(window.RKGLB), c => c.charCodeAt(0)).buffer, '
     const tilt = Math.atan2(Math.hypot(tip.x - base.x, tip.z - base.z), tip.y); const holder = new THREE.Group(); holder.add(bar); holder.rotation.set(0, 0, 0); arm.add(holder);
     holder.quaternion.setFromAxisAngle(new THREE.Vector3(-u.z, 0, u.x), tilt); arm.userData = { holder, tilt, ax:new THREE.Vector3(-u.z, 0, u.x) }; slab.add(arm); arms.push(arm); }
   scene.add(slab); ground.push(slab);
-  const gr = new THREE.Mesh(new THREE.CircleGeometry(40, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color:0x2a2622, roughness:1 })); gr.position.y = top - .06; gr.receiveShadow = true; scene.add(gr); ground.push(gr);
+  const gr = new THREE.Mesh(new THREE.CircleGeometry(60, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color:0x15120f, roughness:1 })); gr.position.y = top - .06; gr.receiveShadow = true; scene.add(gr); ground.push(gr);
   /* ночное небо над степью: купол с градиентом; в космосе — чёрное */
   skyM = new THREE.ShaderMaterial({ side:THREE.BackSide, depthWrite:false, uniforms:{ k:{ value:0 } }, vertexShader:'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
-    fragmentShader:'uniform float k; varying vec3 vP; void main(){ float h = clamp(vP.y, 0., 1.); vec3 a = mix(vec3(.10,.13,.22), vec3(.012,.016,.035), pow(h, .5)); vec3 sp = mix(vec3(.035,.07,.15), vec3(.004,.006,.012), smoothstep(-.65, -.05, vP.y)); gl_FragColor = vec4(mix(a, sp, k), 1.); }' });
+    fragmentShader:'uniform float k; varying vec3 vP; void main(){ float h = clamp(vP.y, 0., 1.); float hz = exp(-h * 9.); vec3 a = mix(vec3(.035,.05,.10), vec3(.006,.008,.02), pow(h, .45)) + vec3(.55,.24,.08) * hz * .55 + vec3(.12,.14,.22) * exp(-h * 3.) * .25; vec3 sp = mix(vec3(.035,.07,.15), vec3(.004,.006,.012), smoothstep(-.65, -.05, vP.y)); gl_FragColor = vec4(mix(a, sp, k), 1.); }' });
   const sky = new THREE.Mesh(new THREE.SphereGeometry(900, 32, 16), skyM); scene.add(sky);
   const sp = new Float32Array(2500 * 3); for (let i = 0; i < 2500; i++){ const u2 = Math.random() * .98 + .02, ph = Math.random() * 6.283, rr = 800, k2 = Math.sqrt(1 - u2 * u2); sp.set([rr * k2 * Math.cos(ph), rr * u2 * (Math.random() < .8 ? 1 : -1), rr * k2 * Math.sin(ph)], i * 3); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color:0xdfe7ff, size:1.8, sizeAttenuation:false, transparent:true, opacity:.75 })));
