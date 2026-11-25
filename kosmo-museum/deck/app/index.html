@@ -10089,7 +10089,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const pp0 = $('#fpPP').onclick; $('#fpPP').onclick = () => { if (!S.playing && needHP(pp0)) return; pp0(); };
   /* 2. Скачать маршрут для офлайна */
   const off = document.createElement('button'); off.className = 'fpoff'; off.id = 'fpOff';
-  const offR = () => { const d = LS.get('kosmoOff', {})[S.rk]; const R = (window.ROUTES || DEFR)[S.rk] || {}; const n = (R.ids || []).length || S.q.length, mb = Math.round(n * 3.8);
+  const offR = () => { const d = LS.get('kosmoOff', {})[S.rk]; const R = (window.ROUTES || DEFR)[S.rk] || {}; const n = (R.ids || []).length || S.q.length, mb = Math.max(1, Math.round(n * .3)); /* v205: записи ~300 КБ */
     off.classList.toggle('done', !!d); off.innerHTML = d ? `<i>✓</i><span><b>Маршрут скачан</b><em>${n} рассказов · ${mb} МБ · работает без интернета</em></span>` : `<i>↓</i><span><b>Скачать маршрут</b><em>${n} рассказов · ${mb} МБ · в залах бывает плохая связь</em></span>`; };
   off.onclick = () => { if (off.classList.contains('done') || off.classList.contains('busy')) return; off.classList.add('busy'); let p = 0; const em = off.querySelector('em'); const iv = setInterval(() => { p += 7 + Math.random() * 9; if (p >= 100){ clearInterval(iv); const o = LS.get('kosmoOff', {}); o[S.rk] = 1; LS.set('kosmoOff', o); off.classList.remove('busy'); offR(); return; } em.textContent = `Скачиваем… ${Math.round(p)}%`; off.style.setProperty('--p', p + '%'); }, 160); };
   $('#fpMode').after(off);
@@ -13739,6 +13739,8 @@ html.rtmode .exc .exgo{height:42px;margin-top:10px;font-size:14px}
 /* v205: заголовок вкладки поднят на уровень кнопок «QR» и «Билет» — больше места под контент */
 #vTour>.hd,#vPass>.hd,#vMore>.hd{margin-top:-45px}#vTour>.hd>.kick,#vPass>.hd>.kick,#vMore>.hd>.kick{display:none}#vHall>.hd{margin-top:-34px}
 #vTour>.hd h1,#vPass>.hd h1,#vMore>.hd h1,#vHall>.hd h1{max-width:58%}
+/* v205: полный плеер прокручивается — «Скачать маршрут» не уезжает за край */
+.fp{overflow-y:auto!important;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}.fp::-webkit-scrollbar{display:none}.fp>*{flex-shrink:0}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
