@@ -13851,6 +13851,11 @@ body:has(.agintro.on) .tdk{opacity:0!important;pointer-events:none!important}
 #vEx .psw.vsc .stk .sdesc{transition:opacity .3s}#vEx .psw.vsc .stk.inch .sdesc{opacity:0;pointer-events:none}
 #vEx .psw.vsc .stk .sdesc{z-index:4}
 canvas.exfly{touch-action:none}
+/* v214: у скрытых экранов (.off) ни один элемент не ловит нажатия — «бип-бип» скрытого «Спутника на орбите» перехватывал «назад» в плеере */
+.off,.off *{pointer-events:none!important}
+#toast{pointer-events:none!important}
+/* v214: плашка экскурсии в досье — обычным блоком в конце, не поверх «Послушать рассказ» */
+#vEx .tourbar{position:relative!important;bottom:auto!important}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
