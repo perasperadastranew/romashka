@@ -13800,7 +13800,7 @@ body.hastdk #mp{display:none!important}
 body:has(#vEx:not(.off)) .tdk,body:has(.qd) .tdk,body:has(#vEx:not(.off)) .agintro{transform:translateY(140%)!important;opacity:0!important;pointer-events:none!important}
 .sdesc .psnav{justify-content:center!important}.sdesc .psnav .pa.go{height:44px!important;padding:0 8px 0 20px!important;display:inline-flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,.22)!important;background:rgba(255,255,255,.1)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#fff!important;font:500 14px var(--f,Inter)!important;box-shadow:none!important}
 .sdesc .psnav .pa.go i{width:30px;height:30px;border-radius:50%;background:#fff;color:#121316;display:grid;place-items:center;font-style:normal;font-size:16px;line-height:1}
-body:has(.exc.on) .mp,body:has(.exc.on) .tdk{transform:translateY(130%)!important;opacity:0!important;pointer-events:none!important}
+body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transform:translateY(130%)!important;opacity:0!important;pointer-events:none!important}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -14039,7 +14039,7 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk{transform:translateY(130%)!importan
   { const st0 = window.showTab; if (typeof st0 === 'function'){ window.showTab = function(t){ const r = st0.apply(this, arguments); const H = window.__here; if (t === 'map' && H && !H.seen && Date.now() - H.t < 45 * 60000){ H.seen = true; setTimeout(() => { try { window.m3select && m3select(H.id, true); say('Вы здесь: ' + ((window.tourEx ? tourEx(H.id).title : '') || 'экспонат')); } catch(_){} }, 600); } return r; }; } }
   /* ---------- 12. вступление о музее при старте экскурсии (audio/intro.mp3) ---------- */
   { const t0 = window.tourStart; if (typeof t0 === 'function'){ window.tourStart = function(){ const r = t0.apply(this, arguments); setTimeout(intro, 400); return r; }; } }
-  function intro(){ if (!(window.__AUD || {}).intro) return; document.querySelectorAll('.agintro').forEach(x => x.remove()); const a = new Audio('audio/intro.mp3'); a.preload = 'auto'; window.__introAU = a;
+  function intro(){ if (!(window.__AUD || {}).intro || window.__introDone) return; window.__introDone = true; /* v210: вступление — один раз за визит */ document.querySelectorAll('.agintro').forEach(x => x.remove()); const a = new Audio('audio/intro.mp3'); a.preload = 'auto'; window.__introAU = a;
     const el = document.createElement('div'); el.className = 'agintro'; el.innerHTML = `<i class="eq"><s></s><s></s><s></s></i><div><small>Вступление о музее</small><b>Добро пожаловать</b></div><span class="tm">0:00</span><button aria-label="Пропустить">Пропустить</button><em><u></u></em>`; host().appendChild(el); requestAnimationFrame(() => el.classList.add('on'));
     const end = () => { a.pause(); el.classList.remove('on'); setTimeout(() => el.remove(), 350); };
     el.querySelector('button').onclick = end; a.onended = end; a.ontimeupdate = () => { const d = a.duration || 33; el.querySelector('.tm').textContent = `${Math.floor(a.currentTime / 60)}:${String(Math.floor(a.currentTime % 60)).padStart(2, '0')}`; el.querySelector('u').style.width = (a.currentTime / d * 100) + '%'; };
