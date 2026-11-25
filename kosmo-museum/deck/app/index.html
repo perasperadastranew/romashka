@@ -11393,7 +11393,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const from0 = scr(obj);
     ex.classList.add('full', 'fin'); openEx(id); window.__m3sel = id; ex.scrollTop = 0;
     requestAnimationFrame(() => requestAnimationFrame(() => ex.classList.remove('fin')));
-    const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">листай — повернётся</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : id === 14 ? '<span class="cr">3D: Homeless_Models, CC BY 4.0</span>' : ''); ex.querySelector('.grab').after(hero); const story = id === 10 ? ps1Story(ex, hero) : STORYCFG[id] ? ps1Story(ex, hero, STORYCFG[id]) : null; me.story = story;
+    const hero = document.createElement('div'); hero.className = 'exhero'; const ht = HT[id] || [(EX.find(x => x.id === id) || {}).short || '', '']; hero.innerHTML = '<i class="sl"></i><div class="ht"><div class="k">' + ht[1] + '</div><h1' + (ht[0].length > 11 ? ' class="lg"' : '') + '>' + ht[0] + '</h1></div><span class="hh">листай — повернётся</span>' + (id === 10 ? '<span class="cr">3D: borkia, CC BY-SA 4.0</span>' : id === 14 ? '<span class="cr">3D: Homeless_Models, CC BY 4.0</span>' : ''); ex.querySelector('.grab').after(hero); const story = id === 10 ? ps1Story(ex, hero) : STORYCFG[id] ? ps1Story(ex, hero, STORYCFG[id]) : null; me.story = story; if (story){ const hh = hero.querySelector('.hh'); hh && hh.remove(); } /* v207: у историй со стрелками — без «листай» */
     if (id === 11 && window.__dogsIn && window.__DOGS_ON) setTimeout(() => window.__dogsIn(hero), 900); /* v149: Белка и Стрелка рядом с контейнером */
     const R = new T.WebGLRenderer({ antialias:true, alpha:true }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.outputColorSpace = T.SRGBColorSpace; R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.1;
     const cv = R.domElement; cv.className = 'exfly'; document.body.appendChild(cv);
@@ -13827,10 +13827,17 @@ body.hastdk #mp{display:none!important}
 
   /* ---------- 2. после скана: капсула → «Забрать в паспорт» → (медаль) → 3D-страница или досье ---------- */
   const fullDossier = id => { window.__viaQR = id; window.__dosOnly = true; try { (window.openEx || openEx)(id); } finally { window.__dosOnly = false; } };
-  const after = id => { const L = window.LANDING && window.LANDING[id]; if (L && window[L]) { window.__dosOnly = false; window[L](); } else fullDossier(id); };
+  /* v207: где сейчас человек — страница экспоната или 3D-страница этого экспоната уже открыта? */
+  const VLID2 = { 'lunokhod.html':22, 'luna16.html':21, 'buran.html':35, 'mir.html':36, 'venera.html':23, 'mars.html':15, 'vostok.html':12, 'soyuzapollo.html':26, 'baikonur.html':31 };
+  const onPage = () => { const vl = document.getElementById('vl'), f = document.getElementById('vlFrame'); if (vl && !vl.classList.contains('off') && f){ const m = (f.getAttribute('src') || '').match(/([a-z0-9]+\.html)/i); if (m && VLID2[m[1]]) return VLID2[m[1]]; }
+    const ex = document.getElementById('vEx'); if (ex && !ex.classList.contains('off') && window.__curEx) return window.__curEx; const qd = document.querySelector('.qd'); if (qd && qd.dataset.id) return +qd.dataset.id; return null; };
+  const after = id => { const from = window.__scanFrom; window.__scanFrom = null; if (from === id && onPage() === id) return; /* скан со страницы этого же экспоната — остаёмся на ней */
+    const L = window.LANDING && window.LANDING[id]; if (L && window[L]) { window.__dosOnly = false; window[L](); } else fullDossier(id); };
+  /* скан = «я здесь»: шаг экскурсии и карта переходят к этому экспонату */
+  const here = id => { window.__here = { id, t:Date.now(), seen:false }; try { const r = window.tourState && tourState(), R = window.TOUR_ROUTES || window.ROUTES || {}; if (r && r.started){ const ids = (R[r.key] || {}).ids || []; const k = ids.indexOf(id); if (k >= 0){ r.i = Math.min(ids.length - 1, r.done.includes(id) ? k + 1 : k); window.tourSave && tourSave(r); window.renderTour && renderTour(); } } } catch(_){} };
   const finish = id => { const m = newMedal(); if (m){ capsule(`kind=medal&m=${m[0]}`, () => { say('Медаль «' + m[1] + '»'); after(id); }); return; } after(id); };
   const openStory = (id) => finish(id);
-  window.__stampScreen = (id, first) => { document.querySelectorAll('.mkov').forEach(x => x.remove());
+  window.__stampScreen = (id, first) => { document.querySelectorAll('.mkov').forEach(x => x.remove()); here(id);
     if (!first){ say('Эта марка уже в паспорте'); return after(id); }
     hasCap(id).then(ok => { if (ok && !SKIPCAP) return capsule(`ex=${id}`, () => { say('Марка в паспорте'); finish(id); }); say('Марка в паспорте'); finish(id); }); };
   window.openStoryDossier = (id) => QSTORY[id] ? story(id, false) : fullDossier(id);
@@ -13879,7 +13886,7 @@ body.hastdk #mp{display:none!important}
 
   function story(id, fresh){ const S = QSTORY[id]; document.querySelectorAll('.qd').forEach(x => x.remove());
     const n = nGot(), T = total();
-    const ov = document.createElement('div'); ov.className = 'qd';
+    const ov = document.createElement('div'); ov.className = 'qd'; ov.dataset.id = id;
     const chHTML = S.ch.map((c, k) => { const num = `<div class="n">${String(k + 1).padStart(2, '0')} / ${String(S.ch.length).padStart(2, '0')}</div><h2>${c.h}</h2><p>${c.p}</p>`;
       if (c.parts) return `<section class="qch" data-k="${k}">${num}<div class="sc sc2"><svg viewBox="0 0 280 190">${rover({ parts:1 })}${[[172, 40, 1], [30, 96, 2], [74, 44, 3], [125, 184, 4], [28, 146, 5], [150, 122, 6]].map(([x, y, i]) => `<g class="mrk" data-p="${i}"><circle cx="${x}" cy="${y}" r="8"/><text x="${x}" y="${y + 3.5}" text-anchor="middle">${i}</text></g>`).join('')}</svg></div>
         <div class="partnav"><button class="pv" aria-label="Назад">‹</button><div class="pc"></div><button class="nx" aria-label="Дальше">›</button></div></section>`;
@@ -13923,7 +13930,7 @@ body.hastdk #mp{display:none!important}
   const qrRow = (id) => { const ok = got(id), q = document.createElement('div'); q.className = 'qrrow' + (ok ? ' ok' : '');
     q.innerHTML = ok ? `<div class="qi">${OKI}</div><div style="flex:1"><b>Марка в паспорте</b><span>Отсканировано у таблички</span></div><button class="qrop">Открыть марку</button>` : `<div class="qi">${QRI}</div><div><b>Сканировать QR на табличке</b><span>Марка в паспорт и досье, которое открывается только у экспоната</span></div>`;
     q.onclick = (e) => { if (ok){ if (e.target.closest('.qrop')) return window.openStampView(id); window.closeEx && closeEx(); window.showTab && showTab('pass'); } else window.openQrScan && openQrScan(id); }; return q; };
-  const o = window.openEx; if (typeof o === 'function'){ window.openEx = function(id){ const r = o.apply(this, arguments);
+  const o = window.openEx; if (typeof o === 'function'){ window.openEx = function(id){ const r = o.apply(this, arguments); window.__curEx = id;
     setTimeout(() => { const ex = document.getElementById('vEx'); if (!ex || ex.classList.contains('off')) return; const sb = ex.querySelector('#stampBtn');
       if (sb && !sb.classList.contains('ok') && got(id)) sb.remove();
       if (ex.querySelector('#stampBtn')) return; ex.querySelectorAll('.qrrow').forEach(x => x.remove());
@@ -13932,7 +13939,7 @@ body.hastdk #mp{display:none!important}
       if (QSTORY[id] && !ex.querySelector('.qrstory')){ const s = document.createElement('div'); s.className = 'qrrow qrstory'; s.innerHTML = `<div class="qi" style="background:rgba(255,255,255,.1)">▶</div><div><b>Досье-история</b><span>Шесть глав со схемами / 2 минуты</span></div>`; s.onclick = () => { window.closeEx && closeEx(); setTimeout(() => story(id, false), 250); }; ex.querySelector('.qrrow:not(.qrstory)').after(s); } }, 160);
     return r; }; try { openEx = window.openEx; } catch(_){} }
   /* 3D-страницы (облёты) — кнопка QR рядом с крестиком */
-  const VLID = { 'lunokhod.html':22, 'luna16.html':21, 'buran.html':35, 'mir.html':36, 'venera.html':23, 'mars.html':15 };
+  const VLID = { 'lunokhod.html':22, 'luna16.html':21, 'buran.html':35, 'mir.html':36, 'venera.html':23, 'mars.html':15, 'vostok.html':12, 'soyuzapollo.html':26, 'baikonur.html':31 };
   const vlBtn = () => { const vl = document.getElementById('vl'), f = document.getElementById('vlFrame'); if (!vl || !f) return; const m = (f.getAttribute('src') || '').match(/([a-z0-9]+\.html)/i), id = m && VLID[m[1]];
     let b = vl.querySelector('.vlqr'); if (!id){ b && b.remove(); return; } if (!b){ b = document.createElement('button'); b.className = 'vlqr'; vl.appendChild(b); }
     const ok = got(id); b.className = 'vlqr' + (ok ? ' ok' : ''); b.innerHTML = (ok ? OKI : QRI) + (ok ? 'В паспорте' : 'QR'); b.onclick = () => { if (ok) return; window.openQrScan && openQrScan(id); }; };
@@ -13960,7 +13967,7 @@ body.hastdk #mp{display:none!important}
   const plural = k => k % 10 === 1 && k % 100 !== 11 ? 'марка' : [2, 3, 4].includes(k % 10) && ![12, 13, 14].includes(k % 100) ? 'марки' : 'марок';
   const rp = window.renderPass; if (rp) window.renderPass = function(){ const r = rp.apply(this, arguments); try { level(); } catch(e){ console.warn(e); } return r; }; setTimeout(() => { try { level(); } catch(_){} }, 900);
   /* ---------- 7. экран сканера: без демо, камера сразу ---------- */
-  window.openQrScan = () => { document.querySelectorAll('.qsx').forEach(x => x.remove()); let stream = null, raf = 0, off = false;
+  window.openQrScan = () => { document.querySelectorAll('.qsx').forEach(x => x.remove()); let stream = null, raf = 0, off = false; window.__scanFrom = onPage();
     const el = document.createElement('div'); el.className = 'qsx'; el.innerHTML = `<button class="x" aria-label="Закрыть">×</button><div class="k">Отметка по QR</div><h3>Наведите камеру<br>на QR-код таблички</h3>
       <div class="vf"><i></i><i></i><i></i><i></i><s></s><div class="ph">Включаем камеру…</div></div><div class="ok">${OKI}</div>
       <div class="bt"><div class="lab"><div class="pl"><b></b><b></b><b></b><b></b><em></em></div><p><b>QR — в правом нижнем углу таблички.</b> Можно сканировать и обычной камерой телефона: приложение откроется само.</p></div><button class="cam">Разрешить камеру</button></div>`;
@@ -13986,6 +13993,8 @@ body.hastdk #mp{display:none!important}
   new MutationObserver(() => document.querySelectorAll('.alb .row .mk:not([data-op])').forEach(m => { m.dataset.op = 1; const b = document.createElement('button'); b.className = 'mkop'; b.setAttribute('aria-label', 'Открыть марку'); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>'; b.onclick = e => { e.stopPropagation(); window.openStampView(+m.dataset.id); }; m.appendChild(b); })).observe(document.body, { childList:true, subtree:true });
   /* ---------- 10. полоса экскурсии: тап по названию открывает окно экскурсии (полный плеер со списком маршрута) ---------- */
   document.addEventListener('click', e => { const t = e.target.closest('.tdk [data-a=open], .tdk .tth'); if (!t) return; e.stopPropagation(); e.preventDefault(); if (window.PL && PL.openFull) PL.openFull(); else { const f = document.getElementById('fp'); f && f.classList.add('on'); } }, true);
+  /* ---------- 11. карта после скана: сразу этаж и экспонат, где человек стоит ---------- */
+  { const st0 = window.showTab; if (typeof st0 === 'function'){ window.showTab = function(t){ const r = st0.apply(this, arguments); const H = window.__here; if (t === 'map' && H && !H.seen && Date.now() - H.t < 45 * 60000){ H.seen = true; setTimeout(() => { try { window.m3select && m3select(H.id, true); say('Вы здесь: ' + ((window.tourEx ? tourEx(H.id).title : '') || 'экспонат')); } catch(_){} }, 600); } return r; }; } }
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */
