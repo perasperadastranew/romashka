@@ -13801,6 +13801,9 @@ body:has(#vEx:not(.off)) .tdk,body:has(.qd) .tdk,body:has(#vEx:not(.off)) .agint
 .sdesc .psnav{justify-content:center!important}.sdesc .psnav .pa.go{height:44px!important;padding:0 8px 0 20px!important;display:inline-flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,.22)!important;background:rgba(255,255,255,.1)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#fff!important;font:500 14px var(--f,Inter)!important;box-shadow:none!important}
 .sdesc .psnav .pa.go i{width:30px;height:30px;border-radius:50%;background:#fff;color:#121316;display:grid;place-items:center;font-style:normal;font-size:16px;line-height:1}
 body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transform:translateY(130%)!important;opacity:0!important;pointer-events:none!important}
+/* v210: «Маршрут под вас» — интересы компактнее, в результате лента экспонатов */
+.myr .ops:not(.seg){gap:6px!important}.myr .ops:not(.seg) button{height:34px!important;min-height:0!important;padding:0 12px!important;font-size:13px!important;border-radius:999px!important}
+.myr .res .ids{display:none!important}.myr .res .myrgal{margin:12px -4px 0}.myr .res .myrgal button{width:76px}.myr .res .myrgal span{width:76px;height:96px}.myr .res .myrgal b{font-size:10.5px}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -14065,6 +14068,10 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transfor
   document.addEventListener('click', e => { const b = e.target.closest('#fpGo, #hmCont'); if (!b) return; let id = null;
     if (b.id === 'fpGo'){ const ps = window.PL && PL.state ? PL.state() : {}; id = ps.id; } else { const r = window.tourState && tourState(), R = window.TOUR_ROUTES || window.ROUTES || {}; const ids = r && R[r.key] ? R[r.key].ids : []; id = ids[r ? r.i : 0]; }
     if (!id) return; e.stopPropagation(); e.preventDefault(); goToExhibit(+id); }, true);
+  /* ---------- 17. «Маршрут под вас»: лента экспонатов в карточке результата ---------- */
+  const myrGal = () => { const res = document.querySelector('.myr .res'); if (!res || !window.myRouteBuild) return; let r; try { r = myRouteBuild(); } catch(_){ return; } if (!r || !r.ids) return; const sig = r.ids.join(','); let g = res.querySelector('.myrgal'); if (g && g.dataset.sig === sig) return; if (!g){ g = document.createElement('div'); g.className = 'myrgal hmgal'; res.appendChild(g); } g.dataset.sig = sig;
+    g.innerHTML = r.ids.map((id, i) => { const x = window.tourEx ? tourEx(id) : {}; const img = (window.__STAMPED && __STAMPED.has(id)) ? `g/stamps/${id}.webp` : (x.th || ''); return `<button data-id="${id}" type="button"><span style="background-image:url('${img}')"></span><em>${i + 1}</em><b>${(x.title || '').replace(/[«»]/g, '')}</b></button>`; }).join(''); };
+  new MutationObserver(() => { if (document.querySelector('.myr .res')) myrGal(); }).observe(document.body, { childList:true, subtree:true, characterData:true });
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */
