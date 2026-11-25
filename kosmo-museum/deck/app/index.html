@@ -9645,7 +9645,9 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
         if (z.y < ns.y * .2 && bb.min.y < nb.min.y + ns.y * .08 && z.x * z.z > ns.x * ns.z * (id === 10 ? .02 : .3) && z.y < Math.max(z.x, z.z) * .35){ o.visible = false; o.userData.mapHide = 1; hit = 1; } });
       if (hit){ const b2 = vBox(n); if (!b2.isEmpty()){ n.position.y -= (b2.min.y - nb.min.y) / (n.parent ? n.parent.getWorldScale(new THREE.Vector3()).y : 1); n.updateMatrixWorld(true); } } }
     /* v152: веранда Циолковского — в левый верхний угол «Творцов», тонкая ракета ГИРД-09 — на её прежнее место */
-    const MOVE = { 50:[15.9, 0.6], 17:[22.2, 12.2] };
+    const MOVE = { 50:[15.9, 0.6], 17:[22.2, 12.2],
+      /* v201: зал 1 «Утро космической эры» — ровная сетка: Спутник по оси у входа, две колонки по три экспоната, посередине свободный проход */
+      10:[-2.7, 40], 13:[-12, 17], 12:[-12, 26], 11:[-12, 35], 14:[6.5, 17], 16:[6.5, 26], 24:[6.5, 35] };
     function moveTo(n){ const m = MOVE[+n.name.slice(3)]; if (!m || n.userData.moved) return; n.userData.moved = 1; n.updateMatrixWorld(true); const c = new THREE.Box3().setFromObject(n).getCenter(new THREE.Vector3()); const w = n.getWorldPosition(new THREE.Vector3()); const tgt = new THREE.Vector3(w.x + m[0] - c.x, w.y, w.z + m[1] - c.z); n.position.copy(n.parent.worldToLocal(tgt)); n.updateMatrixWorld(true); }
     /* v153: ряды витрин в «Доме на орбите» — развернуть на 45°, по ходу коридора */
     let vitrDone = false; function vitr(){ if (vitrDone) return; vitrDone = true; /* v159: витрины-стенды убраны с карты (не крутим группы — экспонаты остаются на местах) */
@@ -9725,9 +9727,12 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     /* v201: путь между экспонатами — перебор «коридоров»: L-путь и Z-пути с поворотом на разных линиях между точками; штраф за задетый экспонат, за длину и за лишний поворот */
     function lanes(a, b){ const V = (x, z) => new THREE.Vector3(x, a.y, z), out = [[ortho(a, b), 0], [zfirst(a, b), 0]]; if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) out.push([[a, b], 0]);
       for (let k = 1; k < 10; k++){ const x = a.x + (b.x - a.x) * k / 10, z = a.z + (b.z - a.z) * k / 10; out.push([[a, V(x, a.z), V(x, b.z), b], 0], [[a, V(a.x, z), V(b.x, z), b], 0]); }
-      for (const d of [-2.5, 2.5]){ const x = (d < 0 ? Math.min(a.x, b.x) : Math.max(a.x, b.x)) + d, z = (d < 0 ? Math.min(a.z, b.z) : Math.max(a.z, b.z)) + d; out.push([[a, V(a.x, z), V(b.x, z), b], 6], [[a, V(x, a.z), V(x, b.z), b], 6]); }
+      for (const d of [-2.5, 2.5, -4, 4, -6, 6]){ const x = (d < 0 ? Math.min(a.x, b.x) : Math.max(a.x, b.x)) + d, z = (d < 0 ? Math.min(a.z, b.z) : Math.max(a.z, b.z)) + d; out.push([[a, V(a.x, z), V(b.x, z), b], Math.abs(d) * 1.5], [[a, V(x, a.z), V(x, b.z), b], Math.abs(d) * 1.5]); }
+      /* v201: центральный проход зала — по оси зоны, где стоят оба экспоната */
+      for (const z of Object.values(zones)){ if (a.x >= z.min.x && a.x <= z.max.x && a.z >= z.min.z && a.z <= z.max.z && b.x >= z.min.x && b.x <= z.max.x && b.z >= z.min.z && b.z <= z.max.z){ const cx = (z.min.x + z.max.x) / 2, cz = (z.min.z + z.max.z) / 2; out.push([[a, V(cx, a.z), V(cx, b.z), b], 0], [[a, V(a.x, cz), V(b.x, cz), b], 0]); } }
       return out; }
     const plen = q => q.reduce((s, p, i) => i ? s + p.distanceTo(q[i - 1]) : 0, 0);
+    window.__routeAudit = () => { const out = []; for (const key of Object.keys(ROUTES)){ const L = ROUTES[key].ids.filter(id => nodes[id]); for (let k = 1; k < L.length; k++){ const a = exPos(L[k - 1]), b = exPos(L[k]); if (floorOf(a) !== floorOf(b)) continue; const q = smart(a, b, L[k - 1], L[k]); const h = hits(q, [L[k - 1], L[k]]); if (h) out.push([key, L[k - 1], L[k], h]); } } return out; };
     function smart(a, b, idA, idB){ let poly; if (a.z > 50 || floorOf(a) !== floorOf(b)) poly = path(a, b); else { let best = null, bs = 1e9; for (const [c, pen] of lanes(a, b)){ const sc = hits(c, [idA, idB]) * 1000 + plen(c) + (c.length - 2) * 1.5 + pen; if (sc < bs){ bs = sc; best = c; } } poly = best; }
       return trim(poly, exRad(idA), exRad(idB)); }
     /* v192: переход между этажами — по ближайшей лестнице (левая или правая), а не всегда по левой */
@@ -13417,7 +13422,7 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
     ['К планетам', '#B5502F', [16, 23, 15]], ['Станции и стыковки', '#6A5BB0', [36, 44, 25, 26, 27, 29, 20]], ['Ракеты и старты', '#C4912B', [33, 41, 34, 35, 38]], ['Спутники для Земли', '#3F8A55', [30, 56]]];
   const YEAR = { 10:1957, 37:1958, 32:1957, 12:1961, 13:1961, 11:1960, 14:1965, 49:1969, 19:1977, 45:1989, 24:1966, 21:1970, 22:1970, 900:1967, 16:1961, 23:1967, 15:1971, 36:1986, 44:1969, 25:1975, 26:1975, 27:1980, 29:1998, 20:1967, 33:1965, 41:1999, 34:1999, 35:1988, 38:1981, 30:1982, 56:2003 };
   const NAME = { 10:'Спутник-1', 21:'Луна-16', 22:'Луноход-1', 35:'Буран', 12:'Восток', 13:'СК-1', 14:'Беркут', 24:'Луна-9', 36:'Мир', 15:'Марс-3', 23:'Венера-4', 26:'Союз — Аполлон', 900:'Сатурн-5', 29:'МКС' };
-  const STAMPED = new Set([10, 21, 22]); /* готовые кадры app/g/stamps/<id>.webp */
+  const STAMPED = new Set([10, 21, 22, 11, 12, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 41, 44, 45, 47, 49, 56, 900]); /* готовые кадры app/g/stamps/<id>.webp; v201 admin: добавлены кадры 3:4 серии «Кино» для всех экспонатов альбома */
   const coll = id => COLL.find(c => c[2].includes(id)) || ['Музей космонавтики', '#FF8A4A', []];
   const title = id => NAME[id] || ((window.tourEx ? tourEx(id).title : '') || 'Экспонат').replace(/[«»]/g, '');
   window.stampHTML = (id, s = 1, empty = false) => { const c = coll(id), n = title(id), fs = Math.min(27, Math.floor(196 / Math.max(5, n.length * .62)));
