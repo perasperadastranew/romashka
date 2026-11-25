@@ -13738,9 +13738,25 @@ html.rtmode .exc .exgo{height:42px;margin-top:10px;font-size:14px}
 .alb .row .mk{position:relative}.alb .row .mk .mkop{position:absolute;right:2px;top:2px;z-index:3;width:24px;height:24px;border-radius:50%;border:0;padding:5px;background:rgba(10,11,13,.72);color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}.alb .row .mk .mkop svg{width:100%;height:100%;display:block}
 /* v205: заголовок вкладки поднят на уровень кнопок «QR» и «Билет» — больше места под контент */
 #vTour>.hd,#vPass>.hd,#vMore>.hd{margin-top:-45px}#vTour>.hd>.kick,#vPass>.hd>.kick,#vMore>.hd>.kick{display:none}#vHall>.hd{margin-top:-34px}
+#vToday>.hello{margin-top:-31px}#vToday>.hello h1{max-width:60%;font-size:26px!important;line-height:1.1!important;white-space:normal}
 #vTour>.hd h1,#vPass>.hd h1,#vMore>.hd h1,#vHall>.hd h1{max-width:58%}
 /* v205: полный плеер прокручивается — «Скачать маршрут» не уезжает за край */
 .fp{overflow-y:auto!important;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}.fp::-webkit-scrollbar{display:none}.fp>*{flex-shrink:0}
+/* v206: плеер экскурсии — тонкая полоса над таб-баром (вариант A); тап открывает окно экскурсии */
+html .tdk{display:flex!important;align-items:center;gap:6px;bottom:90px!important;padding:7px 7px 9px 7px!important;border-radius:18px!important;overflow:hidden}
+html .tdk .tpb{position:absolute!important;left:12px;right:12px;bottom:3px;margin:0!important;height:2px!important;display:flex!important;gap:2px!important}
+html .tdk .tpb i{flex:1!important;height:2px!important;width:auto!important;border-radius:1px!important;margin:0!important;background:rgba(255,255,255,.14)}html .tdk .tpb i.d{background:rgba(143,227,176,.7)}html .tdk .tpb i.c{background:#FF8A4C}
+html .tdk .trw{flex:1;min-width:0;display:flex!important;align-items:center;gap:10px;margin:0!important}
+html .tdk .tth{width:40px!important;height:40px!important;border-radius:10px!important;flex:none}
+html .tdk .ttx{flex:1;min-width:0;text-align:left;padding:0!important}html .tdk .ttx small{font-size:10px!important}html .tdk .ttx b{font-size:14px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}html .tdk .ttx span{display:none!important}
+html .tdk .trw .tsm[data-a=prev]{display:none!important}html .tdk .trw .tsm[data-a=next]{width:36px!important;height:36px!important;margin:0!important;background:none!important}
+html .tdk>div:last-child{flex:none;display:flex!important;gap:0!important;order:2}
+html .tdk>div:last-child .tsm{display:none!important}
+html .tdk .tgo{flex:none!important;width:40px!important;height:40px!important;min-height:0!important;margin:0!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center;position:relative;overflow:hidden}
+html .tdk .tgo span,html .tdk .tgo em{display:none!important}html .tdk .tgo>i{position:absolute;left:0;bottom:0;height:3px}
+html .tdk .tgo svg{width:16px;height:16px}
+html .tdk .trw{order:1}html .tdk .trw .tsm[data-a=next]{order:3}
+body.hastdk #mp{display:none!important}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -13961,6 +13977,8 @@ html.rtmode .exc .exgo{height:42px;margin-top:10px;font-size:14px}
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) start(); else { el.querySelector('.ph').textContent = 'Камера недоступна в этом браузере — отсканируйте код обычной камерой телефона.'; } };
   /* ---------- 9. на каждой марке альбома — маленькая кнопка «открыть»: капсула этой марки (показ, без отметки) ---------- */
   new MutationObserver(() => document.querySelectorAll('.alb .row .mk:not([data-op])').forEach(m => { m.dataset.op = 1; const b = document.createElement('button'); b.className = 'mkop'; b.setAttribute('aria-label', 'Открыть марку'); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>'; b.onclick = e => { e.stopPropagation(); window.openStampView(+m.dataset.id); }; m.appendChild(b); })).observe(document.body, { childList:true, subtree:true });
+  /* ---------- 10. полоса экскурсии: тап по названию открывает окно экскурсии (полный плеер со списком маршрута) ---------- */
+  document.addEventListener('click', e => { const t = e.target.closest('.tdk [data-a=open], .tdk .tth'); if (!t) return; e.stopPropagation(); e.preventDefault(); if (window.PL && PL.openFull) PL.openFull(); else { const f = document.getElementById('fp'); f && f.classList.add('on'); } }, true);
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */
