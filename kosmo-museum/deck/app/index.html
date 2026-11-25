@@ -13821,6 +13821,9 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transfor
 #m3wrap .m3halls2{right:10px!important}#m3wrap #m3find{right:94px!important}
 .psteps{touch-action:pan-y!important}
 .sdesc .psnav .psl span{text-transform:none!important;letter-spacing:0!important;font:500 14px var(--f,Inter)!important;color:#fff!important}
+#vEx>.nowpl{position:sticky;top:58px;z-index:6;display:flex;align-items:center;gap:10px;margin:4px 12px 0;padding:6px 12px 6px 6px;border-radius:999px;background:rgba(22,24,29,.94);border:1px solid rgba(255,138,76,.3);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+#vEx>.nowpl .np{width:32px;height:32px;flex:none;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:11px;cursor:pointer}#vEx>.nowpl.pl .np{background:#FF6A1F}
+#vEx>.nowpl .nt{flex:1;min-width:0;cursor:pointer}#vEx>.nowpl small{display:block;font:500 9.5px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#FF8A4C}#vEx>.nowpl b{display:block;font:500 13.5px var(--f,Inter);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -14089,6 +14092,15 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transfor
   const myrGal = () => { const res = document.querySelector('.myr .res'); if (!res || !window.myRouteBuild) return; let r; try { r = myRouteBuild(); } catch(_){ return; } if (!r || !r.ids) return; const sig = r.ids.join(','); let g = res.querySelector('.myrgal'); if (g && g.dataset.sig === sig) return; if (!g){ g = document.createElement('div'); g.className = 'myrgal hmgal'; res.appendChild(g); } g.dataset.sig = sig;
     g.innerHTML = r.ids.map((id, i) => { const x = window.tourEx ? tourEx(id) : {}; const img = (window.__STAMPED && __STAMPED.has(id)) ? `g/stamps/${id}.webp` : (x.th || ''); return `<button data-id="${id}" type="button"><span style="background-image:url('${img}')"></span><em>${i + 1}</em><b>${(x.title || '').replace(/[«»]/g, '')}</b></button>`; }).join(''); };
   new MutationObserver(() => { if (document.querySelector('.myr .res')) myrGal(); }).observe(document.body, { childList:true, subtree:true, characterData:true });
+  /* ---------- 18. в досье другого экспоната — плашка «Звучит: …» с паузой ---------- */
+  setInterval(() => { const ex = document.getElementById('vEx'); if (!ex) return; const open = !ex.classList.contains('off'); const ps = window.PL && PL.state ? PL.state() : {}; let n = ex.querySelector(':scope > .nowpl');
+    const show = open && ps && ps.id && (ps.playing || ps.t > 0) && +ps.id !== +window.__curEx;
+    if (!show){ if (n) n.remove(); return; }
+    if (!n){ n = document.createElement('div'); n.className = 'nowpl'; n.innerHTML = '<button class="np" aria-label="Пауза"></button><div class="nt"><small></small><b></b></div>'; const top = ex.querySelector(':scope > .top'); top ? top.after(n) : ex.prepend(n);
+      n.querySelector('.np').onclick = e => { e.stopPropagation(); const b = document.getElementById('fpPP') || document.getElementById('mpPP'); const s2 = window.PL && PL.state ? PL.state() : {}; if (window.PL && PL.toggle && s2.id) PL.toggle(+s2.id); else if (b) b.click(); };
+      n.querySelector('.nt').onclick = () => window.PL && PL.openFull && PL.openFull(); }
+    const x = window.tourEx ? tourEx(+ps.id) : {}; const t = Math.floor(ps.t || 0);
+    n.querySelector('small').textContent = (ps.playing ? 'Звучит' : 'На паузе') + ' / ' + Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); n.querySelector('b').textContent = x.title || ''; n.querySelector('.np').textContent = ps.playing ? '❚❚' : '▶'; n.classList.toggle('pl', !!ps.playing); }, 500);
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */
