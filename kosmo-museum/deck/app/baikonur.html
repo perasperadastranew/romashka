@@ -98,9 +98,10 @@ const CH = [
   { roll:0, d:[1, .1, 1.15], k:3.3, t:[0, .82, 0], env:0, lift:0, sb:0, sc:0, pin:null, card:null },
   { roll:0, d:[1, .08, .6], k:1.05, t:[0, .36, 0], env:0, lift:0, sb:0, sc:0, pin:'опоры «тюльпана»', m:'arm', card:['01 / Тюльпан', 'Ракета не стоит, а висит', 'Четыре фермы держат ракету за силовые узлы боковых блоков, а под ней — пустота газоотводного лотка. Опоры прозвали «тюльпаном»: на старте они раскрываются, как лепестки.'] },
   { roll:0, d:[1, .02, .9], k:3.1, t:[0, .42, 0], env:0, lift:1, sb:0, sc:0, pin:null, card:['02 / Старт', 'Пять двигателей — двадцать сопел', 'Разом включаются центральный блок и четыре боковых: у каждого двигателя по четыре камеры сгорания. Ракета поднимается, противовесы отводят фермы, а пламя уходит в лоток.'] },
-  { roll:0.06, d:[1, -.45, .35], k:2.5, t:[0, .38, 0], env:1, lift:0, sb:1, sc:0, pin:null, card:['03 / Крест Королёва', 'Через две минуты — крест', 'Боковые блоки выработали топливо и отходят одновременно, разлетаясь в стороны. С Земли это видно как огненный крест — его называют «крестом Королёва».'] },
-  { roll:-0.05, d:[1, .2, .5], k:2.0, t:[0, .45, 0], env:1, lift:0, sb:1, sc:1, pin:'третья ступень', m:'up', card:['04 / Горячее разделение', 'Огонь сквозь решётку', 'Центральный блок работает почти пять минут. Третья ступень включает двигатель ещё до разделения — огонь выходит через решётчатую ферму, и только потом блоки расходятся.'] },
-  { roll:0.07, d:[-1, .3, .8], k:1.25, t:[0, .72, 0], env:1, lift:0, sb:1, sc:1, pin:null, card:['05 / Орбита', 'Девять минут до орбиты', 'Третья ступень разгоняет корабль до первой космической скорости — почти восемь километров в секунду. На девятой минуте полёта корабль отделяется и выходит на орбиту.', true] } ];
+  { roll:-0.04, d:[1, -.18, .45], k:3.4, t:[0, .22, 0], env:2, lift:0, sb:0, sc:0, asc:1, pin:null, card:['03 / Сквозь атмосферу', 'Облака остаются внизу', 'Ракета разгоняется, и уже через минуту обгоняет звук. Облака уходят вниз, небо темнеет до чёрного, а факел распухает: воздуха вокруг всё меньше, и газам некуда давить. Через две минуты — высота около сорока километров.'] },
+  { roll:0.06, d:[1, -.45, .35], k:2.5, t:[0, .38, 0], env:1, lift:0, sb:1, sc:0, pin:null, card:['04 / Крест Королёва', 'Через две минуты — крест', 'Боковые блоки выработали топливо и отходят одновременно, разлетаясь в стороны. С Земли это видно как огненный крест — его называют «крестом Королёва».'] },
+  { roll:-0.05, d:[1, .2, .5], k:2.0, t:[0, .45, 0], env:1, lift:0, sb:1, sc:1, pin:'третья ступень', m:'up', card:['05 / Горячее разделение', 'Огонь сквозь решётку', 'Центральный блок работает почти пять минут. Третья ступень включает двигатель ещё до разделения — огонь выходит через решётчатую ферму, и только потом блоки расходятся.'] },
+  { roll:0.07, d:[-1, .3, .8], k:2.1, t:[0, .7, 0], env:1, lift:0, sb:1, sc:1, pin:null, card:['06 / Орбита', 'Девять минут до орбиты', 'Третья ступень разгоняет корабль до первой космической скорости — почти восемь километров в секунду. На девятой минуте полёта корабль отделяется и выходит на орбиту.', true] } ];
 $('#prog').innerHTML = CH.map(() => '<i></i>').join('');
 $('#snaps').innerHTML = CH.map(() => '<div class="snap"></div>').join('');
 const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .8; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; stage.prepend(r.domElement);
@@ -116,7 +117,7 @@ const LOOK = new ShaderPass({ uniforms:{ tDiffuse:{ value:null }, t:{ value:0 } 
 composer.addPass(LOOK);
 function size(){ const w = stage.clientWidth, h = stage.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); composer.setSize(w, h); composer.setPixelRatio(Math.min(devicePixelRatio, 2)); }
 addEventListener('resize', size); size();
-const H = 1; const MC = {}; let rocket = null, B = [], core = null, upper = null, flames = [], ground = [], space = [], smoke = [], arms = [], earth = null, skyM = null, Y0 = 0;
+const H = 1; const MC = {}; let asc = null, trail = null, FOG = new THREE.Fog(0xa87c70, 2.5, 30); let rocket = null, B = [], core = null, upper = null, flames = [], ground = [], space = [], smoke = [], arms = [], earth = null, skyM = null, Y0 = 0;
 const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
 /* огонь: вытянутая капля, аддитивно, ярче 1 — её подхватывает свечение */
 const fc = document.createElement('canvas'); fc.width = 64; fc.height = 256; { const g = fc.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(255,250,235,1)'); gr.addColorStop(.18, 'rgba(255,205,120,.95)'); gr.addColorStop(.6, 'rgba(255,120,40,.45)'); gr.addColorStop(1, 'rgba(255,80,20,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(14, 0); g.quadraticCurveTo(64, 70, 32, 256); g.quadraticCurveTo(0, 70, 50, 0); g.fill(); }
@@ -153,7 +154,7 @@ loader.parse(Uint8Array.from(atob(window.RKGLB), c => c.charCodeAt(0)).buffer, '
   MC.up = new THREE.Vector3(0, CUT.up + .12, 0); MC.arm = new THREE.Vector3(.07, CUT.boost - .03, .07);
   window.__parts = Object.fromEntries(Object.entries(parts).map(([k, l]) => [k, l.length]));
   /* стартовый стол: бетонная плита с лотком, «тюльпан» — четыре фермы до силовых узлов */
-  const conc = new THREE.MeshStandardMaterial({ color:0x6d6a66, roughness:.95 }), dark = new THREE.MeshStandardMaterial({ color:0x0b0b0c, roughness:1 });
+  const conc = new THREE.MeshStandardMaterial({ color:0x2e2b28, roughness:.95 }), dark = new THREE.MeshStandardMaterial({ color:0x0b0b0c, roughness:1 });
   const slab = new THREE.Group(); const sW = .5, hole = .16, sh = .03, top = CUT.stand - .02;
   [[0, (sW + hole) / 4, sW, (sW - hole) / 2], [0, -(sW + hole) / 4, sW, (sW - hole) / 2], [(sW + hole) / 4, 0, (sW - hole) / 2, hole], [-(sW + hole) / 4, 0, (sW - hole) / 2, hole]].forEach(([x, z, w, d]) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, sh, d), conc); m.position.set(x, top - sh / 2, z); m.receiveShadow = m.castShadow = true; slab.add(m); });
   const pit = new THREE.Mesh(new THREE.BoxGeometry(hole, .3, hole), dark); pit.position.set(0, top - .3, 0); slab.add(pit);
@@ -164,7 +165,7 @@ loader.parse(Uint8Array.from(atob(window.RKGLB), c => c.charCodeAt(0)).buffer, '
     const tilt = Math.atan2(Math.hypot(tip.x - base.x, tip.z - base.z), tip.y); const holder = new THREE.Group(); holder.add(bar); holder.rotation.set(0, 0, 0); arm.add(holder);
     holder.quaternion.setFromAxisAngle(new THREE.Vector3(-u.z, 0, u.x), tilt); arm.userData = { holder, tilt, ax:new THREE.Vector3(-u.z, 0, u.x) }; slab.add(arm); arms.push(arm); }
   scene.add(slab); ground.push(slab);
-  const gr = new THREE.Mesh(new THREE.CircleGeometry(60, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color:0x15120f, roughness:1 })); gr.position.y = top - .06; gr.receiveShadow = true; scene.add(gr); ground.push(gr);
+  const gr = new THREE.Mesh(new THREE.CircleGeometry(400, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color:0x15120f, roughness:1 })); gr.position.y = top - .06; gr.receiveShadow = true; scene.add(gr); ground.push(gr);
   /* ночное небо над степью: купол с градиентом; в космосе — чёрное */
   skyM = new THREE.ShaderMaterial({ side:THREE.BackSide, depthWrite:false, uniforms:{ k:{ value:0 } }, vertexShader:'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
     fragmentShader:'uniform float k; varying vec3 vP; void main(){ float h = clamp(vP.y, 0., 1.); float hz = exp(-h * 9.); vec3 a = mix(vec3(.035,.05,.10), vec3(.006,.008,.02), pow(h, .45)) + vec3(.55,.24,.08) * hz * .55 + vec3(.12,.14,.22) * exp(-h * 3.) * .25; vec3 sp = mix(vec3(.035,.07,.15), vec3(.004,.006,.012), smoothstep(-.65, -.05, vP.y)); gl_FragColor = vec4(mix(a, sp, k), 1.); }' });
@@ -179,7 +180,14 @@ loader.parse(Uint8Array.from(atob(window.RKGLB), c => c.charCodeAt(0)).buffer, '
   const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.03, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
     vertexShader:'varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vP = mv.xyz; gl_Position = projectionMatrix * mv; }',
     fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.15, 0., 1.), 5.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 2.2, g); }' })); atm.position.copy(piv.position); scene.add(atm); piv.visible = atm.visible = false; /* v189: Землю не показываем — в космосе только её отсвет снизу */
-  space.forEach(o => o.visible = false);
+  space.forEach(o => o.visible = false); scene.fog = FOG;
+  /* v201: подъём сквозь атмосферу — облака проносятся вниз, за ракетой дымный след, небо темнеет */
+  asc = new THREE.Group(); asc.visible = false; scene.add(asc);
+  const ccv = document.createElement('canvas'); ccv.width = ccv.height = 256; { const g = ccv.getContext('2d'); for (let q = 0; q < 14; q++){ const x = 60 + Math.random() * 136, y = 90 + Math.random() * 76, rr = 30 + Math.random() * 46, gr = g.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr, 0, 7); g.fill(); } }
+  const cTex = new THREE.CanvasTexture(ccv);
+  for (let q = 0; q < 34; q++){ const s2 = new THREE.Sprite(new THREE.SpriteMaterial({ map:cTex, transparent:true, depthWrite:false, color:0xf3d9c4, opacity:.6, fog:false })); const cd = new THREE.Vector2(1, .45).normalize(); let a2, rr; do { a2 = Math.random() * 6.283; rr = .45 + Math.random() * 3; } while (Math.cos(a2) * cd.x + Math.sin(a2) * cd.y > -.1 && rr < 2.2); s2.position.set(Math.cos(a2) * rr, Math.random() * 7 - 2.5, Math.sin(a2) * rr); const sz = .25 + Math.random() * .7; s2.scale.set(sz * 1.8, sz, 1); s2.userData.v = 1.6 + Math.random() * 1.2; asc.add(s2); }
+  const tcv = document.createElement('canvas'); tcv.width = 64; tcv.height = 512; { const g = tcv.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 512); gr.addColorStop(0, 'rgba(255,214,170,.95)'); gr.addColorStop(.08, 'rgba(240,220,200,.75)'); gr.addColorStop(1, 'rgba(200,200,210,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 512); const gx = g.createLinearGradient(0, 0, 64, 0); gx.addColorStop(0, 'rgba(0,0,0,1)'); gx.addColorStop(.5, 'rgba(0,0,0,0)'); gx.addColorStop(1, 'rgba(0,0,0,1)'); g.globalCompositeOperation = 'destination-out'; g.fillStyle = gx; g.fillRect(0, 0, 64, 512); }
+  trail = new THREE.Mesh(new THREE.CylinderGeometry(.03, .16, 6, 24, 1, true).translate(0, -3, 0), new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(tcv), transparent:true, depthWrite:false, side:THREE.DoubleSide, fog:false })); trail.position.y = (window.RK || { stand:.115 }).stand - .1; asc.add(trail);
   /* дым старта: пул спрайтов, растут и расползаются от лотка */
   for (let i = 0; i < 70; i++){ const s = new THREE.Sprite(new THREE.SpriteMaterial({ map:pTex, transparent:true, depthWrite:false, opacity:0, color:0xd8d0c8 })); s.userData = { life:-1 }; scene.add(s); smoke.push(s); }
   key.position.set(1.2, 1.4, .8); key.target.position.set(0, .4, 0); const sc0 = key.shadow.camera; sc0.left = sc0.bottom = -.7; sc0.right = sc0.top = .7; sc0.near = .1; sc0.far = 5; sc0.updateProjectionMatrix();
@@ -209,22 +217,29 @@ let lt0 = 0, kPrev = -1, tCh = 0, env = 0, fade = 0;
 /* v190: режим для слабых телефонов — если за первые секунды меньше ~34 кадров/с (или мало памяти, или ?low=1), рисуем без постобработки и с меньшим разрешением */
 let LOWQ = /[?&]low=1/.test(location.search) || (navigator.deviceMemory && navigator.deviceMemory <= 3); const FPS = { n:0, t0:0, done:false }; window.__lowq = () => LOWQ;
 if (LOWQ) r.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-const qCheck = now => { if (LOWQ || FPS.done) return; if (!FPS.t0){ FPS.t0 = now + 1200; return; } if (now < FPS.t0) return; FPS.n++; if (now - FPS.t0 > 2500){ FPS.done = true; if (FPS.n / ((now - FPS.t0) / 1000) < 34){ LOWQ = true; r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); size(); } } };
+const qCheck = now => { if (LOWQ || FPS.done || /[?&]hq=1/.test(location.search)) return; if (!FPS.t0){ FPS.t0 = now + 1200; return; } if (now < FPS.t0) return; FPS.n++; if (now - FPS.t0 > 2500){ FPS.done = true; if (FPS.n / ((now - FPS.t0) / 1000) < 34){ LOWQ = true; r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); size(); } } };
 function loop(now){ requestAnimationFrame(loop); qCheck(now); const t = now / 1000, dt = Math.min(.05, t - (lt0 || t)); lt0 = t;
   smooth += (target - smooth) * .07; const i = Math.min(CH.length - 2, Math.floor(smooth)), f = ease(Math.min(1, Math.max(0, smooth - i)));
   const k = Math.round(smooth), st = CH[k]; if (k !== kPrev){ tCh = 0; kPrev = k; } tCh += dt;
   /* земля ↔ космос: короткое затемнение кадра в момент смены */
-  if (st.env !== env){ fade = Math.min(1, fade + dt * 4); if (fade >= 1){ env = st.env; ground.forEach(o => o.visible = !env); space.forEach(o => o.visible = !!env); skyM.uniforms.k.value = env; } } else fade = Math.max(0, fade - dt * 2.5);
+  if (st.env !== env){ fade = Math.min(1, fade + dt * 4); if (fade >= 1){ env = st.env; ground.forEach(o => o.visible = env === 0); space.forEach(o => o.visible = env === 1); asc.visible = env === 2; skyM.uniforms.k.value = env === 1 ? 1 : 0; scene.fog = env === 0 ? FOG : null; } } else fade = Math.max(0, fade - dt * 2.5);
   $('#fade').style.opacity = fade;
   /* состояние ракеты по главе; анимация идёт от входа в главу */
   const L = st.lift ? Math.min(1, tCh / 7) : 0, lift = eIn(L) * .9; rocket && (rocket.position.y = lift);
-  const sb = st.sb ? (k === 3 ? Math.max(0, Math.min(1, (tCh - 1.2) / 3.5)) : 1) : 0, sc = st.sc ? (k === 4 ? Math.max(0, Math.min(1, (tCh - 2.5) / 4)) : 1) : 0;
+  const sb = st.sb ? (k === 4 ? Math.max(0, Math.min(1, (tCh - 1.2) / 3.5)) : 1) : 0, sc = st.sc ? (k === 5 ? Math.max(0, Math.min(1, (tCh - 2.5) / 4)) : 1) : 0;
   if (rocket){ B.forEach(b => { const u = b.userData.u, e2 = ease(sb); b.position.set(u.x * (.045 + e2 * .18), (window.RK || { stand:.115 }).stand + .01 - e2 * .12, u.z * (.045 + e2 * .18)); b.quaternion.setFromAxisAngle(b.userData.axis, -e2 * 1.1); b.visible = sb < .999;
       b.userData.fl.material.opacity = (k >= 2 && sb < .05 && (k !== 2 || L > 0) ? 1 : 0) * (.85 + Math.sin(t * 40 + u.x * 9) * .15); });
     core.position.y = -ease(sc) * .35; core.position.x = -ease(sc) * .05; core.visible = sc < .999; core.userData.fl.material.opacity = (k >= 2 && sc < .02 && (k !== 2 || L > 0) ? 1 : 0) * (.85 + Math.sin(t * 37) * .15);
-    upper.userData.fl.material.opacity = (k === 4 && tCh > 1.2) || k === 5 ? .9 + Math.sin(t * 43) * .1 : 0;
+    upper.userData.fl.material.opacity = (k === 5 && tCh > 1.2) || k === 6 ? .9 + Math.sin(t * 43) * .1 : 0;
     arms.forEach(a => { const open = k >= 2 ? Math.min(1, Math.max(0, (L - .05) * 3)) : 0; a.userData.holder.quaternion.setFromAxisAngle(a.userData.ax, a.userData.tilt - open * .9); });
     fireL.position.set(0, (window.RK || { stand:.115 }).stand + lift - .05, 0); fireL.intensity = k === 2 && L > 0 ? 3 + Math.sin(t * 30) : 0;
+    /* v201: подъём — высота растёт за 9 с: облака проносятся и редеют, небо чернеет, факел распухает, ракету потряхивает */
+    const alt = st.asc ? Math.min(1, tCh / 9) : (k > 3 ? 1 : 0), plume = 1 + alt * 1.0;
+    if (asc && env === 2){ skyM.uniforms.k.value = Math.pow(alt, .8) * .97; asc.children.forEach(c => { if (!c.isSprite) return; c.position.y -= c.userData.v * dt * (1 + alt * 2.5); if (c.position.y < -3.5) c.position.y += 8; c.material.opacity = .6 * (1 - Math.min(1, Math.max(0, (alt - .5) / .35))); c.material.color.setRGB(.95 - alt * .3, .85 - alt * .3, .77 - alt * .2); });
+      trail.material.opacity = .85 - alt * .45; trail.scale.set(1 + alt * 1.5, 1, 1 + alt * 1.5);
+      rocket.position.x = Math.sin(t * 47) * .0016 * (1 - alt); rocket.position.z = Math.cos(t * 53) * .0016 * (1 - alt);
+      fireL.position.set(0, .05, 0); fireL.intensity = 2.5; }
+    [...B.map(b => b.userData.fl), core.userData.fl].forEach(fl => { const bs = fl.userData.base; if (bs) fl.scale.set(bs[0] * (1 + (plume - 1) * 1.3), bs[1] * plume, 1); });
     /* дым: только на земле во время старта */
     smoke.forEach((s, j) => { const u = s.userData; if (u.life < 0 && k === 2 && L > 0 && L < 1 && Math.random() < dt * 14){ u.life = 0; const a = Math.random() * 6.283; u.v = new THREE.Vector3(Math.cos(a), .25 + Math.random() * .3, Math.sin(a)).multiplyScalar(.08 + Math.random() * .1); s.position.set(Math.cos(a) * .06, .08, Math.sin(a) * .06); }
       if (u.life >= 0){ u.life += dt; s.position.addScaledVector(u.v, dt); u.v.multiplyScalar(1 - dt * .4); const sz = .05 + u.life * .12; s.scale.set(sz, sz, 1); s.material.opacity = Math.max(0, .75 * (1 - u.life / 4.5)) * (env ? 0 : 1); if (u.life > 4.5) { u.life = -1; s.material.opacity = 0; } } }); }
@@ -236,7 +251,7 @@ function loop(now){ requestAnimationFrame(loop); qCheck(now); const t = now / 10
   if (st.pin && Math.abs(smooth - k) < .08){ const tt = new THREE.Vector3(); camAt(st, tt, new THREE.Vector3()); const p = tt.project(cam), w = stage.clientWidth, h = stage.clientHeight;
     pin.style.transform = `translate(${(p.x + 1) / 2 * w}px, ${(1 - p.y) / 2 * h}px)`; $('#pinT').textContent = st.pin; pin.style.opacity = 1; } else pin.style.opacity = 0;
   LOOK.uniforms.t.value = t; LOWQ ? r.render(scene, cam) : composer.render(); }
-window.__go = k => { scrollTo(0, k * innerHeight); target = k; smooth = k; readScroll(); };
+window.__tch = v => { tCh = v; }; window.__go = k => { scrollTo(0, k * innerHeight); target = k; smooth = k; readScroll(); };
 </script>
 </body>
 </html>

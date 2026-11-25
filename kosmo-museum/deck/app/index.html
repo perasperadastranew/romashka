@@ -13423,6 +13423,7 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
   const YEAR = { 10:1957, 37:1958, 32:1957, 12:1961, 13:1961, 11:1960, 14:1965, 49:1969, 19:1977, 45:1989, 24:1966, 21:1970, 22:1970, 900:1967, 16:1961, 23:1967, 15:1971, 36:1986, 44:1969, 25:1975, 26:1975, 27:1980, 29:1998, 20:1967, 33:1965, 41:1999, 34:1999, 35:1988, 38:1981, 30:1982, 56:2003 };
   const NAME = { 10:'Спутник-1', 21:'Луна-16', 22:'Луноход-1', 35:'Буран', 12:'Восток', 13:'СК-1', 14:'Беркут', 24:'Луна-9', 36:'Мир', 15:'Марс-3', 23:'Венера-4', 26:'Союз — Аполлон', 900:'Сатурн-5', 29:'МКС' };
   const STAMPED = new Set([10, 21, 22, 11, 12, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 41, 44, 45, 47, 49, 56, 900]); /* готовые кадры app/g/stamps/<id>.webp; v201 admin: добавлены кадры 3:4 серии «Кино» для всех экспонатов альбома */
+  window.__COLL = COLL; window.__STAMPED = STAMPED; /* v203: для уровня профиля */
   const coll = id => COLL.find(c => c[2].includes(id)) || ['Музей космонавтики', '#FF8A4A', []];
   const title = id => NAME[id] || ((window.tourEx ? tourEx(id).title : '') || 'Экспонат').replace(/[«»]/g, '');
   window.stampHTML = (id, s = 1, empty = false) => { const c = coll(id), n = title(id), fs = Math.min(27, Math.floor(196 / Math.max(5, n.length * .62)));
@@ -13529,5 +13530,298 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .gdbar em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gdbar .gdgo{background:transparent;border:1px solid rgba(255,255,255,.18);color:#fff;height:32px}
 </style>
+<script>/* v202 admin: картинки экспоната из KC.exhibits — thumb (аватарка, квадрат) и stamp (кадр марки 3:4); путь app/… или https; пусто — стандартные */
+(function(){ var AV0 = null, U = function(v){ return /^https?:/.test(v) ? v : String(v).replace(/^\/?app\//, ''); };
+  function ov(id){ var L = (window.KC && window.KC.exhibits) || []; for (var i = 0; i < L.length; i++) if (L[i] && L[i].id === id) return L[i]; return null; }
+  function apply(){ var A = window.__AV = window.__AV || {}; if (!AV0){ AV0 = {}; for (var k in A) AV0[k] = A[k]; }
+    var L = (window.KC && window.KC.exhibits) || [], seen = {};
+    L.forEach(function(o){ if (o && o.thumb){ A[o.id] = U(o.thumb); seen[o.id] = 1; } });
+    for (var k in A) if (!seen[k]) { if (k in AV0) A[k] = AV0[k]; else delete A[k]; } }
+  function wrap(){ var f = window.stampHTML; if (!f || f.__v202) return; var g = function(id){ var s = f.apply(this, arguments), o = ov(id);
+      return o && o.stamp ? s.split('g/stamps/' + id + '.webp').join(U(o.stamp)) : s; }; g.__v202 = 1; window.stampHTML = g; }
+  addEventListener('kc', function(){ apply(); wrap(); }); if (window.KC) apply(); wrap(); addEventListener('load', wrap); })();</script>
+<!--v203-->
+<style>
+/* v203: капсула unlock/ поверх приложения */
+.qcap{position:absolute;inset:0;z-index:330;background:#050607;opacity:0;transition:opacity .35s}
+.qcap.on{opacity:1}.qcap.out{opacity:0;transition:opacity .45s}
+.qcap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#050607}
+/* v203: досье-история */
+.qd{position:absolute;inset:0;z-index:320;background:#0A0B0D;overflow-y:auto;overflow-x:hidden;opacity:0;transition:opacity .5s;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.qd::-webkit-scrollbar{display:none}.qd.on{opacity:1}
+.qd .qx{position:fixed;position:sticky;top:0;z-index:5;height:0}
+.qd .qx button{position:absolute;left:14px;top:48px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(10,11,13,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:20px;line-height:1;cursor:pointer}
+.qd .qx .qnav{position:absolute;right:14px;top:58px;display:flex;gap:4px}
+.qd .qx .qnav i{width:14px;height:3px;border-radius:2px;background:rgba(255,255,255,.22);transition:background .3s,width .3s}.qd .qx .qnav i.on{background:#FF8A4C;width:22px}
+.qd .hero{position:relative;height:470px;overflow:hidden}
+.qd .hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%;transform:scale(1.08);transition:transform 1.6s cubic-bezier(.2,.7,.2,1)}
+.qd.on .hero>img{transform:scale(1)}
+.qd .hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,11,13,.55) 0%,rgba(10,11,13,0) 26%,rgba(10,11,13,0) 50%,#0A0B0D 98%)}
+.qd .hero .hk{position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:2;padding:4px 9px;border-radius:7px;border:1px solid rgba(255,138,74,.5);background:rgba(10,11,13,.45);font:500 9.5px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#FF8A4C;white-space:nowrap}
+.qd .hero .hb{position:absolute;left:16px;right:16px;bottom:8px;z-index:2}
+.qd .chip{display:inline-flex;align-items:center;gap:8px;padding:5px 11px 5px 5px;border-radius:12px;background:rgba(18,28,22,.8);border:1px solid rgba(143,227,176,.35);color:#8fe3b0;font-size:12px;line-height:1.2;opacity:0;transform:translateY(8px);transition:.5s .5s}
+.qd.on .chip{opacity:1;transform:none}
+.qd .chip .mk{flex:none}.qd .chip em{display:block;font-style:normal;color:#8B93A0}
+.qd h1{margin:12px 0 0;font:400 34px/1.05 var(--f,Inter);letter-spacing:-.01em;color:#fff}
+.qd .sub{margin-top:6px;font-size:14px;color:#AEB6C2}
+.qd .nums{display:flex;gap:8px;margin:16px 16px 0}
+.qd .nums div{flex:1;padding:10px 12px;border-radius:16px;background:#14161B;border:1px solid rgba(255,255,255,.07)}
+.qd .nums small{display:block;font:500 9px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#8B93A0}
+.qd .nums b{display:block;margin-top:5px;font:300 27px var(--f,Inter);color:#fff}.qd .nums b em{font-size:12px;font-style:normal;color:#8B93A0;margin-left:3px}
+.qd .lead{margin:18px 16px 0;font-size:16px;line-height:1.5;color:#D6DAE0}
+.qd .qch{margin:34px 0 0;padding:0 16px;opacity:.25;transform:translateY(24px);transition:opacity .7s,transform .7s}
+.qd .qch.in{opacity:1;transform:none}
+.qd .qch .n{font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#FF8A4C}
+.qd .qch h2{margin:6px 0 0;font:400 25px/1.15 var(--f,Inter);color:#fff}
+.qd .qch p{margin:10px 0 0;font-size:15px;line-height:1.5;color:#C4CAD3}
+.qd .sc{position:relative;margin-top:14px;border-radius:22px;overflow:hidden;background:radial-gradient(130% 90% at 50% 0%,#1A1D24,#0E1014);border:1px solid rgba(255,255,255,.08)}
+.qd .sc svg{display:block;width:100%;height:auto}
+.qd .sc .cap{position:absolute;left:12px;top:10px;font:500 9.5px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#8B93A0}
+/* линии схем */
+.qd .ln{fill:none;stroke:#C9D1DB;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.qd .lt{fill:none;stroke:rgba(201,209,219,.4);stroke-width:1}
+.qd .gr{fill:none;stroke:rgba(201,209,219,.28);stroke-width:1.2;stroke-dasharray:2 5}
+.qd .acc{stroke:#FF8A4C!important}
+/* 01 съезд по трапам */
+.qd .rv1{transform:translate(170px,84px)}
+.qd .qch.in .rv1{animation:rvDown 5.5s cubic-bezier(.5,0,.3,1) .4s infinite}
+@keyframes rvDown{0%{transform:translate(170px,84px)}25%{transform:translate(128px,84px)}55%{transform:translate(70px,128px)}75%,100%{transform:translate(26px,128px)}}
+/* 02 устройство */
+.qd .pt{transition:stroke .3s,opacity .3s}
+.qd .sc2 .pt{opacity:.55}.qd .sc2 .pt.on{opacity:1}.qd .sc2 .pt.on .ln{stroke:#FF8A4C;stroke-width:2.2}
+.qd .sc2 .pt.on .glow{opacity:1}
+.qd .mrk circle{fill:#14161B;stroke:rgba(255,255,255,.35)}.qd .mrk text{font:600 10px var(--f,Inter);fill:#C9D1DB}
+.qd .mrk.on circle{fill:#FF6A1F;stroke:#FF6A1F}.qd .mrk.on text{fill:#fff}
+.qd .partnav{display:flex;align-items:center;gap:10px;margin-top:10px}
+.qd .partnav .pc{flex:1;min-height:62px;padding:10px 12px;border-radius:14px;background:#14161B;font-size:14px;line-height:1.4;color:#E1E5EA}
+.qd .partnav .pc b{display:block;font:500 15px var(--f,Inter);color:#fff;margin-bottom:2px}
+.qd .partnav button{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;font-size:18px;cursor:pointer}
+.qd .partnav button.nx{background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316}
+/* 03 экипаж */
+.qd .crew5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
+.qd .crew5 div{padding:10px 4px 9px;border-radius:14px;background:#14161B;border:1px solid rgba(255,255,255,.07);text-align:center;font-size:11px;line-height:1.25;color:#C4CAD3;opacity:0;transform:translateY(10px);transition:.5s}
+.qd .qch.in .crew5 div{opacity:1;transform:none}
+.qd .crew5 i{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 6px;border-radius:50%;background:rgba(255,138,76,.14);color:#FF8A4C;font:600 13px var(--f,Inter);font-style:normal}
+.qd .sig{offset-path:path('M58 70 C 140 20, 200 20, 282 70');offset-distance:0%}
+.qd .qch.in .sig{animation:sig 2.6s linear infinite}
+.qd .qch.in .sig.b{animation-delay:1.3s;animation-direction:reverse}
+@keyframes sig{to{offset-distance:100%}}
+/* 04 день и ночь */
+.qd .seg{display:inline-flex;margin-top:12px;padding:3px;border-radius:999px;background:#14161B;border:1px solid rgba(255,255,255,.08)}
+.qd .seg button{height:34px;padding:0 16px;border:0;border-radius:999px;background:none;color:#AEB6C2;font:500 13px var(--f,Inter);cursor:pointer}
+.qd .seg button.on{background:#ECEEF1;color:#0A0B0D}
+.qd .lid{transform-box:view-box;transform-origin:242px 98px;transition:transform 1.4s cubic-bezier(.5,0,.2,1)}
+.qd .lid{transform:rotate(28deg)}.qd .sc4.night .lid{transform:rotate(0deg)}
+.qd .sc4 .sun,.qd .sc4 .cells{transition:opacity 1s}.qd .sc4.night .sun,.qd .sc4.night .cells{opacity:0}
+.qd .sc4 .heat{opacity:0;transition:opacity 1s .6s}.qd .sc4.night .heat{opacity:1}
+.qd .sc4 .sky{transition:fill 1.2s}.qd .sc4.night .sky{fill:#05060A}
+.qd .sc4 .stars{opacity:0;transition:opacity 1s}.qd .sc4.night .stars{opacity:1}
+/* 05 маршрут */
+.qd .route{stroke-dasharray:var(--L);stroke-dashoffset:var(--L)}
+.qd .qch.in .route{transition:stroke-dashoffset 4.5s cubic-bezier(.4,0,.2,1) .3s;stroke-dashoffset:0}
+.qd .km{position:absolute;right:14px;bottom:12px;font:300 34px var(--f,Inter);color:#fff}.qd .km em{font-size:13px;font-style:normal;color:#8B93A0;margin-left:4px}
+/* 06 лазер */
+.qd .las{offset-path:path('M74 90 L 290 90');offset-distance:0%}
+.qd .qch.in .las{animation:las 2.6s cubic-bezier(.4,0,.6,1) infinite alternate}
+@keyframes las{to{offset-distance:100%}}
+/* вопрос */
+.qd .quiz{margin:34px 16px 0;padding:16px;border-radius:22px;background:linear-gradient(160deg,rgba(255,106,31,.18),rgba(255,106,31,.03));border:1px solid rgba(255,138,76,.3)}
+.qd .quiz .n{font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#FFB27A}
+.qd .quiz h3{margin:6px 0 12px;font:500 19px/1.25 var(--f,Inter);color:#fff}
+.qd .quiz .op{display:flex;gap:8px}.qd .quiz .op button{flex:1;height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:500 17px var(--f,Inter);cursor:pointer;transition:.25s}
+.qd .quiz .op button.ok{background:rgba(143,227,176,.18);border-color:#8fe3b0;color:#8fe3b0}.qd .quiz .op button.no{opacity:.4}
+.qd .quiz .an{margin-top:10px;font-size:14px;line-height:1.45;color:#D6DAE0;min-height:20px}
+.qd .end{margin:28px 16px 40px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qd .end button{height:50px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#ECEEF1;font:500 14px var(--f,Inter);cursor:pointer}
+.qd .end button.pr{grid-column:1/-1;border:0;background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12)}
+.qd .note{margin:0 16px 110px;font-size:11.5px;color:#6E7682;text-align:center}
+/* v203: кнопка QR — уже отсканировано */
+.qrrow.ok .qi{background:rgba(143,227,176,.16);color:#8fe3b0}.qrrow.ok{border-color:rgba(143,227,176,.3);background:rgba(143,227,176,.05)}
+.vlqr{position:absolute;right:14px;top:50px;z-index:4;display:flex;align-items:center;gap:6px;height:38px;padding:0 14px 0 11px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(10,11,13,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font:500 13px var(--f,Inter);cursor:pointer}
+.vlqr svg{width:16px;height:16px;color:#FF8A4C}.vlqr.ok svg{color:#8fe3b0}
+/* v203: уровень профиля в паспорте */
+#vPass .pp,#vPass .rwd,#vPass .sec.lvh{display:none}
+.plv{position:relative;margin:14px 12px 0;padding:18px 16px 16px;border-radius:26px;overflow:hidden;background:radial-gradient(120% 90% at 85% 0%,rgba(255,106,31,.22),rgba(255,106,31,0) 55%),linear-gradient(170deg,#181A20,#0E1014);border:1px solid rgba(255,255,255,.09)}
+.plv .orb{position:absolute;right:-70px;top:-80px;width:260px;height:260px;opacity:.5;pointer-events:none}
+.plv .top{display:flex;gap:16px;align-items:center;position:relative}
+.plv .ring{position:relative;width:112px;height:112px;flex:none}
+.plv .ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.plv .ring .lvn{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.plv .ring .lvn b{font:300 46px/1 var(--f,Inter);color:#fff}.plv .ring .lvn small{display:block;margin-top:2px;font:500 9px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#FFB27A}
+.plv .rk small{display:block;font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#8B93A0}
+.plv .rk h2{margin:4px 0 0;font:400 25px/1.1 var(--f,Inter);color:#fff}
+.plv .rk p{margin:6px 0 0;font-size:13px;line-height:1.4;color:#AEB6C2}.plv .rk p b{color:#FFB27A;font-weight:500}
+.plv .xp{margin-top:16px;display:flex;justify-content:space-between;font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#8B93A0}
+.plv .ladder{position:relative;margin-top:8px;display:flex;gap:4px}
+.plv .ladder i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;position:relative}
+.plv .ladder i.on{background:#FF8A4C}.plv .ladder i.cur:after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--p);background:#FF8A4C}
+.plv .colls{margin-top:16px;display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.plv .colls div{text-align:center}
+.plv .colls span{display:block;width:30px;height:30px;margin:0 auto;border-radius:50%;background:conic-gradient(var(--c) var(--p),rgba(255,255,255,.08) 0);position:relative}
+.plv .colls span:after{content:"";position:absolute;inset:4px;border-radius:50%;background:#121419}
+.plv .colls div.full span{box-shadow:0 0 0 2px var(--c),0 0 16px var(--c)}
+.plv .colls em{display:block;margin-top:5px;font:500 9.5px ui-monospace,Menlo,monospace;font-style:normal;color:#8B93A0}
+.plv .last{margin-top:16px;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.04)}
+.plv .last .fan{display:flex;flex:none;height:60px;align-items:center}
+.plv .last .fan>.mk{margin-left:-18px}.plv .last .fan>.mk:first-child{margin-left:0}
+.plv .last p{margin:0;font-size:13px;line-height:1.35;color:#C4CAD3}
+.plv .last button{margin-left:auto;flex:none;height:38px;padding:0 14px;border-radius:999px;border:0;background:#FF6A1F;color:#fff;font:600 13px var(--f,Inter);cursor:pointer}
+</style>
+<script>
+/* v203: QR → капсула (app/unlock/) → «Забрать в паспорт» → досье-история; кнопка QR во всех экспонатах; уровень профиля в паспорте */
+(() => {
+  const UNL = new Set([10, 21, 22]); /* у этих экспонатов есть марка-капсула в app/unlock/st/ */
+  const SKIPCAP = /[?&]open=dossier/.test(location.search); /* пришли со страницы unlock/ напрямую — капсулу уже видели */
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const host = () => { const h = document.querySelector('.scr') || document.getElementById('dev') || document.body; if (h.scrollTop) h.scrollTop = 0; return h; };
+  const done = () => ((window.tourState ? tourState() : {}).done || []);
+  const got = id => done().includes(id);
+  const say = t => { try { typeof toast === 'function' ? toast(t) : window.toast && window.toast(t); } catch(_){} };
+  const QRI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/></svg>';
+  const OKI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const total = () => (window.__COLL || []).reduce((s, c) => s + c[2].length, 0) || 33;
+  const nGot = () => { const g = new Set(done()); return (window.__COLL || []).reduce((s, c) => s + c[2].filter(i => g.has(i)).length, 0); };
+
+  /* ---------- 1. капсула поверх приложения ---------- */
+  function capsule(id, then){ document.querySelectorAll('.qcap').forEach(x => x.remove());
+    const ov = document.createElement('div'); ov.className = 'qcap'; ov.innerHTML = `<iframe src="unlock/?ex=${id}" title="Новая марка" allow="vibrate"></iframe>`;
+    host().appendChild(ov); requestAnimationFrame(() => ov.classList.add('on'));
+    const onMsg = e => { const d = e.data; if (!d || d.type !== 'kosmo:stamp' || d.action !== 'claim' || String(d.ex) !== String(id)) return;
+      removeEventListener('message', onMsg); then(); setTimeout(() => { ov.classList.add('out'); setTimeout(() => ov.remove(), 480); }, 120); };
+    addEventListener('message', onMsg); }
+
+  /* ---------- 2. после скана ---------- */
+  const fullDossier = id => { window.__viaQR = id; window.__dosOnly = true; try { (window.openEx || openEx)(id); } finally { window.__dosOnly = false; } };
+  const openStory = (id, fresh) => QSTORY[id] ? story(id, fresh) : fullDossier(id);
+  window.__stampScreen = (id, first) => { document.querySelectorAll('.mkov').forEach(x => x.remove());
+    if (first && UNL.has(id) && !reduce() && !SKIPCAP) return capsule(id, () => { openStory(id, true); setTimeout(() => say('Марка в паспорте'), 500); });
+    say(first ? 'Марка в паспорте' : 'Эта марка уже в паспорте'); openStory(id, first); };
+  window.openStoryDossier = openStory;
+
+  /* ---------- 3. досье-история ---------- */
+  const rover = (o = {}) => `<g class="rov">
+      ${o.parts ? '' : ''}<g class="pt" data-p="4"><path class="ln" d="M70 146H230"/>${[80, 125, 170, 215].map(x => `<circle class="ln" cx="${x}" cy="160" r="15"/><circle class="lt" cx="${x}" cy="160" r="5"/>${[0, 45, 90, 135].map(a => `<path class="lt" d="M${x} 160l${(15 * Math.cos(a * Math.PI / 180)).toFixed(1)} ${(15 * Math.sin(a * Math.PI / 180)).toFixed(1)}M${x} 160l${(-15 * Math.cos(a * Math.PI / 180)).toFixed(1)} ${(-15 * Math.sin(a * Math.PI / 180)).toFixed(1)}"/>`).join('')}`).join('')}</g>
+      <g class="pt" data-p="6"><path class="ln" d="M76 140H224L242 100H58Z"/><path class="lt" d="M70 128H230M64 114H236"/><circle class="glow heat" cx="150" cy="122" r="12" fill="#FF6A1F" opacity="0" style="filter:blur(4px)"/><circle class="ln heat" cx="150" cy="122" r="5" style="stroke:#FF8A4C;opacity:0"/></g>
+      <g class="pt lid" data-p="1"><path class="ln" d="M242 98L58 98L56 92L240 92Z"/><g class="cells">${Array.from({ length:9 }, (_, k) => `<path class="lt" d="M${70 + k * 19} 92.5v5"/>`).join('')}</g></g>
+      <g class="pt" data-p="2"><rect class="ln" x="44" y="104" width="14" height="9" rx="2"/><rect class="ln" x="44" y="117" width="14" height="9" rx="2"/><circle class="lt" cx="47" cy="108.5" r="2"/><circle class="lt" cx="47" cy="121.5" r="2"/></g>
+      <g class="pt" data-p="3"><path class="ln" d="M96 100V64"/><path class="ln" d="M80 58a18 10 -20 0 0 32 -8"/><path class="ln" d="M96 64l8-12"/><path class="ln" d="M210 100l10-34"/></g>
+      <g class="pt" data-p="5"><rect class="ln" x="34" y="130" width="14" height="10" rx="1.5"/><path class="lt" d="M34 135h14M41 130v10"/></g></g>`;
+  const S22 = {
+    hero:'g/stamps/22.webp', title:'Луноход-1', sub:'Первый в мире планетоход / 1970', inv:'№ 022',
+    nums:[['Пройдено', '10,5', 'км'], ['Работал', '301', 'сут.'], ['Масса', '756', 'кг']],
+    lead:'Первую машину на другом небесном теле вели с Земли пятеро человек — по картинке, которая приходила с опозданием. Листайте вниз: шесть коротких глав.',
+    ch:[
+      { h:'Съехал по трапам', p:'17 ноября 1970 года станция «Луна-17» села в Море Дождей, раскрыла трапы, и луноход съехал на грунт.',
+        svg:`<svg viewBox="0 0 320 180"><path class="gr" d="M0 150H320"/><path class="lt" d="M14 156q20-6 40 0M240 160q24-7 48 0M150 166q14-4 28 0"/>
+          <g><path class="ln" d="M128 108H222V96H128Z"/>${[140, 165, 190, 212].map(x => `<circle class="ln" cx="${x}" cy="122" r="11"/>`).join('')}<path class="ln" d="M132 112L112 150M218 112L238 150M150 132L146 150M200 132L204 150"/>
+          <path class="ln acc" d="M128 104L72 148"/><path class="lt" d="M128 110L76 150"/></g>
+          <g class="rv1"><path class="ln" d="M0 0H28L32 -9H-4Z" style="stroke-width:1.4"/><circle class="ln" cx="5" cy="5" r="4.5"/><circle class="ln" cx="23" cy="5" r="4.5"/><path class="ln" d="M-4 -10H32" style="stroke:#FF8A4C"/></g>
+          <text x="175" y="88" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8.5" letter-spacing="1.2" fill="#8B93A0">«ЛУНА-17»</text></svg>`, cap:'17.11.1970 / Море Дождей' },
+      { h:'Как он устроен', p:'Корпус как перевёрнутая кастрюля на восьми колёсах. Нажимайте стрелку — покажем по частям.', parts:[
+          ['Крышка с солнечной батареей', 'Днём открывалась, как ноутбук, и заряжала аккумуляторы. На ночь закрывалась и берегла тепло.'],
+          ['Две телекамеры водителя', 'Смотрели вперёд: по ним экипаж на Земле выбирал, куда ехать.'],
+          ['Антенны', 'Остронаправленная «тарелка» держала связь с Землёй, штыревые — запасной канал.'],
+          ['Восемь колёс', 'У каждого колеса свой мотор. Если одно заклинит, его можно отстрелить и ехать дальше.'],
+          ['Лазерный отражатель', 'Французский уголковый отражатель. С Земли в него «светят» лазером.'],
+          ['Обогрев изнутри', 'Лунной ночью до −150 °C. Приборы грел радиоизотопный источник тепла.']] },
+      { h:'Экипаж из пяти', p:'Им управляли из Центра дальней космической связи под Симферополем. Сигнал до Луны идёт больше секунды, поэтому водитель видел картинку с опозданием в несколько секунд.',
+        svg:`<svg viewBox="0 0 340 120"><circle class="ln" cx="40" cy="80" r="26"/><path class="lt" d="M18 70q22 8 44 0M16 86q24 6 48 0"/><circle class="ln" cx="300" cy="80" r="16"/><circle class="lt" cx="295" cy="74" r="3"/><circle class="lt" cx="305" cy="86" r="2"/>
+          <path class="gr" d="M58 70 C 140 20, 200 20, 282 70"/><circle class="sig" r="4" fill="#FF8A4C"/><circle class="sig b" r="3" fill="#8FB6E6"/>
+          <text x="40" y="118" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" letter-spacing="1" fill="#8B93A0">ЗЕМЛЯ</text><text x="300" y="112" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" letter-spacing="1" fill="#8B93A0">ЛУНА</text>
+          <text x="170" y="22" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8.5" letter-spacing="1" fill="#FFB27A">≈ 1,3 С В ОДНУ СТОРОНУ</text></svg>`,
+        crew:[['К', 'командир'], ['В', 'водитель'], ['Ш', 'штурман'], ['И', 'борт&shy;инженер'], ['А', 'оператор антенны']] },
+      { h:'День и ночь', p:'Лунный день длится две земные недели, ночь — столько же. Днём крышка открыта, ночью закрыта, внутри греет «печка». 301 сутки работы — это 11 лунных дней.', day:true },
+      { h:'10,5 километра', p:'За 11 лунных дней луноход проехал 10,5 км, сделал десятки тысяч снимков и проверил грунт в сотнях точек.', route:true },
+      { h:'Работает до сих пор', p:'Отражатель лунохода потеряли из виду, а в 2010 году нашли снова. По нему до сих пор меряют расстояние до Луны: лазерный импульс летит туда и обратно около 2,5 секунды.',
+        svg:`<svg viewBox="0 0 340 150"><circle class="ln" cx="40" cy="90" r="34"/><path class="lt" d="M10 80q30 10 60 0M8 98q32 8 64 0"/><circle class="ln" cx="300" cy="90" r="18"/><rect x="295" y="76" width="7" height="5" fill="#FF8A4C"/>
+          <path d="M74 90H290" stroke="rgba(255,106,31,.25)" stroke-width="1" stroke-dasharray="2 4"/><circle class="las" r="4" fill="#FF6A1F" style="filter:drop-shadow(0 0 6px #FF6A1F)"/>
+          <text x="182" y="76" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" letter-spacing="1" fill="#FFB27A">≈ 384 000 КМ</text><text x="182" y="114" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" letter-spacing="1" fill="#8B93A0">ТУДА И ОБРАТНО ≈ 2,5 С</text></svg>`, cap:'Лазерная локация' }],
+    quiz:{ q:'Сколько колёс у «Лунохода-1»?', o:['6', '8', '4'], a:1, ok:'Верно: восемь, и у каждого свой мотор.', no:'Почти. Колёс восемь — по четыре с каждой стороны.' },
+    land:'openLuno', note:'Факты на сверке с музеем.' };
+  const QSTORY = { 22:S22 }; window.QSTORY = QSTORY;
+
+  function story(id, fresh){ const S = QSTORY[id]; document.querySelectorAll('.qd').forEach(x => x.remove());
+    const n = nGot(), T = total();
+    const ov = document.createElement('div'); ov.className = 'qd';
+    const chHTML = S.ch.map((c, k) => { const num = `<div class="n">${String(k + 1).padStart(2, '0')} / ${String(S.ch.length).padStart(2, '0')}</div><h2>${c.h}</h2><p>${c.p}</p>`;
+      if (c.parts) return `<section class="qch" data-k="${k}">${num}<div class="sc sc2"><svg viewBox="0 0 280 190">${rover({ parts:1 })}${[[172, 40, 1], [30, 96, 2], [74, 44, 3], [125, 184, 4], [28, 146, 5], [150, 122, 6]].map(([x, y, i]) => `<g class="mrk" data-p="${i}"><circle cx="${x}" cy="${y}" r="8"/><text x="${x}" y="${y + 3.5}" text-anchor="middle">${i}</text></g>`).join('')}</svg></div>
+        <div class="partnav"><button class="pv" aria-label="Назад">‹</button><div class="pc"></div><button class="nx" aria-label="Дальше">›</button></div></section>`;
+      if (c.day) return `<section class="qch" data-k="${k}">${num}<div class="sc sc4"><svg viewBox="0 0 280 190"><rect class="sky" width="280" height="190" fill="#11141B"/><g class="stars">${Array.from({ length:24 }, (_, j) => `<circle cx="${(j * 53) % 280}" cy="${(j * 29) % 80 + 6}" r="${.6 + j % 3 * .4}" fill="#fff" opacity=".6"/>`).join('')}</g><circle class="sun" cx="236" cy="34" r="14" fill="#FFD8A8" style="filter:drop-shadow(0 0 14px #FFB27A)"/>${rover()}<path class="gr" d="M0 176H280"/></svg><div class="cap" style="top:auto;bottom:10px">Крышка / солнечная батарея / обогрев</div></div><div class="seg"><button class="on" data-m="day">Лунный день</button><button data-m="night">Лунная ночь</button></div></section>`;
+      if (c.route){ const d = 'M40 150 C 60 120, 90 128, 104 104 S 120 70, 150 76 S 190 104, 206 84 S 220 46, 248 52 S 270 70, 282 40'; return `<section class="qch" data-k="${k}">${num}<div class="sc"><svg viewBox="0 0 320 190">${Array.from({ length:14 }, (_, j) => `<circle class="lt" cx="${(j * 71) % 300 + 10}" cy="${(j * 43) % 160 + 15}" r="${4 + j % 4 * 4}"/>`).join('')}
+          <path class="route" d="${d}" fill="none" stroke="#FF8A4C" stroke-width="2.4" stroke-linecap="round" style="--L:420"/><circle cx="40" cy="150" r="5" fill="#ECEEF1"/><text x="48" y="168" font-family="ui-monospace,Menlo,monospace" font-size="8" letter-spacing="1" fill="#8B93A0">«ЛУНА-17»</text><circle cx="282" cy="40" r="5" fill="#FF6A1F"/><text x="276" y="26" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="8" letter-spacing="1" fill="#8B93A0">ПОСЛЕДНЯЯ СТОЯНКА</text></svg>
+          <div class="cap">Море Дождей / схема</div><div class="km"><span>0</span><em>км</em></div></div></section>`; }
+      return `<section class="qch" data-k="${k}">${num}<div class="sc">${c.svg}${c.cap ? `<div class="cap">${c.cap}</div>` : ''}</div>${c.crew ? `<div class="crew5">${c.crew.map(([a, b], j) => `<div style="transition-delay:${.1 * j}s"><i>${a}</i>${b}</div>`).join('')}</div>` : ''}</section>`; }).join('');
+    ov.innerHTML = `<div class="qx"><button aria-label="Закрыть">×</button><div class="qnav">${S.ch.map(() => '<i></i>').join('')}</div></div>
+      <div class="hero"><img src="${S.hero}" alt="${S.title}"><span class="hk">Досье / ${S.inv}</span><div class="hb">${got(id) ? `<span class="chip"><img src="${S.hero}" alt="" style="width:24px;height:32px;border-radius:3px;object-fit:cover;box-shadow:0 0 0 2px #F4F2EE"><span>${fresh ? 'Марка в паспорте' : 'Марка уже в паспорте'}<em>${n} из ${T}</em></span></span>` : ''}<h1>${S.title}</h1><div class="sub">${S.sub}</div></div></div>
+      <div class="nums">${S.nums.map(([a, b, c]) => `<div><small>${a}</small><b>${b}<em>${c}</em></b></div>`).join('')}</div>
+      <div class="lead">${S.lead}</div>${chHTML}
+      <div class="quiz"><div class="n">Проверь себя</div><h3>${S.quiz.q}</h3><div class="op">${S.quiz.o.map((o, j) => `<button data-j="${j}">${o}</button>`).join('')}</div><div class="an"></div></div>
+      <div class="end">${S.land ? '<button class="pr" data-a="anim">▶ Смотреть историю в 3D</button>' : ''}<button data-a="full">Полное досье</button><button data-a="map">На карте</button></div><div class="note">${S.note || ''}</div>`;
+    host().appendChild(ov); requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+    const close = () => { ov.classList.remove('on'); setTimeout(() => ov.remove(), 450); };
+    ov.querySelector('.qx button').onclick = close;
+    /* главы проявляются при прокрутке */
+    const dots = ov.querySelectorAll('.qnav i');
+    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; const s = e.target; s.classList.add('in'); dots.forEach((d, j) => d.classList.toggle('on', j <= +s.dataset.k));
+      if (s.querySelector('.km') && !s.__km){ s.__km = 1; const sp = s.querySelector('.km span'), t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0 - 300) / 4500), q = p < 0 ? 0 : 1 - Math.pow(1 - p, 2); sp.textContent = (10.5 * q).toFixed(1).replace('.', ','); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); } }), { root:ov, threshold:.35 });
+    ov.querySelectorAll('.qch').forEach(s => io.observe(s));
+    /* устройство по частям */
+    const s2 = ov.querySelector('.sc2'); if (s2){ const P = S.ch.find(c => c.parts).parts; let k = 0; const pc = s2.parentNode.querySelector('.pc');
+      const draw = () => { s2.querySelectorAll('.pt,.mrk').forEach(e => e.classList.toggle('on', +e.dataset.p === k + 1)); pc.innerHTML = `<b>${k + 1}. ${P[k][0]}</b>${P[k][1]}`; };
+      s2.parentNode.querySelector('.partnav .nx').onclick = () => { k = (k + 1) % P.length; draw(); }; s2.parentNode.querySelector('.partnav .pv').onclick = () => { k = (k + P.length - 1) % P.length; draw(); };
+      s2.querySelectorAll('.mrk').forEach(m => m.onclick = () => { k = +m.dataset.p - 1; draw(); }); draw(); }
+    /* день и ночь */
+    const s4 = ov.querySelector('.sc4'); if (s4){ const seg = s4.parentNode.querySelectorAll('.seg button'); let auto = 0;
+      const set = m => { s4.classList.toggle('night', m === 'night'); seg.forEach(b => b.classList.toggle('on', b.dataset.m === m)); };
+      seg.forEach(b => b.onclick = () => { clearInterval(auto); set(b.dataset.m); });
+      auto = setInterval(() => { if (s4.closest('.qch.in') && ov.isConnected) set(s4.classList.contains('night') ? 'day' : 'night'); if (!ov.isConnected) clearInterval(auto); }, 3200); }
+    /* вопрос */
+    ov.querySelectorAll('.quiz .op button').forEach(b => b.onclick = () => { const j = +b.dataset.j, q = S.quiz; ov.querySelectorAll('.quiz .op button').forEach((x, i) => { x.classList.toggle('ok', i === q.a); x.classList.toggle('no', i !== q.a); x.disabled = true; }); ov.querySelector('.quiz .an').textContent = j === q.a ? q.ok : q.no; });
+    ov.querySelector('.end').onclick = e => { const a = e.target.closest('button')?.dataset.a; if (!a) return;
+      if (a === 'anim'){ close(); setTimeout(() => window[S.land] && window[S.land](), 200); }
+      if (a === 'full'){ close(); setTimeout(() => fullDossier(id), 200); }
+      if (a === 'map'){ close(); window.showTab && showTab('map'); setTimeout(() => window.m3select && m3select(id, true), 700); } }; }
+
+  /* ---------- 4. кнопка QR во всех экспонатах ---------- */
+  const qrRow = (id) => { const ok = got(id), q = document.createElement('div'); q.className = 'qrrow' + (ok ? ' ok' : '');
+    q.innerHTML = ok ? `<div class="qi">${OKI}</div><div><b>Марка в паспорте</b><span>Отсканировано у таблички / открыть альбом</span></div>` : `<div class="qi">${QRI}</div><div><b>Сканировать QR на табличке</b><span>Марка в паспорт и досье, которое открывается только у экспоната</span></div>`;
+    q.onclick = () => ok ? (window.closeEx && closeEx(), window.showTab && showTab('pass')) : window.openQrScan && openQrScan(id); return q; };
+  const o = window.openEx; if (typeof o === 'function'){ window.openEx = function(id){ const r = o.apply(this, arguments);
+    setTimeout(() => { const ex = document.getElementById('vEx'); if (!ex || ex.classList.contains('off')) return; const sb = ex.querySelector('#stampBtn');
+      if (sb && !sb.classList.contains('ok') && got(id)) sb.remove();
+      if (ex.querySelector('#stampBtn')) return; ex.querySelectorAll('.qrrow').forEach(x => x.remove());
+      const h = ex.querySelector('.acts2') || ex.querySelector('.ex'); if (h) h.after(qrRow(id));
+      /* у экспоната есть досье-история — ссылка на неё сразу под кнопкой */
+      if (QSTORY[id] && !ex.querySelector('.qrstory')){ const s = document.createElement('div'); s.className = 'qrrow qrstory'; s.innerHTML = `<div class="qi" style="background:rgba(255,255,255,.1)">▶</div><div><b>Досье-история</b><span>Шесть глав со схемами / 2 минуты</span></div>`; s.onclick = () => { window.closeEx && closeEx(); setTimeout(() => story(id, false), 250); }; ex.querySelector('.qrrow:not(.qrstory)').after(s); } }, 160);
+    return r; }; try { openEx = window.openEx; } catch(_){} }
+  /* 3D-страницы (облёты) — кнопка QR рядом с крестиком */
+  const VLID = { 'lunokhod.html':22, 'luna16.html':21, 'buran.html':35, 'mir.html':36, 'venera.html':23, 'mars.html':15 };
+  const vlBtn = () => { const vl = document.getElementById('vl'), f = document.getElementById('vlFrame'); if (!vl || !f) return; const m = (f.getAttribute('src') || '').match(/([a-z0-9]+\.html)/i), id = m && VLID[m[1]];
+    let b = vl.querySelector('.vlqr'); if (!id){ b && b.remove(); return; } if (!b){ b = document.createElement('button'); b.className = 'vlqr'; vl.appendChild(b); }
+    const ok = got(id); b.className = 'vlqr' + (ok ? ' ok' : ''); b.innerHTML = (ok ? OKI : QRI) + (ok ? 'В паспорте' : 'QR'); b.onclick = () => { if (ok) return; window.openQrScan && openQrScan(id); }; };
+  { const f = document.getElementById('vlFrame'); if (f) new MutationObserver(vlBtn).observe(f, { attributes:true, attributeFilter:['src'] }); const vl = document.getElementById('vl'); if (vl) new MutationObserver(vlBtn).observe(vl, { attributes:true, attributeFilter:['class'] }); }
+
+  /* ---------- 5. уровень профиля в паспорте ---------- */
+  const RANKS = [[0, 'Курсант'], [1, 'Стажёр'], [3, 'Наблюдатель'], [6, 'Конструктор'], [10, 'Испытатель'], [16, 'Космонавт'], [24, 'Командир экипажа'], [33, 'Главный конструктор']];
+  function level(){ const v = document.getElementById('vPass'); if (!v) return; v.querySelector('.plv')?.remove();
+    v.querySelectorAll('.sec').forEach(s => { if (s.nextElementSibling && s.nextElementSibling.classList.contains('rwd')) s.classList.add('lvh'); });
+    const n = nGot(), T = total(); let L = 0; RANKS.forEach(([k], j) => { if (n >= k) L = j; });
+    const nx = RANKS[L + 1], cur = RANKS[L], p = nx ? (n - cur[0]) / (nx[0] - cur[0]) : 1, C = 2 * Math.PI * 50;
+    const g = new Set(done()), last = done().filter(i => (window.__STAMPED || new Set()).has(i)).slice(-3).reverse();
+    const el = document.createElement('div'); el.className = 'plv';
+    el.innerHTML = `<svg class="orb" viewBox="0 0 260 260" fill="none" stroke="rgba(255,178,122,.35)"><circle cx="130" cy="130" r="60"/><ellipse cx="130" cy="130" rx="125" ry="48" transform="rotate(-24 130 130)"/><ellipse cx="130" cy="130" rx="100" ry="100" stroke-dasharray="2 6"/><circle cx="236" cy="86" r="4" fill="#FFB27A" stroke="none"/></svg>
+      <div class="top"><div class="ring"><svg viewBox="0 0 112 112"><circle cx="56" cy="56" r="50" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="7"/><circle cx="56" cy="56" r="50" fill="none" stroke="url(#plvG)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(C * Math.max(.02, p)).toFixed(1)} ${C.toFixed(1)}"/><defs><linearGradient id="plvG" x1="0" x2="1"><stop offset="0" stop-color="#FF6A1F"/><stop offset="1" stop-color="#FFD0A3"/></linearGradient></defs></svg><div class="lvn"><b>${L}</b><small>уровень</small></div></div>
+      <div class="rk"><small>Космический паспорт</small><h2>${cur[1]}</h2><p>${nx ? `Ещё <b>${nx[0] - n} ${plural(nx[0] - n)}</b> до звания «${nx[1]}»` : 'Все марки музея собраны. Покажите паспорт на кассе — там ждёт значок.'}</p></div></div>
+      <div class="xp"><span>${n} из ${T} марок</span><span>${nx ? 'Ур. ' + (L + 1) + ' / ' + nx[0] : 'максимум'}</span></div>
+      <div class="ladder">${RANKS.slice(1).map((r, j) => `<i class="${j + 1 <= L ? 'on' : j + 1 === L + 1 ? 'cur' : ''}" style="--p:${Math.round(p * 100)}%" title="${r[1]}"></i>`).join('')}</div>
+      <div class="colls">${(window.__COLL || []).map(([nm, c, ids]) => { const k = ids.filter(i => g.has(i)).length; return `<div class="${k === ids.length ? 'full' : ''}" title="${nm}"><span style="--c:${c};--p:${Math.round(k / ids.length * 100)}%"></span><em>${k}/${ids.length}</em></div>`; }).join('')}</div>
+      <div class="last">${last.length ? `<div class="fan">${last.map((i, j) => `<div style="transform:rotate(${(j - 1) * 7}deg)">${window.stampHTML ? stampHTML(i, .2) : ''}</div>`).join('')}</div><p>Последняя марка:<br><b style="color:#fff">${(window.tourEx ? tourEx(last[0]).title : '')}</b></p>` : `<p>Марок пока нет. QR-код стоит в углу таблички у каждого экспоната.</p>`}<button>${last.length ? 'Ещё QR' : 'Сканировать'}</button></div>`;
+    el.querySelector('.last button').onclick = () => window.openQrScan && openQrScan();
+    const hd = v.querySelector('.hd'); hd ? hd.after(el) : v.prepend(el); }
+  const plural = k => k % 10 === 1 && k % 100 !== 11 ? 'марка' : [2, 3, 4].includes(k % 10) && ![12, 13, 14].includes(k % 100) ? 'марки' : 'марок';
+  const rp = window.renderPass; if (rp) window.renderPass = function(){ const r = rp.apply(this, arguments); try { level(); } catch(e){ console.warn(e); } return r; }; setTimeout(() => { try { level(); } catch(_){} }, 900);
+})();
+</script>
+<!--/v203-->
 </body>
 </html>

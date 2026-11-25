@@ -216,7 +216,7 @@ let lt0 = 0, kPrev = -1, tCh = 0, env = 0, fade = 0;
 /* v190: режим для слабых телефонов — если за первые секунды меньше ~34 кадров/с (или мало памяти, или ?low=1), рисуем без постобработки и с меньшим разрешением */
 let LOWQ = /[?&]low=1/.test(location.search) || (navigator.deviceMemory && navigator.deviceMemory <= 3); const FPS = { n:0, t0:0, done:false }; window.__lowq = () => LOWQ;
 if (LOWQ) r.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-const qCheck = now => { if (LOWQ || FPS.done) return; if (!FPS.t0){ FPS.t0 = now + 1200; return; } if (now < FPS.t0) return; FPS.n++; if (now - FPS.t0 > 2500){ FPS.done = true; if (FPS.n / ((now - FPS.t0) / 1000) < 34){ LOWQ = true; r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); size(); } } };
+const qCheck = now => { if (LOWQ || FPS.done || /[?&]hq=1/.test(location.search)) return; if (!FPS.t0){ FPS.t0 = now + 1200; return; } if (now < FPS.t0) return; FPS.n++; if (now - FPS.t0 > 2500){ FPS.done = true; if (FPS.n / ((now - FPS.t0) / 1000) < 34){ LOWQ = true; r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); size(); } } };
 function loop(now){ requestAnimationFrame(loop); qCheck(now); const t = now / 1000, dt = Math.min(.05, t - (lt0 || t)); lt0 = t;
   smooth += (target - smooth) * .07; const i = Math.min(CH.length - 2, Math.floor(smooth)), f = ease(cl(smooth - i));
   const k = Math.round(smooth), st = CH[k]; if (k !== kPrev){ tCh = 0; kPrev = k; } tCh += dt;

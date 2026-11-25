@@ -180,7 +180,7 @@ const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, cl =
 const vA = new THREE.Vector3(), vB = new THREE.Vector3(), tA = new THREE.Vector3(), tB = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
 const camAt = (s, tgt, pos) => { if (s.m && MC[s.m]) tgt.copy(MC[s.m]).add(new THREE.Vector3(...s.t).multiplyScalar(s.m === 'ball' ? 0 : 0)); else tgt.set(s.t[2] * -1, s.t[1], 0); if (s.m === 'ball' && s.env) tgt.y += s.t[1]; pos.set(...s.d).normalize().multiplyScalar(s.k).add(tgt); };
 let LOWQ = /[?&]low=1/.test(location.search) || (navigator.deviceMemory && navigator.deviceMemory <= 3); const FPS = { n:0, t0:0, done:false }; if (LOWQ) r.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-const qCheck = now => { if (LOWQ || FPS.done) return; if (!FPS.t0){ FPS.t0 = now + 1200; return; } if (now < FPS.t0) return; FPS.n++; if (now - FPS.t0 > 2500){ FPS.done = true; if (FPS.n / ((now - FPS.t0) / 1000) < 34){ LOWQ = true; r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); size(); } } };
+const qCheck = now => { if (LOWQ || FPS.done || /[?&]hq=1/.test(location.search)) return; if (!FPS.t0){ FPS.t0 = now + 1200; return; } if (now < FPS.t0) return; FPS.n++; if (now - FPS.t0 > 2500){ FPS.done = true; if (FPS.n / ((now - FPS.t0) / 1000) < 34){ LOWQ = true; r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); size(); } } };
 let lt0 = 0, kPrev = -1, tCh = 0, env = 0, fade = 0;
 function loop(now){ requestAnimationFrame(loop); qCheck(now); const t = now / 1000, dt = Math.min(.05, t - (lt0 || t)); lt0 = t;
   smooth += (target - smooth) * .07; const i = Math.min(CH.length - 2, Math.floor(smooth)), f = ease(cl(smooth - i));

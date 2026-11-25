@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Медаль получена · 3D</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#07080A;color:#ECEEF1;font-family:Inter,system-ui,-apple-system,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center}
+#sky{position:absolute;inset:0;width:100%;height:100%}
+.glow{position:absolute;left:50%;top:40%;width:560px;height:560px;margin:-280px 0 0 -280px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,122,56,.14),rgba(255,122,56,.04) 55%,transparent);opacity:0;transition:opacity 1.6s}
+.on .glow{opacity:1}
+#gl{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#gl:active{cursor:grabbing}
+#fx{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:3}
+#rays{display:none;position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:0;transition:opacity 1.4s}
+.on #rays{opacity:1}
+#rays i{position:absolute;top:-80px;height:78%;filter:blur(18px);transform-origin:top center;animation:rsw 7s ease-in-out infinite alternate}
+@keyframes rsw{0%{opacity:.55;transform:rotate(var(--r))}100%{opacity:1;transform:rotate(calc(var(--r) + 3deg)) translateX(8px)}}
+#spot{display:none;position:absolute;left:50%;top:-10%;width:760px;height:900px;margin-left:-380px;pointer-events:none;background:radial-gradient(50% 60% at 50% 0%,rgba(255,240,220,.10),transparent 75%);clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);opacity:0;transition:opacity .4s}
+.lnd #spot{opacity:1;animation:spf 1.8s ease-out}
+@keyframes spf{0%{opacity:0}100%{opacity:1}}
+.top{position:relative;z-index:2;margin-top:max(22px,env(safe-area-inset-top));font:500 11px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#FF8A4A;opacity:0;transform:translateY(-6px);transition:all .6s .2s;text-shadow:0 1px 8px #000}
+.on .top{opacity:1;transform:none}
+.b{position:absolute;left:24px;right:24px;bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));z-index:2;text-align:center;max-width:420px;margin:0 auto}
+.t{opacity:0;transform:translateY(12px);transition:opacity .7s,transform .9s cubic-bezier(.2,.8,.2,1)}
+.lnd .t{opacity:1;transform:none}
+.n{font-size:27px;line-height:31px;font-weight:500;letter-spacing:-.02em}
+.d{font-size:14px;line-height:20px;color:rgba(236,238,241,.6);margin-top:8px}
+.tier{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font:500 10.5px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(236,238,241,.55)}
+.tier i{width:8px;height:8px;border-radius:50%}
+.btn{margin-top:18px;width:100%;height:50px;border:0;border-radius:25px;background:#ECEEF1;color:#111;font:inherit;font-size:15px;font-weight:600;cursor:pointer;opacity:0;transform:translateY(12px);transition:opacity .7s .25s,transform .9s .25s cubic-bezier(.2,.8,.2,1)}
+.lnd .btn{opacity:1;transform:none}
+.hint{margin-top:10px;font-size:12px;color:rgba(236,238,241,.38);opacity:0;transition:opacity 1s 1.2s}.lnd .hint{opacity:1}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:12px -24px 0;padding:0 24px}.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;height:30px;padding:0 12px;border-radius:15px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(236,238,241,.75);font:inherit;font-size:12px;cursor:pointer}
+.chips button.on{border-color:#FF8A4A;color:#fff;background:rgba(255,106,31,.14)}
+#stb{position:absolute;left:0;top:0;width:100%;height:70%;display:none;align-items:center;justify-content:center;z-index:2;perspective:900px}
+.stamp2d #stb{display:flex}#forms{display:none!important}.stamp #forms{display:none}.stamp #mats{display:none}#metals{display:none}.stamp #metals{display:flex}#vars{display:none}
+.stw{position:relative;width:200px;height:250px;transform:scale(1.25)}
+.stw .sb,.stw .pmk{position:absolute;inset:0}.stw .sb{filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+.stw.go .sb{animation:sbIn 1s cubic-bezier(.2,1.1,.3,1) both}
+@keyframes sbIn{0%{transform:translateY(-130%) rotate(-25deg) rotateY(60deg);opacity:0}60%{opacity:1}100%{transform:rotate(-3deg)}}
+.stw .pmk{opacity:0}.stw.go .pmk{animation:pmIn .32s cubic-bezier(.3,1.6,.5,1) 1.15s both}
+@keyframes pmIn{0%{transform:scale(2.4) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
+.stw.go{animation:shk .35s ease 1.42s}
+@keyframes shk{0%,100%{transform:scale(1.25)}30%{transform:scale(1.21) translateY(4px)}60%{transform:scale(1.27)}}
+#load{position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);font-size:12px;color:rgba(236,238,241,.35)}
+
+.emb #kinds,.emb #mats,.emb #forms,.emb #vars,.emb #metals,.emb #chips,.emb .hint{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="sky"></canvas>
+<div class="glow"></div>
+<div id="rays"></div><div id="spot"></div>
+<canvas id="gl"></canvas>
+<canvas id="fx"></canvas>
+<div id="stb"><div class="stw" id="stw"></div></div>
+<div id="load">Чеканим медаль…</div>
+<div class="top" id="kick">Новая медаль</div>
+<div class="b">
+<div class="t"><div class="n" id="nm"></div><div class="d" id="cd"></div><div class="tier" id="tr"><i></i><span></span></div></div>
+<button class="btn" id="go">Забрать в паспорт</button>
+<div class="hint">Медаль можно покрутить пальцем</div>
+<div class="chips" id="kinds" aria-label="Тип награды"></div>
+<div class="chips" id="forms" aria-label="Форма награды"></div>
+<div class="chips" id="vars" aria-label="Вариант раскрытия"></div>
+<div class="chips" id="metals" aria-label="Металл капсулы"></div>
+<div class="chips" id="mats" aria-label="Материал медали"></div>
+<div class="chips" id="chips"></div>
+</div>
+</div>
+<script type="module">
+/* Музей в кармане · «Медаль получена», v2.
+   Медаль — настоящий предмет: гурт с насечкой по ребру, барельеф (полированные выпуклости, тёмные впадины),
+   гильош под эмалью, надписи по кругу, ушко с кольцом и лента из ткани с рубчиком.
+   Анимация: орбита → медаль выходит из глубины, вращаясь → встаёт → медаль на колодке (короткая лента из муара на планке) вращается одним предметом. Дальше «живёт»: дышит, следует за пальцем, крутится свайпом. */
+const MEDALS = [{"k": "m1", "name": "Первый виток", "cond": "Первая отметка в паспорте", "tier": "bronze", "enamel": "#16202E", "rib": ["#1F3550", "#1F3550", "#FF6A1F", "#1F3550", "#1F3550"]}, {"k": "m2", "name": "Конструктор", "cond": "5 отметок", "tier": "bronze", "enamel": "#1E1712", "rib": ["#2F4F6B", "#FF8A4A", "#2F4F6B", "#FF8A4A", "#2F4F6B"]}, {"k": "m3", "name": "Слушатель", "cond": "10 рассказов аудиогида", "tier": "bronze", "enamel": "#121A22", "rib": ["#1F3550", "#7FA3BF", "#1F3550", "#7FA3BF", "#1F3550"]}, {"k": "m4", "name": "Испытатель", "cond": "15 отметок", "tier": "silver", "enamel": "#141B26", "rib": ["#1F3550", "#9AA9B8", "#FF6A1F", "#9AA9B8", "#1F3550"]}, {"k": "m5", "name": "Лунный путь", "cond": "Весь зал «Луна и планеты»", "tier": "silver", "enamel": "#191A1F", "rib": ["#3A4150", "#9AA9B8", "#3A4150", "#9AA9B8", "#3A4150"]}, {"k": "m6", "name": "Второй экипаж", "cond": "Маршрут «С детьми»: по следам Белки и Стрелки", "tier": "silver", "enamel": "#1A1420", "rib": ["#4A2E4E", "#FF8A4A", "#4A2E4E", "#FF8A4A", "#4A2E4E"]}, {"k": "m7", "name": "Космонавт музея", "cond": "Весь маршрут «Главное»", "tier": "gold", "enamel": "#16202E", "rib": ["#14284A", "#FFD873", "#14284A", "#FFD873", "#14284A"]}, {"k": "m8", "name": "Вся коллекция", "cond": "Все 37 отметок · металлический значок на кассе", "tier": "gold", "enamel": "#0E1420", "rib": ["#FFD873", "#14284A", "#FF6A1F", "#14284A", "#FFD873"]}];
+const TIERS = {
+  bronze: { name: 'Бронза', base: [194, 124, 78], dot: '#C27A4A', enamel: false },
+  silver: { name: 'Серебро', base: [214, 219, 226], dot: '#C5CBD3', enamel: true },
+  gold:   { name: 'Золото', base: [226, 196, 140], dot: '#E0AE48', enamel: true },
+  titan:  { name: 'Титан', base: [150, 160, 172], dot: '#96A0AC', enamel: true },
+  graphite: { name: 'Графит', base: [128, 134, 142], dot: '#5C626A', enamel: true },
+  copper: { name: 'Медь', base: [204, 110, 72], dot: '#CC6E48', enamel: true }
+};
+const MATS = [['', 'По уровню'], ['bronze', 'Бронза'], ['silver', 'Серебро'], ['gold', 'Золото'], ['titan', 'Титан'], ['graphite', 'Графит'], ['copper', 'Медь с эмалью']];
+let MAT = TIERS[new URLSearchParams(location.search).get('mat')] ? new URLSearchParams(location.search).get('mat') : ''; /* материал для теста: перекрывает уровень медали */
+const tierOf = (m) => TIERS[MAT || m.tier];
+const ENAMEL = { m4: '#203a55', m5: '#2b3040', m6: '#45233d', m7: '#142c52', m8: '#10264a' };
+const $ = (s) => document.querySelector(s);
+const app = $('#app'), cv = $('#gl'), fx = $('#fx'), sky = $('#sky');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const qs = new URLSearchParams(location.search);
+const FREEZE = qs.get('t') != null ? +qs.get('t') : null, RY = qs.get('ry') != null ? +qs.get('ry') : null;
+let cur = Math.max(0, MEDALS.findIndex((m) => m.k === (qs.get('m') || 'm7')));
+
+/* звёздное небо: три слоя глубины, мерцание, Млечный Путь; при появлении жетона — «прыжок» со штрихами, потом параллакс от пальца */
+const SK = { warp:0, px:0, py:0 };
+const ST = [...Array(420)].map(() => ({ x:(Math.random() - .5) * 2, y:(Math.random() - .5) * 2, z:Math.random(), r:Math.random() ** 3 * 1.6 + .35, p:Math.random() * 6, c:Math.random() < .12 ? [255, 214, 170] : Math.random() < .2 ? [190, 210, 255] : [255, 255, 255] }));
+const MW = [...Array(900)].map(() => { const u = Math.random(), v = (Math.random() + Math.random() + Math.random() - 1.5) * .16; return { u, v, a:Math.random() * .35 + .05, r:Math.random() * .7 + .2 }; });
+let skyPrev = 0;
+function drawSky(t) {
+  const dt = Math.min(.05, skyPrev ? t - skyPrev : .016); skyPrev = t;
+  const k = devicePixelRatio, w = sky.width = sky.clientWidth * k, h = sky.height = sky.clientHeight * k, g = sky.getContext('2d'), cx = w / 2, cy = h * .36, F = Math.max(w, h) * .6;
+  /* Млечный Путь: тусклая диагональная полоса */
+  g.save(); g.translate(cx + SK.px * 10 * k, cy + SK.py * 8 * k); g.rotate(-.5);
+  const gr = g.createLinearGradient(0, -h * .22, 0, h * .22); gr.addColorStop(0, 'rgba(120,140,190,0)'); gr.addColorStop(.5, 'rgba(150,160,200,.07)'); gr.addColorStop(1, 'rgba(120,140,190,0)'); g.fillStyle = gr; g.fillRect(-w * 1.2, -h * .22, w * 2.4, h * .44);
+  MW.forEach((m) => { g.fillStyle = `rgba(230,235,255,${m.a * (1 - SK.warp)})`; g.fillRect((m.u - .5) * w * 2.4, m.v * h * 1.4, m.r * k, m.r * k); });
+  g.restore();
+  const sp = .015 + SK.warp * 2.4;
+  ST.forEach((s) => {
+    const z0 = s.z; s.z -= sp * dt * (.4 + (1 - s.z)); if (s.z <= .02){ s.z = 1; s.x = (Math.random() - .5) * 2; s.y = (Math.random() - .5) * 2; }
+    const depth = 1 - s.z, X = (z) => cx + s.x / (z + .08) * F * .08 + SK.px * depth * 26 * k, Y = (z) => cy + s.y / (z + .08) * F * .08 + SK.py * depth * 18 * k;
+    const x = X(s.z), y = Y(s.z); if (x < -20 || x > w + 20 || y < -20 || y > h + 20) return;
+    const tw = .65 + .35 * Math.sin(t * (1.2 + s.p) + s.p), al = Math.min(1, (.25 + depth * .9) * tw), [r, gg, bb] = s.c;
+    if (SK.warp > .05){ g.strokeStyle = `rgba(${r},${gg},${bb},${al})`; g.lineWidth = s.r * k * (.6 + depth); g.beginPath(); g.moveTo(X(Math.min(1, z0 + SK.warp * .12)), Y(Math.min(1, z0 + SK.warp * .12))); g.lineTo(x, y); g.stroke(); }
+    else { g.fillStyle = `rgba(${r},${gg},${bb},${al})`; g.beginPath(); g.arc(x, y, s.r * k * (.5 + depth * .9), 0, 6.283); g.fill(); if (s.r > 1.3 && depth > .5){ g.fillStyle = `rgba(${r},${gg},${bb},${al * .25})`; g.beginPath(); g.arc(x, y, s.r * k * 3.2, 0, 6.283); g.fill(); } }
+  });
+}
+function setText(m, i) {
+  $('#kick').textContent = 'Новая медаль · ' + (i + 1) + ' из ' + MEDALS.length;
+  $('#nm').textContent = m.name; $('#cd').textContent = m.cond;
+  $('#tr i').style.background = tierOf(m).dot; $('#tr span').textContent = tierOf(m).name + ' · ' + new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+const chips = $('#chips');
+MEDALS.forEach((m, i) => { const b = document.createElement('button'); b.textContent = m.name; b.onclick = () => play(i); chips.appendChild(b); });
+/* форма награды: жетон (по умолчанию), на шее, значок, брелок */
+const FORMS = [['petal', 'Лепестки'], ['coin', 'Жетон'], ['neck', 'На шее'], ['pin', 'Значок'], ['charm', 'Брелок']];
+let FORM = FORMS.some((f) => f[0] === qs.get('form')) ? qs.get('form') : 'coin'; /* медали появляются сами, без капсулы */
+const forms = $('#forms');
+FORMS.forEach(([k, n]) => { const b = document.createElement('button'); b.textContent = n; b.dataset.f = k; b.onclick = () => { FORM = k; [...forms.children].forEach((x) => x.classList.toggle('on', x.dataset.f === FORM)); play(cur); }; forms.appendChild(b); });
+[...forms.children].forEach((x) => x.classList.toggle('on', x.dataset.f === FORM));
+let VAR = qs.get('var') === 'a' ? 'a' : 'b'; /* «Лежит → зум» оставлен в коде как ?var=a */ const vars = $('#vars');
+[['a', 'Лежит → зум'], ['b', 'Наклон → сразу']].forEach(([k, n]) => { const b = document.createElement('button'); b.textContent = n; b.dataset.v = k; b.onclick = () => { VAR = k; [...vars.children].forEach((x) => x.classList.toggle('on', x.dataset.v === VAR)); window.play(cur); }; vars.appendChild(b); });
+[...vars.children].forEach((x) => x.classList.toggle('on', x.dataset.v === VAR));
+const METALS = { titan:['Титан', 0x9aa3ad, 1, .36, .15], graphite:['Графит', 0x5a6068, .9, .42, .3] };
+let METAL = METALS[qs.get('metal')] ? qs.get('metal') : 'graphite'; const metals = $('#metals');
+window.applyMetal = () => { const m = window.CAPG && CAPG.userData.pm, v = METALS[METAL]; if (!m) return; m.color.setHex(v[1]); m.metalness = v[2]; m.roughness = v[3]; m.clearcoat = v[4]; m.clearcoatRoughness = .18; m.envMapIntensity = 1.3; m.needsUpdate = true; };
+Object.entries(METALS).forEach(([k, v]) => { const b = document.createElement('button'); b.textContent = v[0]; b.dataset.m = k; b.onclick = () => { METAL = k; [...metals.children].forEach((x) => x.classList.toggle('on', x.dataset.m === METAL)); applyMetal(); }; metals.appendChild(b); });
+[...metals.children].forEach((x) => x.classList.toggle('on', x.dataset.m === METAL));
+const mats = $('#mats');
+MATS.forEach(([k, n]) => { const b = document.createElement('button'); b.textContent = n; b.dataset.m = k; b.onclick = () => { MAT = k; [...mats.children].forEach((x) => x.classList.toggle('on', x.dataset.m === MAT)); window.play(cur); }; mats.appendChild(b); });
+[...mats.children].forEach((x) => x.classList.toggle('on', x.dataset.m === MAT));
+/* тип награды: медаль (3D) или марка с гашением */
+const STAMPS = [{"k": "10", "name": "Спутник-1", "num": "010", "full": "Первый искусственный спутник Земли", "coll": "Начало космической эры", "base": "st/10.webp", "pm": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"1024\" viewBox=\"0 0 384 512\" aria-hidden=\"true\"><g transform=\"rotate(-14 240.0 192.0)\"><circle cx=\"240.0\" cy=\"192.0\" r=\"73.6\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"3.52\"/><circle cx=\"240.0\" cy=\"192.0\" r=\"54.4\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"1.60\"/><path id=\"cp384\" d=\"M176.0 192.0a64.0 64.0 0 0 1 128.0 0\" fill=\"none\"/><text font-family=\"Geist Mono,monospace\" font-size=\"11.2\" letter-spacing=\"1.9\" fill=\"rgba(244,242,238,.82)\"><textPath href=\"#cp384\" startOffset=\"50%\" text-anchor=\"middle\">МУЗЕЙ КОСМОНАВТИКИ<\/textPath><\/text><text x=\"240.0\" y=\"198.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"17.6\" font-weight=\"500\" fill=\"rgba(244,242,238,.82)\">25.11.26<\/text><text x=\"240.0\" y=\"230.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"9.6\" letter-spacing=\"1.6\" fill=\"rgba(244,242,238,.82)\">МОСКВА<\/text><\/g><path d=\"M291.5 156.8q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 177.6q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 198.4q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 219.2q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><\/svg>"}, {"k": "21", "name": "Луна-16", "num": "021", "full": "Лунный грунт на Землю", "coll": "Лунная программа", "base": "st/21.webp", "pm": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"1024\" viewBox=\"0 0 384 512\" aria-hidden=\"true\"><g transform=\"rotate(-14 240.0 192.0)\"><circle cx=\"240.0\" cy=\"192.0\" r=\"73.6\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"3.52\"/><circle cx=\"240.0\" cy=\"192.0\" r=\"54.4\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"1.60\"/><path id=\"cp384\" d=\"M176.0 192.0a64.0 64.0 0 0 1 128.0 0\" fill=\"none\"/><text font-family=\"Geist Mono,monospace\" font-size=\"11.2\" letter-spacing=\"1.9\" fill=\"rgba(244,242,238,.82)\"><textPath href=\"#cp384\" startOffset=\"50%\" text-anchor=\"middle\">МУЗЕЙ КОСМОНАВТИКИ<\/textPath><\/text><text x=\"240.0\" y=\"198.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"17.6\" font-weight=\"500\" fill=\"rgba(244,242,238,.82)\">25.11.26<\/text><text x=\"240.0\" y=\"230.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"9.6\" letter-spacing=\"1.6\" fill=\"rgba(244,242,238,.82)\">МОСКВА<\/text><\/g><path d=\"M291.5 156.8q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 177.6q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 198.4q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 219.2q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><\/svg>"}, {"k": "22", "name": "Луноход-1", "num": "022", "full": "Первый планетоход", "coll": "Лунная программа", "base": "st/22.webp", "pm": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"1024\" viewBox=\"0 0 384 512\" aria-hidden=\"true\"><g transform=\"rotate(-14 240.0 192.0)\"><circle cx=\"240.0\" cy=\"192.0\" r=\"73.6\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"3.52\"/><circle cx=\"240.0\" cy=\"192.0\" r=\"54.4\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"1.60\"/><path id=\"cp384\" d=\"M176.0 192.0a64.0 64.0 0 0 1 128.0 0\" fill=\"none\"/><text font-family=\"Geist Mono,monospace\" font-size=\"11.2\" letter-spacing=\"1.9\" fill=\"rgba(244,242,238,.82)\"><textPath href=\"#cp384\" startOffset=\"50%\" text-anchor=\"middle\">МУЗЕЙ КОСМОНАВТИКИ<\/textPath><\/text><text x=\"240.0\" y=\"198.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"17.6\" font-weight=\"500\" fill=\"rgba(244,242,238,.82)\">25.11.26<\/text><text x=\"240.0\" y=\"230.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"9.6\" letter-spacing=\"1.6\" fill=\"rgba(244,242,238,.82)\">МОСКВА<\/text><\/g><path d=\"M291.5 156.8q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 177.6q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 198.4q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 219.2q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><\/svg>"}];
+let KIND = qs.get('kind') === 'medal' ? 'medal' : 'stamp';
+const EX = qs.get('ex'); /* номер экспоната из QR: режим встраивания в приложение */
+if (EX) document.documentElement.classList.add('emb');
+const kinds = $('#kinds');
+function listChips(){ chips.innerHTML = ''; (KIND === 'stamp' ? STAMPS : MEDALS).forEach((m, i) => { const b = document.createElement('button'); b.textContent = m.name; b.onclick = () => window.play(i); chips.appendChild(b); }); }
+[['stamp', 'Марка'], ['medal', 'Медаль']].forEach(([k, n]) => { const b = document.createElement('button'); b.textContent = n; b.dataset.k = k; b.onclick = () => { if (KIND === k) return; KIND = k; app.classList.toggle('stamp', KIND === 'stamp'); [...kinds.children].forEach((x) => x.classList.toggle('on', x.dataset.k === KIND)); listChips(); cur = 0; window.play(0); }; kinds.appendChild(b); });
+[...kinds.children].forEach((x) => x.classList.toggle('on', x.dataset.k === KIND)); app.classList.toggle('stamp', KIND === 'stamp');
+let stT = null;
+const loadImg = (src) => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src.trim().startsWith('<') ? 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src.includes('xmlns=') ? src : src.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ')) : src; }); /* SVG-строка или путь к картинке */
+let STI = {};
+async function playStamp(i){
+  cur = i; const m = STAMPS[i]; [...chips.children].forEach((b, k) => b.classList.toggle('on', k === i));
+  $('#kick').textContent = 'Новая марка · ' + (i + 1) + ' из ' + STAMPS.length; $('#nm').textContent = m.name; $('#cd').textContent = m.full + ' · марка погашена штемпелем визита';
+  $('#tr i').style.background = '#FF6A1F'; $('#tr span').textContent = (m.coll || 'Почта музея') + ' · № ' + m.num + ' · ' + new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  $('#load').style.display = 'none'; setRays({ tier:'gold' }); CF.length = 0;
+  app.classList.remove('lnd'); app.classList.add('on');
+  if (!T){ app.classList.add('stamp2d'); const w = $('#stw'); w.classList.remove('go'); w.innerHTML = `<div class="sb">${m.base.trim().startsWith('<') ? m.base : '<img src="' + m.base + '" alt="" style="width:100%">'}</div><div class="pmk">${m.pm}</div>`; void w.offsetWidth; w.classList.add('go'); setTimeout(() => { app.classList.add('lnd'); CFQ = 120; }, 1450); return; }
+  run = null; STI = { base: await loadImg(m.base), pm: await loadImg(m.pm) };
+  drawStampTex(true); { const a = AIM.petal; cam.position.set(0, a[1], a[2]); cam.lookAt(0, a[0], 0); }
+  run = { t0: performance.now(), land: false, pm: false };
+}
+function drawStampTex(pm){ const c = SG.userData.cv, g = c.getContext('2d'); g.clearRect(0, 0, 768, 1024); if (STI.base) g.drawImage(STI.base, 0, 0, 768, 1024); if (pm && STI.pm) g.drawImage(STI.pm, 0, 0, 768, 1024); SG.userData.tx.needsUpdate = true; }
+
+
+let T = null;
+try { const c = document.createElement('canvas'); if (c.getContext('webgl2') || c.getContext('webgl')) T = await import('./three.module.min.js'); } catch (e) { T = null; }
+
+/* ================= чеканка: карты рельефа, цвета, шероховатости ================= */
+const N = 1024, C0 = N / 2, RD = .735 * C0; /* RD — радиус центрального поля в пикселях */
+const cnv = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h || w; return c; };
+const X = (u) => C0 + u * RD;
+/* Примитивы рисуют высоту: светлее = выше. Слои складываются по максимуму */
+function kit(g) {
+  g.globalCompositeOperation = 'lighten'; g.lineCap = 'round'; g.lineJoin = 'round';
+  const v = (h) => { const k = Math.round(Math.max(0, Math.min(1, h)) * 255); return `rgb(${k},${k},${k})`; };
+  return {
+    dome(x, y, r, h = 1, flat = .55) { const q = g.createRadialGradient(X(x) - r * RD * .15, X(y) - r * RD * .15, 0, X(x), X(y), r * RD); q.addColorStop(0, v(h)); q.addColorStop(.7, v(h * (.6 + flat * .4))); q.addColorStop(1, v(h * flat)); g.fillStyle = q; g.beginPath(); g.arc(X(x), X(y), r * RD, 0, 6.2832); g.fill(); },
+    tube(pts, w, h = .8) { for (let i = 0; i < 6; i++) { g.strokeStyle = v(h * (.5 + .5 * i / 5)); g.lineWidth = Math.max(1, w * RD * (1 - i / 6.5)); g.beginPath(); pts.forEach(([x, y], k) => (k ? g.lineTo(X(x), X(y)) : g.moveTo(X(x), X(y)))); g.stroke(); } },
+    arc(x, y, rx, ry, rot, a0, a1, w, h = .8) { const P = []; for (let i = 0; i <= 64; i++) { const a = a0 + (a1 - a0) * i / 64, cx = Math.cos(a) * rx, cy = Math.sin(a) * ry; P.push([x + cx * Math.cos(rot) - cy * Math.sin(rot), y + cx * Math.sin(rot) + cy * Math.cos(rot)]); } this.tube(P, w, h); },
+    /* тело-«цилиндр»: форма с поперечным градиентом */
+    body(path, ax, w, h = 1, rot = 0, cx = 0, cy = 0) { g.save(); g.translate(X(cx), X(cy)); g.rotate(rot); const q = g.createLinearGradient(-w * RD / 2, 0, w * RD / 2, 0); q.addColorStop(0, v(h * .5)); q.addColorStop(.38, v(h)); q.addColorStop(.62, v(h * .92)); q.addColorStop(1, v(h * .45)); g.fillStyle = q; g.beginPath(); path(g, RD); g.fill(); g.restore(); },
+    sparkle(x, y, s, h = .9) { const r = s * RD; g.fillStyle = v(h); g.beginPath(); g.moveTo(X(x), X(y) - r); g.quadraticCurveTo(X(x), X(y), X(x) + r, X(y)); g.quadraticCurveTo(X(x), X(y), X(x), X(y) + r); g.quadraticCurveTo(X(x), X(y), X(x) - r, X(y)); g.quadraticCurveTo(X(x), X(y), X(x), X(y) - r); g.fill(); this.dome(x, y, s * .22, h, .7); },
+    dot(x, y, r, h = .7) { this.dome(x, y, r, h, .5); },
+    fill(path, h) { g.fillStyle = v(h); g.beginPath(); path(g, RD); g.fill(); },
+    g, v
+  };
+}
+const ART = {
+  /* Первый виток: край Земли с меридианами, орбита, спутник с антеннами */
+  m1(a, c) {
+    a.dome(0, 1.62, 1.12, .62, .8);
+    for (let i = -3; i <= 3; i++) c.arc(i * .2, 1.62, .18 + Math.abs(i) * .02, 1.12, 0, Math.PI * 1.1, Math.PI * 1.9, .018, .8);
+    [.78, .95].forEach((ry) => c.arc(0, 1.62, 1.12 * Math.sqrt(1 - (ry * .0)), ry - .45, 0, Math.PI * 1.05, Math.PI * 1.95, .014, .5));
+    a.arc(0, .12, .9, .3, -.2, Math.PI * .95, Math.PI * 2.05, .028, .55);
+    /* ПС-1 летит вправо-вверх; четыре антенны крепятся к передней полусфере и уходят назад парами */
+    const sx = .26, sy = -.3, ro = -.32, ux = Math.cos(ro), uy = Math.sin(ro), nx = -uy, ny = ux, R0 = .2;
+    a.dome(sx, sy, R0, 1, .55); c.arc(sx - ux * .02, sy - uy * .02, .07, R0, ro, 0, 6.2832, .012, .6);
+    [[1, .95, .42], [1, .8, .62], [-1, .95, .42], [-1, .8, .62]].forEach(([sd, L, sp]) => {
+      const bx = sx + ux * R0 * .45 + nx * sd * R0 * .86, by = sy + uy * R0 * .45 + ny * sd * R0 * .86;
+      a.tube([[bx, by], [sx - ux * L + nx * sd * sp, sy - uy * L + ny * sd * sp]], .02, .78);
+      a.dome(bx, by, .028, 1, .8); });
+    a.sparkle(-.5, -.55, .09, .8); a.sparkle(.62, -.6, .06, .7); a.dot(.55, .02, .025); a.dot(-.25, -.72, .02);
+  },
+  /* Конструктор: чертёжная сетка, ракета в разрезе по форме, размерные линии */
+  m2(a, c) {
+    for (let i = -5; i <= 5; i++) { c.tube([[i * .18, -1], [i * .18, 1]], .006, .5); c.tube([[-1, i * .18], [1, i * .18]], .006, .5); }
+    /* Р-7 по центру поля: от -0.6 до 0.6, размерная линия слева, транспортир справа на той же оси */
+    const dy = .06;
+    a.body((g, R) => { g.moveTo(0, (-.66 + dy) * R); g.lineTo(.06 * R, (-.54 + dy) * R); g.lineTo(.08 * R, (-.4 + dy) * R); g.lineTo(.09 * R, (.42 + dy) * R); g.lineTo(-.09 * R, (.42 + dy) * R); g.lineTo(-.08 * R, (-.4 + dy) * R); g.lineTo(-.06 * R, (-.54 + dy) * R); g.closePath(); }, 0, .2, 1);
+    [-1, 1].forEach((sd) => a.body((g, R) => { g.moveTo(sd * .09 * R, (-.08 + dy) * R); g.quadraticCurveTo(sd * .21 * R, (.03 + dy) * R, sd * .22 * R, (.18 + dy) * R); g.lineTo(sd * .21 * R, (.42 + dy) * R); g.lineTo(sd * .09 * R, (.42 + dy) * R); g.closePath(); }, 0, .44, .85));
+    a.fill((g, R) => { [-.17, -.05, .05, .17].forEach((x) => { g.moveTo((x - .03) * R, (.42 + dy) * R); g.lineTo((x + .03) * R, (.42 + dy) * R); g.lineTo((x + .045) * R, (.5 + dy) * R); g.lineTo((x - .045) * R, (.5 + dy) * R); g.closePath(); }); }, .6);
+    c.tube([[-.08, -.4 + dy], [.08, -.4 + dy]], .012, .8); c.tube([[-.09, -.08 + dy], [.09, -.08 + dy]], .012, .8);
+    a.tube([[-.5, -.6 + dy], [-.5, .5 + dy]], .012, .5); a.tube([[-.56, -.6 + dy], [-.14, -.6 + dy]], .01, .45); a.tube([[-.56, .5 + dy], [-.3, .5 + dy]], .01, .45);
+    a.tube([[-.54, -.52 + dy], [-.5, -.6 + dy], [-.46, -.52 + dy]], .012, .5); a.tube([[-.54, .42 + dy], [-.5, .5 + dy], [-.46, .42 + dy]], .012, .5);
+    a.arc(.5, 0, .2, .2, 0, -Math.PI / 2, Math.PI / 2, .016, .5); a.tube([[.5, -.2], [.5, .2]], .012, .5); a.tube([[.5, 0], [.66, -.12]], .014, .55); a.dot(.5, 0, .03, .6);
+  },
+  /* Слушатель: наушники и волны звука */
+  m3(a, c) {
+    const S = .74; /* наушники меньше, больше воздуха вокруг */
+    a.arc(0, .06, .5 * S, .55 * S, 0, Math.PI * 1.05, Math.PI * 1.95, .06, .85);
+    a.arc(0, .06, .5 * S, .55 * S, 0, Math.PI * 1.08, Math.PI * 1.92, .016, 1);
+    [[-.5 * S, .16], [.5 * S, .16]].forEach(([x, y]) => { a.body((g, R) => { g.roundRect(-.085 * R, -.15 * R, .17 * R, .3 * R, .08 * R); }, 0, .17, 1, 0, x, y); c.tube([[x, y - .09], [x, y + .09]], .013, .6); });
+    [.16, .27, .38].forEach((r, i) => { a.arc(-.5 * S, .16, r + .1, r + .1, 0, Math.PI * .72, Math.PI * 1.28, .026, .75 - i * .15); a.arc(.5 * S, .16, r + .1, r + .1, 0, -Math.PI * .28, Math.PI * .28, .026, .75 - i * .15); });
+    a.sparkle(0, -.62, .07, .7); a.dot(-.2, .66, .02); a.dot(.24, .64, .02);
+  },
+  /* Испытатель: гермошлем со стеклом, кольцо гермоворота, заклёпки */
+  m4(a, c) {
+    /* гермошлем СК-1: круглая оболочка чуть шире книзу, стекло — верхний овал с прямым нижним краем, гермоворот */
+    const shell = (g, R) => { g.moveTo(-.4 * R, .28 * R); g.bezierCurveTo(-.5 * R, -.05 * R, -.44 * R, -.56 * R, 0, -.56 * R); g.bezierCurveTo(.44 * R, -.56 * R, .5 * R, -.05 * R, .4 * R, .28 * R); g.closePath(); };
+    a.body(shell, 0, .96, 1);
+    const visor = (g, R) => { g.moveTo(-.28 * R, -.02 * R); g.bezierCurveTo(-.3 * R, -.36 * R, .3 * R, -.36 * R, .28 * R, -.02 * R); g.quadraticCurveTo(0, .06 * R, -.28 * R, -.02 * R); g.closePath(); };
+    a.fill(visor, .12); c.fill(visor, .7);
+    const vp = []; for (let i = 0; i <= 40; i++) { const t = i / 40, u = 1 - t; vp.push([u * u * u * -.28 + 3 * u * u * t * -.3 + 3 * u * t * t * .3 + t * t * t * .28, u * u * u * -.02 + 3 * u * u * t * -.36 + 3 * u * t * t * -.36 + t * t * t * -.02]); }
+    for (let i = 1; i <= 16; i++) { const t = i / 16, u = 1 - t; vp.push([u * u * .28 + t * t * -.28, u * u * -.02 + 2 * u * t * .06 + t * t * -.02]); }
+    a.tube(vp, .03, .98);
+    a.arc(-.08, -.16, .14, .08, -.3, Math.PI * 1.05, Math.PI * 1.5, .024, .55);
+    a.tube([[-.38, .12], [.38, .12]], .02, .8);
+    a.body((g, R) => { g.roundRect(-.48 * R, .28 * R, .96 * R, .16 * R, .07 * R); }, 0, .96, .88);
+    for (let i = 0; i < 9; i++) a.dot(-.38 + i * .095, .36, .02, .95);
+    a.dome(.42, .02, .055, .85, .7);
+    a.sparkle(.62, -.6, .07, .8); a.sparkle(-.66, -.3, .05, .7); a.dot(.66, .62, .02);
+  },
+  /* Лунный путь: Луна с кратерами, колея лунохода, Земля */
+  m5(a, c) {
+    a.dome(.1, -.12, .58, .95, .6);
+    [[-.12, -.3, .13], [.3, -.32, .09], [.18, .12, .15], [-.15, .1, .07], [.42, .0, .06], [-.02, -.52, .06]].forEach(([x, y, r]) => { c.dome(x, y, r, .55, .9); a.arc(x - r * .1, y - r * .1, r * 1.05, r * 1.05, 0, Math.PI * .9, Math.PI * 1.9, .02, .95); });
+    const tr = (o) => { const P = []; for (let i = 0; i <= 40; i++) { const t = i / 40; P.push([-.85 + t * 1.6, .78 - Math.sin(t * 2.2) * .18 + o]); } return P; };
+    for (let k = 0; k < 2; k++) tr(k * .07).forEach(([x, y], i) => { if (i % 2 === 0) a.fill((g, R) => { g.rect((x - .012) * R, (y - .02) * R, .024 * R, .04 * R); }, .55); });
+    a.sparkle(-.6, -.55, .08, .75);
+    a.sparkle(.7, .45, .06, .7); a.dot(-.72, .2, .02);
+  },
+  /* Второй экипаж: следы лап по орбите и капсула */
+  m6(a, c) {
+    /* «Второй экипаж»: контейнер «Спутника-5» на орбите над Землёй, два иллюминатора — два члена экипажа */
+    a.dome(0, 1.62, 1.12, .62, .8);
+    for (let i = -3; i <= 3; i++) c.arc(i * .2, 1.62, .18 + Math.abs(i) * .02, 1.12, 0, Math.PI * 1.1, Math.PI * 1.9, .018, .8);
+    a.arc(0, .2, .86, .34, -.18, Math.PI * .95, Math.PI * 2.05, .022, .5);
+    a.body((g, R) => { g.roundRect(-.3 * R, -.12 * R, .6 * R, .24 * R, .12 * R); }, 0, .6, 1, -.18, .06, -.18);
+    c.dome(-.04, -.16, .055, .8, .9); c.dome(.14, -.2, .055, .8, .9);
+    a.arc(-.04, -.16, .06, .06, 0, 0, 6.2832, .014, 1); a.arc(.14, -.2, .06, .06, 0, 0, 6.2832, .014, 1);
+    a.sparkle(-.55, -.5, .08, .8); a.sparkle(.6, -.55, .06, .7); a.dot(.3, .3, .02); a.dot(-.7, .05, .02);
+  },
+  /* Космонавт музея: лучи-гильош, планета с кольцом, спутник */
+  m7(a, c) {
+    for (let i = 0; i < 36; i++) { const an = i / 36 * 6.2832; c.tube([[Math.cos(an) * .42, Math.sin(an) * .42], [Math.cos(an) * .98, Math.sin(an) * .98]], i % 2 ? .006 : .012, .5); }
+    a.arc(0, .02, .74, .22, -.35, Math.PI * .02, Math.PI * .98, .05, .55);
+    a.dome(0, .02, .34, 1, .55);
+    c.arc(0, .02, .34, .1, -.35, Math.PI * .1, Math.PI * .9, .02, .4); c.arc(0, -.12, .3, .07, -.35, Math.PI * .1, Math.PI * .9, .015, .3);
+    a.arc(0, .02, .74, .22, -.35, Math.PI * 1.02, Math.PI * 1.98, .05, .98); a.arc(0, .02, .74, .22, -.35, Math.PI * 1.02, Math.PI * 1.98, .015, 1);
+    a.dome(.66, -.42, .08, .9, .6);
+    a.sparkle(-.6, -.55, .09, .8); a.sparkle(.5, .62, .06, .7); a.dot(-.4, .66, .02);
+  },
+  /* Вся коллекция: старт ракеты, факел, траектория и звёзды */
+  m8(a, c) {
+    const tr = []; for (let i = 0; i <= 40; i++) { const t = i / 40; tr.push([-.8 + t * 1.25, .85 - t * t * 1.55]); } a.tube(tr, .016, .45);
+    a.body((g, R) => { g.moveTo(0, -.5 * R); g.bezierCurveTo(.15 * R, -.36 * R, .14 * R, -.06 * R, .12 * R, .3 * R); g.lineTo(-.12 * R, .3 * R); g.bezierCurveTo(-.14 * R, -.06 * R, -.15 * R, -.36 * R, 0, -.5 * R); }, 0, .3, 1, .5, .08, -.12);
+    a.g.save(); a.g.translate(X(.08), X(-.12)); a.g.rotate(.5);
+    a.fill((g, R) => { g.moveTo(-.11 * R, .1 * R); g.lineTo(-.26 * R, .38 * R); g.lineTo(-.1 * R, .3 * R); g.closePath(); g.moveTo(.11 * R, .1 * R); g.lineTo(.26 * R, .38 * R); g.lineTo(.1 * R, .3 * R); g.closePath(); }, .75);
+    const q = a.g.createLinearGradient(0, .3 * RD, 0, .95 * RD); q.addColorStop(0, a.v(.8)); q.addColorStop(1, a.v(.05)); a.g.fillStyle = q; a.g.beginPath(); a.g.moveTo(-.09 * RD, .3 * RD); a.g.quadraticCurveTo(-.16 * RD, .7 * RD, 0, .98 * RD); a.g.quadraticCurveTo(.16 * RD, .7 * RD, .09 * RD, .3 * RD); a.g.fill();
+    a.g.restore();
+    c.dome(.08 + Math.sin(.5) * .18 * -1 + .0, -.12 - .18 * Math.cos(.5) * 1, .065, .9, .9);
+    [[-.55, -.45, .1], [.6, -.6, .07], [.68, .2, .06], [-.7, .15, .05], [-.2, -.75, .05]].forEach(([x, y, s]) => a.sparkle(x, y, s, .85));
+    for (let i = 0; i < 14; i++) { const an = Math.random() * 6.28, r = .3 + Math.random() * .6; a.dot(Math.cos(an) * r, Math.sin(an) * r, .012, .55); }
+    /* ракета Циолковского 1903 года — контуром, как на чертеже */
+    a.arc(-.4, .4, .3, .085, -.5, 0, 6.2832, .022, .95); a.tube([[-.66, .54], [-.78, .64]], .018, .9); a.tube([[-.66, .54], [-.8, .54]], .016, .85); c.tube([[-.5, .36], [-.47, .52]], .008, .6); c.tube([[-.36, .3], [-.33, .46]], .008, .6);
+  }
+};
+/* надпись по дуге */
+function arcText(g, text, r, mid, size, inside) {
+  g.font = `700 ${size}px Inter, "Helvetica Neue", Arial, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const chars = [...text], ws = chars.map((ch) => g.measureText(ch).width + size * .14), tot = ws.reduce((s, w) => s + w, 0);
+  let a = mid - (inside ? -1 : 1) * tot / r / 2;
+  chars.forEach((ch, i) => { const da = ws[i] / r, an = a + (inside ? -1 : 1) * da / 2; g.save(); g.translate(C0 + Math.cos(an) * r, C0 + Math.sin(an) * r); g.rotate(an + (inside ? -Math.PI / 2 : Math.PI / 2)); g.fillText(ch, 0, 0); g.restore(); a += (inside ? -1 : 1) * da; });
+}
+const sm = (e0, e1, x) => { const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+const CACHE = {};
+function mint(m) {
+  const ck = m.k + '|' + (MAT || m.tier); if (CACHE[ck]) return CACHE[ck];
+  const tier = tierOf(m), hasE = tier.enamel, en = hasE ? hexRgb(ENAMEL[m.k] || '#142c52') : null;
+  /* 1) барельеф и врезка */
+  const A = cnv(N), Cc = cnv(N), ag = A.getContext('2d'), cg = Cc.getContext('2d');
+  [ag, cg].forEach((g) => { g.fillStyle = '#000'; g.fillRect(0, 0, N, N); g.save(); g.beginPath(); g.arc(C0, C0, RD - 6, 0, 6.2832); g.clip(); });
+  ART[m.k](kit(ag), kit(cg));
+  [ag, cg].forEach((g) => g.restore());
+  /* смягчаем край рельефа: размытая копия поверх резкой, как после чеканки */
+  const A2 = cnv(N), a2 = A2.getContext('2d'); a2.filter = 'blur(2.2px)'; a2.drawImage(A, 0, 0); a2.filter = 'none';
+  /* 2) поясок с надписями */
+  const L = cnv(N), lg = L.getContext('2d'); lg.fillStyle = '#000'; lg.fillRect(0, 0, N, N); lg.fillStyle = '#fff';
+  const rt = .808 * C0; arcText(lg, m.name.toUpperCase(), rt, -Math.PI / 2, 38, false); arcText(lg, 'МУЗЕЙ КОСМОНАВТИКИ', rt, Math.PI / 2, 30, true);
+  [-1, 1].forEach((s) => { const an = Math.PI / 2 + s * 1.28; lg.beginPath(); lg.arc(C0 + Math.cos(an) * rt, C0 + Math.sin(an) * rt, 6, 0, 6.2832); lg.fill(); const an2 = -Math.PI / 2 + s * 1.5; lg.beginPath(); lg.arc(C0 + Math.cos(an2) * rt, C0 + Math.sin(an2) * rt, 6, 0, 6.2832); lg.fill(); });
+  const L2 = cnv(N), l2 = L2.getContext('2d'); l2.filter = 'blur(1.6px)'; l2.drawImage(L, 0, 0); l2.filter = 'none';
+  const ad = a2.getImageData(0, 0, N, N).data, cd = cg.getImageData(0, 0, N, N).data, ld = l2.getImageData(0, 0, N, N).data;
+  /* 3) сборка карт: высота, цвет, ORM (G — шероховатость, B — металл) */
+  const Hh = new Float32Array(N * N), col = cnv(N), cc = col.getContext('2d'), cimg = cc.createImageData(N, N), orm = cnv(N), oc = orm.getContext('2d'), oimg = oc.createImageData(N, N);
+  const base = tier.base, flatE = new Uint8Array(N * N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const i = y * N + x, dx = (x - C0) / C0, dy = (y - C0) / C0, r = Math.hypot(dx, dy), th = Math.atan2(dy, dx);
+    let h = 0, rough = .3, metal = 1, ce = null, cav = 0;
+    const art = ad[i * 4] / 255, cut = cd[i * 4] / 255;
+    if (r > .99) { h = 0; }
+    else if (r > .905) { /* обод: валик с фаской к ребру */
+      const t = (r - .905) / .085; h = .62 + .3 * Math.sin(Math.min(1, t * 1.15) * Math.PI * .9) - .55 * sm(.8, 1, t); rough = .18;
+    } else if (r > .878) { /* поясок бусин */
+      const an = ((th / 6.2832 * 60) % 1 + 1) % 1, bd = Math.hypot((an - .5) * 6.2832 * .8915 * C0 / 60, (r - .8915) * C0) / 9;
+      h = .4 + (bd < 1 ? .38 * Math.sqrt(1 - bd * bd) : 0); rough = .26; cav = bd < 1 ? 0 : 1;
+    } else if (r > .748) { /* поясок с надписями: матовый, буквы полированные */
+      const lt = ld[i * 4] / 255; h = .42 + .32 * lt; rough = .55 - .35 * lt; cav = 1 - lt;
+      h += .012 * Math.sin(r * 900); /* тонкая токарная риска */
+    } else if (r > .735) { h = .82; rough = .16; } /* выпуклый кантик */
+    else { /* центр */
+      const g = .5 + .5 * Math.cos(6.2832 * (r * (hasE ? 30 : 20) + .28 * Math.sin(th * (hasE ? 14 : 10) + r * 9)));
+      if (art > .03) { h = .36 + .64 * art - .22 * cut; rough = .22 + .3 * (1 - art) + .2 * cut; cav = (1 - art) * .6 + cut * .7; }
+      else if (hasE) { h = .34; flatE[i] = 1; metal = 0; rough = .06; const k = .62 + .5 * g + .25 * (1 - r); ce = [en[0] * k, en[1] * k, en[2] * k]; }
+      else { h = .3 + .025 * g - .15 * cut; rough = .42 - .12 * g; cav = .5 * (1 - g) + cut * .6; }
+    }
+    Hh[i] = h;
+    const o = i * 4;
+    if (ce) { cimg.data[o] = ce[0]; cimg.data[o + 1] = ce[1]; cimg.data[o + 2] = ce[2]; }
+    else { const k = (.62 + .38 * Math.min(1, h * 1.15)) * (1 - .38 * cav); cimg.data[o] = base[0] * k; cimg.data[o + 1] = base[1] * k; cimg.data[o + 2] = base[2] * k * (m.tier === 'bronze' ? .95 : 1); }
+    cimg.data[o + 3] = 255; oimg.data[o] = 255; oimg.data[o + 1] = rough * 255; oimg.data[o + 2] = metal * 255; oimg.data[o + 3] = 255;
+  }
+  cc.putImageData(cimg, 0, 0); oc.putImageData(oimg, 0, 0);
+  /* высота для смещения (512) и нормали (1024; эмаль — гладкая) */
+  const hc = cnv(N), hg = hc.getContext('2d'), himg = hg.createImageData(N, N);
+  for (let i = 0; i < N * N; i++) { const v = Hh[i] * 255; himg.data[i * 4] = himg.data[i * 4 + 1] = himg.data[i * 4 + 2] = v; himg.data[i * 4 + 3] = 255; }
+  hg.putImageData(himg, 0, 0);
+  const nc = cnv(N), ng = nc.getContext('2d'), nimg = ng.createImageData(N, N), K = 7.5;
+  const Hs = (x, y) => Hh[Math.min(N - 1, Math.max(0, y)) * N + Math.min(N - 1, Math.max(0, x))];
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const i = y * N + x; let ddx = 0, ddy = 0;
+    if (!flatE[i]) { ddx = (Hs(x + 1, y) - Hs(x - 1, y)) * K; ddy = (Hs(x, y + 1) - Hs(x, y - 1)) * K; }
+    const l = Math.hypot(ddx, ddy, 1), o = i * 4; nimg.data[o] = (-ddx / l * .5 + .5) * 255; nimg.data[o + 1] = (ddy / l * .5 + .5) * 255; nimg.data[o + 2] = (1 / l * .5 + .5) * 255; nimg.data[o + 3] = 255;
+  }
+  ng.putImageData(nimg, 0, 0);
+  const dc = cnv(512), dg = dc.getContext('2d'); dg.filter = 'blur(1px)'; dg.drawImage(hc, 0, 0, 512, 512); dg.filter = 'none';
+  const mk = cnv(512), mg = mk.getContext('2d'); mg.fillStyle = '#000'; mg.fillRect(0, 0, 512, 512); mg.fillStyle = '#fff'; mg.beginPath(); mg.arc(256, 256, 256 * .99, 0, 6.2832); mg.fill();
+  const tx = (c, srgb) => { const t = new T.CanvasTexture(c); if (srgb) t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; return t; };
+  return (CACHE[ck] = { color: tx(col, true), orm: tx(orm), nrm: tx(nc), disp: tx(dc), mask: tx(mk) });
+}
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+/* оборот: зеркальный с токарными кольцами, гравировка */
+function backMaps(m) {
+  const S = 1024, c = cnv(S), g = c.getContext('2d'); g.fillStyle = '#9a9a9a'; g.fillRect(0, 0, S, S);
+  g.fillStyle = '#555'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  arcText(g, 'МУЗЕЙ КОСМОНАВТИКИ · МОСКВА · МУЗЕЙ В КАРМАНЕ ·', .8 * 512, -Math.PI / 2, 34, false);
+  g.strokeStyle = '#555'; g.lineWidth = 4; [.72, .9].forEach((r) => { g.beginPath(); g.arc(512, 512, r * 512, 0, 6.2832); g.stroke(); });
+  g.font = '600 64px Inter, Arial, sans-serif'; const w = m.name.toUpperCase().split(' '), lines = w.length > 1 ? [w[0], w.slice(1).join(' ')] : w;
+  lines.forEach((l, i) => g.fillText(l, 512, 470 + i * 78 - (lines.length - 1) * 30));
+  g.font = '500 40px Inter, Arial, sans-serif'; g.fillText('— 2026 —', 512, 650);
+  g.font = '500 30px Inter, Arial, sans-serif'; g.fillText('№ ' + String(MEDALS.indexOf(m) + 1).padStart(3, '0'), 512, 360);
+  const b = cnv(S), bg = b.getContext('2d'); bg.filter = 'blur(1.4px)'; bg.drawImage(c, 0, 0); bg.filter = 'none';
+  const d = bg.getImageData(0, 0, S, S).data, o = cnv(S), og = o.getContext('2d'), od = og.createImageData(S, S);
+  const H0 = (x, y) => d[(Math.min(S - 1, Math.max(0, y)) * S + Math.min(S - 1, Math.max(0, x))) * 4] / 255 + .004 * Math.sin(Math.hypot(x - 512, y - 512) * 1.3);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const dx = (H0(x + 1, y) - H0(x - 1, y)) * 4, dy = (H0(x, y + 1) - H0(x, y - 1)) * 4, l = Math.hypot(dx, dy, 1), i = (y * S + x) * 4; od.data[i] = (-dx / l * .5 + .5) * 255; od.data[i + 1] = (dy / l * .5 + .5) * 255; od.data[i + 2] = (1 / l * .5 + .5) * 255; od.data[i + 3] = 255; }
+  og.putImageData(od, 0, 0); const t = new T.CanvasTexture(o); return t;
+}
+/* лента: продольные полосы, кромка, рубчик поперёк и переплетение */
+function ribbonMaps(m) {
+  const W = 256, Hh = 1024, c = cnv(W, Hh), g = c.getContext('2d'), sw = W / m.rib.length;
+  m.rib.forEach((h, i) => { g.fillStyle = h; g.fillRect(i * sw, 0, sw + 1, Hh); });
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, 0, 6, Hh); g.fillRect(W - 6, 0, 6, Hh);
+  const id = g.getImageData(0, 0, W, Hh); for (let y = 0; y < Hh; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 4, mo = Math.sin(x * .045 + 5 * Math.sin(y * .012 + x * .03) + 2 * Math.sin(y * .031)), k = .8 + .1 * mo + .07 * Math.cos(y * .8) + (Math.random() - .5) * .06; id.data[i] *= k; id.data[i + 1] *= k; id.data[i + 2] *= k; }
+  g.putImageData(id, 0, 0);
+  const n = cnv(W, Hh), ng = n.getContext('2d'), nd = ng.createImageData(W, Hh);
+  for (let y = 0; y < Hh; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 4, dy = Math.sin(y * .8) * .45 + Math.cos((x + y) * .5) * .08, dx = Math.cos(x * 1.3) * .08, l = Math.hypot(dx, dy, 1); nd.data[i] = (-dx / l * .5 + .5) * 255; nd.data[i + 1] = (dy / l * .5 + .5) * 255; nd.data[i + 2] = (1 / l * .5 + .5) * 255; nd.data[i + 3] = 255; }
+  ng.putImageData(nd, 0, 0);
+  const map = new T.CanvasTexture(c); map.colorSpace = T.SRGBColorSpace; map.anisotropy = 8; const nm = new T.CanvasTexture(n); nm.anisotropy = 8;
+  return { map, nm };
+}
+
+/* ================= сцена ================= */
+let R, scene, cam, P, H, RB, ring, keyL;
+if (T) {
+  R = new T.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+  R.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.0; R.outputColorSpace = T.SRGBColorSpace;
+  R.shadowMap.enabled = true; R.shadowMap.type = T.PCFSoftShadowMap;
+  scene = new T.Scene(); cam = new T.PerspectiveCamera(26, 1, .1, 60); cam.position.set(0, .7, 9.2); cam.lookAt(0, .5, 0);
+  const env = new T.Scene();
+  env.add(new T.Mesh(new T.SphereGeometry(20, 32, 16), new T.MeshBasicMaterial({ color: 0x060607, side: T.BackSide })));
+  [[10, 6, 0, 3, 12, 0xfff0e0, 1.1], [14, 9, -5, 8, 9, 0xffffff, 1.7], [1.6, 14, 9, 1, 3, 0xffffff, 3.6], [14, 2, 0, 11, 0, 0xffffff, 3.6], [10, 4, 0, -9, 6, 0xff7a38, 1.1], [3, 12, -10, 0, -6, 0x9fc3ff, 1.5]].forEach(([w, h, x, y, z, c, k]) => {
+    const p = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color: new T.Color(c).multiplyScalar(k), side: T.DoubleSide })); p.position.set(x, y, z); p.lookAt(0, 0, 0); env.add(p);
+  });
+  scene.environment = new T.PMREMGenerator(R).fromScene(env, .04).texture;
+  /* ключевой свет с тенями: рельеф отбрасывает тень сам на себя, лента — на медаль */
+  keyL = new T.DirectionalLight(0xfff3e6, 2.2); keyL.position.set(-2.6, 4, 5); keyL.castShadow = true;
+  keyL.shadow.mapSize.set(2048, 2048); Object.assign(keyL.shadow.camera, { left: -2, right: 2, top: 3, bottom: -2, near: .5, far: 20 }); keyL.shadow.bias = -.0004; keyL.shadow.normalBias = .012; keyL.shadow.radius = 3;
+  scene.add(keyL, keyL.target);
+  /* прожектор сверху: включается при посадке */
+  window.__spot = new T.SpotLight(0xfff0dc, 0, 0, .45, 1, 0); __spot.position.set(0, 7, 3.5); __spot.target.position.set(0, 0, 0); scene.add(__spot, __spot.target);
+
+  const rim = new T.DirectionalLight(0xc4dcff, 1.5); rim.position.set(-3, 3.5, -5); scene.add(rim); /* холодная контровая сверху-сзади: обводит силуэт */
+  const rim2 = new T.DirectionalLight(0xffe6cc, .9); rim2.position.set(3.5, 1.2, -4); scene.add(rim2); /* тёплая контровая справа */
+  const fillL = new T.DirectionalLight(0xdfe8f5, .45); fillL.position.set(2, -2, 6); scene.add(fillL); /* мягкая заливка снизу-спереди */
+  P = new T.Group(); scene.add(P); /* подвес: медаль + лента */
+  H = new T.Group(); P.add(H); RB = new T.Group(); P.add(RB);
+  /* капсула «как Луна-9»: четыре лепестка на шарнирах у основания + антенны; медаль спрятана внутри */
+  scene.fog = new T.Fog(0x0b0c0e, 60, 80); /* глубина: дальнее растворяется в темноте */
+  window.CAPG = new T.Group(); P.add(CAPG); CAPG.visible = false; CAPG.userData.piv = []; CAPG.userData.ant = [];
+  { const Rc = .92, pm = new T.MeshPhysicalMaterial({ color: 0xd3d8de, metalness: 1, roughness: .28, side: T.FrontSide, clearcoat: .5, clearcoatRoughness: .1 });
+    /* изнутри лепестки — золотая термоплёнка, как на настоящих аппаратах */
+    const fc = cnv(256), fg = fc.getContext('2d'); fg.fillStyle = '#808080'; fg.fillRect(0, 0, 256, 256); for (let i = 0; i < 160; i++){ fg.fillStyle = `rgba(${Math.random() < .5 ? 255 : 0},${Math.random() < .5 ? 255 : 0},128,.06)`; fg.beginPath(); const x = Math.random() * 256, y = Math.random() * 256; fg.moveTo(x, y); fg.lineTo(x + Math.random() * 90 - 45, y + Math.random() * 90 - 45); fg.lineTo(x + Math.random() * 90 - 45, y + Math.random() * 90 - 45); fg.fill(); } fg.filter = 'blur(5px)'; fg.drawImage(fc, 0, 0); fg.filter = 'none';
+    const fn = new T.CanvasTexture(fc); fn.wrapS = fn.wrapT = T.RepeatWrapping; fn.repeat.set(1.2, 1.2);
+    const foil = new T.MeshPhysicalMaterial({ color: 0x4a5058, metalness: .85, roughness: .38, envMapIntensity: 1.1, side: T.BackSide });
+    for (let i = 0; i < 4; i++){ const ph = i * Math.PI / 2, mid = ph + Math.PI / 4, d = new T.Vector3(-Math.cos(mid), 0, Math.sin(mid)), ax = new T.Vector3(d.z, 0, -d.x).normalize();
+      const pv = new T.Group(); pv.position.copy(d).multiplyScalar(Rc * Math.cos(Math.PI / 4)); pv.userData.ax = ax; CAPG.add(pv); CAPG.userData.piv.push(pv);
+      const g = new T.SphereGeometry(Rc, 40, 18, ph + .004, Math.PI / 2 - .008, 0, Math.PI / 2), off = d.clone().multiplyScalar(-Rc * Math.cos(Math.PI / 4));
+      [pm, foil].forEach((mt) => { const m = new T.Mesh(g, mt); m.position.copy(off); m.castShadow = m.receiveShadow = true; pv.add(m); });
+    }
+    const low = new T.Mesh(new T.SphereGeometry(Rc * .99, 48, 18, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), pm); CAPG.add(low);
+    /* палуба: светлый металл с тонкими проточками */
+    const dkc = cnv(512), dk = dkc.getContext('2d'); dk.fillStyle = '#dfe2e6'; dk.fillRect(0, 0, 512, 512);
+    for (let r = 4; r < 256; r += 3){ dk.strokeStyle = `rgba(${Math.random() < .5 ? 255 : 120},${Math.random() < .5 ? 255 : 128},${Math.random() < .5 ? 255 : 136},.10)`; dk.lineWidth = 1.2; dk.beginPath(); dk.arc(256, 256, r, 0, 6.2832); dk.stroke(); }
+    dk.strokeStyle = 'rgba(150,158,168,.55)'; dk.lineWidth = 2; [140, 236].forEach((r) => { dk.beginPath(); dk.arc(256, 256, r, 0, 6.2832); dk.stroke(); });
+    { const rg = dk.createRadialGradient(256, 256, 40, 256, 256, 256); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(0,0,0,.75)'); dk.fillStyle = rg; dk.fillRect(0, 0, 512, 512); }
+    const deckTx = new T.CanvasTexture(dkc); deckTx.colorSpace = T.SRGBColorSpace; deckTx.anisotropy = 8;
+    const deck = new T.Mesh(new T.CircleGeometry(Rc * .97, 64), new T.MeshPhysicalMaterial({ color: 0x5a616a, metalness: .75, roughness: .42, envMapIntensity: .9, map: deckTx })); deck.rotation.x = -Math.PI / 2; deck.position.y = .005; CAPG.add(deck);
+    const dr = new T.Mesh(new T.RingGeometry(Rc * .55, Rc * .58, 64), new T.MeshBasicMaterial({ color: 0xb9bfc6, transparent: true, opacity: .0 })); dr.rotation.x = -Math.PI / 2; dr.position.y = .01; CAPG.add(dr);
+    const dark = new T.MeshPhysicalMaterial({ color: 0xc9ced4, metalness: 1, roughness: .18, clearcoat: .5 });
+    const belt = new T.Mesh(new T.TorusGeometry(Rc, .022, 12, 96), dark); belt.rotation.x = Math.PI / 2; CAPG.add(belt);
+    const bolts = new T.InstancedMesh(new T.CylinderGeometry(.011, .011, .018, 10), dark, 24), mx = new T.Matrix4(), q = new T.Quaternion();
+    for (let i = 0; i < 24; i++){ const an = i / 24 * 6.2832; q.setFromUnitVectors(new T.Vector3(0, 1, 0), new T.Vector3(Math.cos(an), 0, Math.sin(an))); mx.compose(new T.Vector3(Math.cos(an) * (Rc + .022), 0, Math.sin(an) * (Rc + .022)), q, new T.Vector3(1, 1, 1)); bolts.setMatrixAt(i, mx); } CAPG.add(bolts);
+    CAPG.userData.camT = new T.Object3D(); CAPG.userData.pm = pm;
+    window.__sheen = new T.PointLight(0xfff4e6, 0, 5, 1.6); scene.add(__sheen); CAPG.userData.glow = new T.PointLight(0xffd9a8, 0, 3.2, 2); CAPG.userData.glow.position.set(0, .35, 0); CAPG.add(CAPG.userData.glow); /* тёплый свет изнутри, когда лепестки раскрываются */ if (window.applyMetal) applyMetal();
+    }
+  /* марка: плоскость с текстурой из SVG, оборот — бумага */
+  window.SG = new T.Group(); P.add(SG); SG.visible = false;
+  const SG_G = new T.PlaneGeometry(1.5, 2, 20, 24); { const pa = SG_G.attributes.position; for (let i = 0; i < pa.count; i++){ const x = pa.getX(i) / .75, y = pa.getY(i); pa.setZ(i, -.035 * x * x + .012 * Math.sin(y * 1.3)); } SG_G.computeVertexNormals(); }
+  const gc = cnv(256), gg = gc.getContext('2d'); gg.fillStyle = '#8080ff'; gg.fillRect(0, 0, 256, 256); for (let i = 0; i < 9000; i++){ gg.fillStyle = `rgba(${100 + Math.random() * 56 | 0},${100 + Math.random() * 56 | 0},255,.5)`; gg.fillRect(Math.random() * 256, Math.random() * 256, 1, 1); }
+  const grain = new T.CanvasTexture(gc); grain.wrapS = grain.wrapT = T.RepeatWrapping; grain.repeat.set(3, 3);
+  { const sc = cnv(768, 1024); SG.userData.cv = sc; const tx = new T.CanvasTexture(sc); tx.colorSpace = T.SRGBColorSpace; tx.anisotropy = 8; SG.userData.tx = tx;
+    const fr = new T.Mesh(SG_G, new T.MeshPhysicalMaterial({ map: tx, transparent: true, alphaTest: .4, roughness: .7, metalness: 0, envMapIntensity: .45, emissiveMap: tx, emissive: 0xffffff, emissiveIntensity: .22, clearcoat: .35, clearcoatRoughness: .4, normalMap: grain, normalScale: new T.Vector2(.25, .25), sheen: .35, sheenRoughness: .8, sheenColor: new T.Color(0xfff4e0), side: T.FrontSide })); fr.castShadow = true;
+    const bk = new T.Mesh(SG_G, new T.MeshPhysicalMaterial({ map: tx, alphaTest: .4, transparent: true, color: 0xf3ead6, roughness: .9, side: T.BackSide })); SG.add(fr, bk); }
+
+
+  ring = new T.Mesh(new T.RingGeometry(.995, 1, 128), new T.MeshBasicMaterial({ color: 0xffc9a0, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false })); scene.add(ring);
+}
+const TH = .2; /* толщина медали */
+async function build(m) {
+  const tier = tierOf(m), base = new T.Color().setRGB(...tier.base.map((v) => v / 255), T.SRGBColorSpace);
+  [H, RB].forEach((G) => { G.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); G.clear(); });
+  await new Promise((r) => setTimeout(r, 0));
+  const M = mint(m);
+  const metal = (o) => new T.MeshPhysicalMaterial(Object.assign({ color: base, metalness: 1, roughness: .28 }, o || {}));
+  /* ребро: гурт со 160 насечками */
+  const n = 160, pts = []; for (let i = 0; i < n * 8; i++) { const a = i / (n * 8) * 6.2832, k = FORM === 'pin' ? .99 : .99 - .012 * Math.max(0, Math.cos(n * a)) ** 2; pts.push(new T.Vector2(Math.cos(a) * k, Math.sin(a) * k)); }
+  const eg = new T.ExtrudeGeometry(new T.Shape(pts), { depth: TH - .004, bevelEnabled: false, curveSegments: 1 }); eg.translate(0, 0, -TH + .002);
+  const edge = new T.Mesh(eg, metal({ roughness: .34 })); edge.castShadow = edge.receiveShadow = true; H.add(edge);
+  /* лицевая сторона: смещение + нормали + цвет + шероховатость/металл */
+  const fg = new T.PlaneGeometry(2, 2, 360, 360);
+  const face = new T.Mesh(fg, new T.MeshPhysicalMaterial({ map: M.color, roughnessMap: M.orm, metalnessMap: M.orm, roughness: 1, metalness: 1, normalMap: M.nrm, normalScale: new T.Vector2(1.1, 1.1), displacementMap: M.disp, displacementScale: .075, alphaMap: M.mask, alphaTest: .5, clearcoat: tier.enamel ? .6 : .1, clearcoatRoughness: .06 }));
+  face.position.z = .001; face.castShadow = face.receiveShadow = true;
+  face.customDepthMaterial = new T.MeshDepthMaterial({ depthPacking: T.RGBADepthPacking, displacementMap: M.disp, displacementScale: .075, alphaMap: M.mask, alphaTest: .5 });
+  H.add(face);
+  /* оборот */
+  const back = new T.Mesh(new T.CircleGeometry(.985, 128), metal({ roughness: .2, normalMap: backMaps(m), normalScale: new T.Vector2(.8, .8) }));
+  back.position.z = -TH + .001; back.rotation.y = Math.PI; back.receiveShadow = true; H.add(back);
+  if (m.k === 'm8') { /* у главной медали — второй ряд бусин по ребру */
+    const bd = new T.InstancedMesh(new T.SphereGeometry(.026, 14, 10), metal({ roughness: .2 }), 64), mx = new T.Matrix4();
+    for (let i = 0; i < 64; i++) { const a = i / 64 * 6.2832; mx.makeTranslation(Math.cos(a) * 1.035, Math.sin(a) * 1.035, -TH / 2); bd.setMatrixAt(i, mx); } bd.castShadow = true; H.add(bd);
+  }
+  const RM = ribbonMaps(m), rmat = () => new T.MeshPhysicalMaterial({ map: RM.map, normalMap: RM.nm, normalScale: new T.Vector2(.9, .9), roughness: .7, metalness: 0, sheen: .8, sheenRoughness: .4, sheenColor: new T.Color(0xf0ebe4), side: T.DoubleSide });
+  const ear = () => { const e = new T.Mesh(new T.CylinderGeometry(.06, .075, .16, 24), metal({ roughness: .25 })); e.position.set(0, 1.02, -TH / 2); e.castShadow = true; H.add(e); };
+  const loop = (r, t, y, rotY) => { const l = new T.Mesh(new T.TorusGeometry(r, t, 18, 64), metal({ roughness: .22 })); l.rotation.y = rotY; l.position.set(0, y, -TH / 2); l.castShadow = true; H.add(l); return l; };
+  if (FORM === 'neck'){ /* спортивная подача: длинная лента петлёй на шею, без планки */
+    ear(); loop(.11, .026, 1.16, Math.PI / 2);
+    [-1, 1].forEach((sd) => { const L = 4.6, Wd = .34, gq = new T.PlaneGeometry(Wd, L, 6, 50), p = gq.attributes.position;
+      for (let i = 0; i < p.count; i++){ const x = p.getX(i), y = p.getY(i) + L / 2, tt = y / L; p.setY(i, y); p.setZ(i, -TH / 2 - .03 * sd + .1 * Math.sin(tt * Math.PI) * (1 - tt) + x * x * .3 * (1 - tt * .7)); }
+      gq.computeVertexNormals(); const st = new T.Mesh(gq, rmat()); st.rotation.z = sd * -.2; st.position.set(sd * .03, 1.2, 0); st.castShadow = st.receiveShadow = true; H.add(st); });
+  } else if (FORM === 'charm'){ /* брелок: ушко и разъёмное кольцо */
+    ear(); loop(.11, .026, 1.16, Math.PI / 2);
+    const kr = loop(.34, .028, 1.55, 0); kr.rotation.x = .35; const kr2 = loop(.34, .028, 1.55, 0); kr2.rotation.x = .35; kr2.position.z -= .05;
+  } else if (FORM === 'pin'){ /* значок: на обороте две цанги-«бабочки» */
+    [-.42, .42].forEach((x) => { const post = new T.Mesh(new T.CylinderGeometry(.025, .025, .22, 16), metal({ roughness: .3 })); post.rotation.x = Math.PI / 2; post.position.set(x, .25, -TH - .1); H.add(post);
+      const cl = new T.Mesh(new T.CylinderGeometry(.13, .13, .04, 32), metal({ roughness: .35, color: new T.Color(0xb9bec6) })); cl.rotation.x = Math.PI / 2; cl.position.set(x, .25, -TH - .16); H.add(cl); });
+  }
+  ring.material.color.set(m.tier === 'gold' ? 0xffd89a : m.tier === 'silver' ? 0xdfe8ff : 0xffbe94);
+  try { R.compile(scene, cam); } catch (e) {}
+  $('#load').style.display = 'none';
+}
+
+/* звёздочки поверх */
+const GL = [];
+function glints(n) { for (let i = 0; i < n; i++) GL.push({ a: Math.random() * 6.283, r: .72 + Math.random() * .5, s: 4 + Math.random() * 8, l: 0, d: .5 + Math.random() * .5, dl: Math.random() * .35 }); }
+function drawFx(dt, cx0, cy0, pxR) {
+  const w = fx.width = fx.clientWidth * devicePixelRatio, h = fx.height = fx.clientHeight * devicePixelRatio, g = fx.getContext('2d'), k = devicePixelRatio;
+  /* конфетти: вылетают из жетона, падают с вращением */
+  if (CFQ > 0 && !reduce){ const m = MEDALS[cur], tc = { bronze:'#E49A6A', silver:'#D9E0EA', gold:'#F2C45A' }[m.tier], cs = [tc, '#FFE2A8', '#F3EEE9', '#FF6A1F', '#8FB3D9'];
+    for (let i = 0; i < CFQ; i++){ const a = -Math.PI / 2 + (Math.random() - .5) * 2.6, v = (5 + Math.random() * 10) * k; CF.push({ x:cx0 * k, y:cy0 * k, vx:Math.cos(a) * v, vy:Math.sin(a) * v - 3 * k, s:(3 + Math.random() * 4) * k, c:cs[i % 5], r:Math.random() * 6, vr:(Math.random() - .5) * .35, l:1, el:i % 3 === 0, fl:Math.random() * 6 }); } CFQ = 0; }
+  for (let i = CF.length - 1; i >= 0; i--){ const p = CF[i]; p.vy += .25 * k; p.vx *= .985; p.vy *= .985; p.x += p.vx + Math.sin(p.fl += .1) * .6 * k; p.y += p.vy; p.r += p.vr; p.l -= .0045; if (p.l <= 0 || p.y > h + 20){ CF.splice(i, 1); continue; }
+    g.save(); g.globalAlpha = Math.min(1, p.l * 1.6); g.fillStyle = p.c; g.translate(p.x, p.y); g.rotate(p.r); g.scale(1, Math.abs(Math.cos(p.fl)) * .8 + .2);
+    if (p.el){ g.beginPath(); g.ellipse(0, 0, p.s * 1.2, p.s * .55, 0, 0, 6.283); g.fill(); } else g.fillRect(-p.s / 2, -p.s * .8, p.s, p.s * 1.6); g.restore(); }
+  for (let i = GL.length - 1; i >= 0; i--) {
+    const p = GL[i]; if (p.dl > 0) { p.dl -= dt; continue; } p.l += dt / p.d; if (p.l >= 1) { GL.splice(i, 1); continue; }
+    const e = Math.sin(p.l * Math.PI), x = cx0 * k + Math.cos(p.a) * p.r * pxR * k, y = cy0 * k + Math.sin(p.a) * p.r * pxR * k, s = p.s * e * k;
+    g.save(); g.translate(x, y); g.globalAlpha = e; g.fillStyle = '#fff'; g.shadowColor = '#ffb27a'; g.shadowBlur = 10 * k;
+    g.beginPath(); g.moveTo(0, -s); g.quadraticCurveTo(0, 0, s, 0); g.quadraticCurveTo(0, 0, 0, s); g.quadraticCurveTo(0, 0, -s, 0); g.quadraticCurveTo(0, 0, 0, -s); g.fill(); g.restore();
+  }
+}
+
+const ease3 = (x) => 1 - Math.pow(1 - x, 3), ease5 = (x) => 1 - Math.pow(1 - x, 5), clamp = (x) => Math.max(0, Math.min(1, x));
+const backOut = (x) => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2);
+let run = null;
+const drag = { on: false, x: 0, w: 0, rot: 0, tx: 0, ty: 0 }; const TL = { x: 0, y: 0 };
+cv.addEventListener('pointerdown', (e) => { drag.on = true; drag.x = e.clientX; drag.last = performance.now(); cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', (e) => {
+  const r = cv.getBoundingClientRect(); drag.tx = ((e.clientX - r.left) / r.width - .5) * 2; drag.ty = ((e.clientY - r.top) / r.height - .5) * 2;
+  if (!drag.on) return; const now = performance.now(), dx = e.clientX - drag.x; drag.x = e.clientX; drag.rot += dx * .012; drag.w = dx * .012 / Math.max(.008, (now - drag.last) / 1000) * .9; drag.last = now;
+});
+const up = () => { drag.on = false; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+cv.addEventListener('pointerleave', () => { drag.tx = 0; drag.ty = 0; });
+
+const RC = { bronze:'255,190,150', silver:'215,228,255', gold:'255,226,160' };
+function setRays(m){ const c = RC[m.tier] || RC.gold; $('#rays').innerHTML = [[8, 80, -14, .5], [28, 120, -6, .7], [46, 100, 2, .9], [60, 130, 9, .65], [78, 80, 16, .45]].map(([l, w, r, o], i) => `<i style="left:${l}%;width:${w}px;--r:${r}deg;background:linear-gradient(to bottom,rgba(${c},${o * .26}),rgba(${c},0));animation-delay:${-i * 1.7}s"></i>`).join(''); }
+let CFQ = 0; const CF = [];
+async function play3d(i) {
+  setRays(MEDALS[i]); CF.length = 0;
+  { const a = AIM[FORM] || AIM.coin; cam.position.set(0, a[1], a[2]); cam.lookAt(0, a[0], 0); }
+  cur = i; const m = MEDALS[i]; setText(m, i);
+  [...chips.children].forEach((b, k) => b.classList.toggle('on', k === i));
+  app.classList.remove('lnd'); app.classList.add('on'); run = null;
+  if (!CACHE[m.k + '|' + (MAT || m.tier)]) $('#load').style.display = '';
+  await build(m);
+  drag.rot = 0; drag.w = 0; GL.length = 0;
+  run = { t0: performance.now(), land: false };
+}
+const LAND = 2.4, RIB = 2.4;
+const AIM = { petal:[.45, 1.1, 10.6], coin:[0, .1, 8.6], neck:[.5, .7, 9.2], pin:[0, .1, 8.6], charm:[.35, .5, 8.6] }; /* посадка медали; лента опускается */
+let prev = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(.05, (now - prev) / 1000); prev = now; const t = now / 1000;
+  drawSky(t);
+  if (KIND === 'stamp' && !T){ SK.warp = 0; const r = $('#stw').getBoundingClientRect(), f = fx.getBoundingClientRect(); drawFx(dt, r.left - f.left + r.width / 2, r.top - f.top + r.height / 2, r.width * .55); return; }
+  if (!T || !run) return;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * R.getPixelRatio()) || cv.height !== Math.round(h * R.getPixelRatio())) { R.setSize(w, h, false); const hv = h * .7; cam.aspect = w / hv; cam.setViewOffset(w, hv, 0, 0, w, h); cam.updateProjectionMatrix(); } /* холст на весь экран, кадр как раньше — капсула уходит за нижний край, а не обрезается */
+  let k = (now - run.t0) / 1000; if (FREEZE != null) k = FREEZE; if (reduce) k = Math.max(k, RIB + 2.8);
+  /* жетон приходит из глубины космоса прямо к зрителю, звёзды на это время вытягиваются в штрихи */
+  const p = clamp((k - .15) / (LAND - .15)), pe = ease3(p);
+  SK.warp = reduce || KIND === 'medal' ? 0 : Math.max(0, 1 - pe) ** 1.6 * clamp(k / .25);
+  const ox = 0, oz = -14 * (1 - pe);
+  const settle = Math.max(0, k - LAND);
+  const wob = settle > 0 ? .1 * Math.exp(-2.6 * settle) * Math.sin(settle * 6) : 0;
+  const ST3 = KIND === 'stamp', PET = ST3 || FORM === 'petal', OB = ST3 ? SG : H; H.visible = !ST3; SG.visible = ST3;
+  const VB = ST3 && VAR === 'b', TZ = LAND + 1.9, LO = VB ? LAND + 1.4 : ST3 ? TZ + 1.9 : PET ? LAND + 1.75 : LAND; /* у марки: лежит в капсуле → зум и разворот к зрителю */ /* момент «получения»: у лепестков — когда предмет поднялся */
+  if (PET){
+    const dn0 = clamp((k - (VB ? LAND + .8 : ST3 ? TZ + .75 : LO + .9)) / (VB ? 1.6 : ST3 ? 2 : 1.9)), dn = dn0 * dn0 * (2.2 - 1.2 * dn0); /* после штемпеля упаковка уходит вниз за кадр */
+    const rc = VB ? (x => x * x * (3 - 2 * x))(clamp((k - LAND - .35) / 2.2)) : 0;
+    { const fo = clamp((k - LAND) / .8); scene.fog.near = 60 - 49 * fo; scene.fog.far = 80 - 57 * fo; } /* при прилёте тумана нет — капсула видна сразу; потом даль темнеет */ /* марка летит к зрителю, капсула уходит вглубь и прячется за ней */
+    CAPG.visible = VB ? rc < 1 : dn0 < 1; if (VB) CAPG.position.set(0, (1 - pe) * .2 - .3 * rc, -14 * (1 - pe) - 12 * rc); else CAPG.position.set(0, (1 - pe) * .2 - 6.5 * dn, -14 * (1 - pe) + 2.6 * dn); CAPG.rotation.set(.12 + (VB ? .83 : .28) * (x => x * x * (3 - 2 * x))(clamp((k - .2) / (LAND + .5))) + (VB ? 0 : .5 * dn), -Math.PI * (1 - ease5(p)), (1 - pe) * -.15); /* в конце капсула наклонена к зрителю */
+    const o = VB ? clamp((k - LAND + .15) / .8) : clamp((k - LAND - .1) / 1.5), oe = o * o * (3 - 2 * o); /* мягко, без отскока */
+    if (!run.op && k >= LAND + (VB ? .05 : .3)){ run.op = true; CFQ = 130; } /* конфетти — в момент раскрытия */
+    if (CAPG.userData.glow) CAPG.userData.glow.intensity = ST3 ? 4 * oe * (1 - clamp((k - LAND - .5) / 1.4)) : 0;
+    CAPG.userData.piv.forEach((pv) => pv.quaternion.setFromAxisAngle(pv.userData.ax, 1.45 * oe));
+    CAPG.userData.camT.scale.y = Math.max(.001, ease3(clamp((k - LAND - .9) / .8)));
+    const rise = (x => x * x * (3 - 2 * x))(clamp((k - LAND - .5) / 1.6)), sl = Math.max(0, k - LO), wb = sl > 0 ? .04 * Math.exp(-2 * sl) * Math.sin(sl * 4) : 0;
+    const pmA = ST3 && run.pmT ? Math.max(0, k - run.pmT) : 9, shk = pmA < .8 ? Math.exp(-6 * pmA) * Math.sin(pmA * 30) * .012 : 0;
+    if (ST3){
+      /* марка лежит на палубе лицом вверх, потом плавно встаёт к зрителю, камера подъезжает */
+      const z = (x => x * x * (3 - 2 * x))(VB ? clamp((k - LAND - .15) / 1.2) : clamp((k - TZ) / 1.9)), lie = new T.Object3D();
+      lie.position.set(0, .04, .05); lie.rotation.set(-Math.PI / 2, 0, .12); lie.scale.setScalar(.42); CAPG.updateMatrix(); lie.updateMatrix(); lie.applyMatrix4(CAPG.matrix);
+      const up = new T.Quaternion().setFromEuler(new T.Euler(shk, 0, -.04 + shk));
+      OB.position.lerpVectors(lie.position, VB ? new T.Vector3(0, .6 - Math.abs(shk) * .5, 3) : new T.Vector3(0, .5 - Math.abs(shk) * .5, .4), z); OB.quaternion.slerpQuaternions(lie.quaternion, up, z); OB.scale.setScalar(VB ? .42 + .11 * z : .42 + .46 * z);
+      { const tt = k - LAND, al = clamp((k - LO) / 1.2); TL.x += (drag.tx - TL.x) * Math.min(1, dt * 4); TL.y += (drag.ty - TL.y) * Math.min(1, dt * 4);
+        OB.rotateY(z * (.06 * Math.sin(tt * .7) * al + TL.x * .28 * al + drag.rot)); OB.rotateX(z * (.035 * Math.sin(tt * .9 + 1) * al + TL.y * .16 * al)); } /* живая марка: дышит и наклоняется за курсором вокруг своего центра */
+      if (window.__sheen){ const sw2 = ((k - LAND) * .22) % 1; __sheen.position.set(-2.4 + 4.8 * sw2, 1.6, OB.position.z + 1.2); __sheen.intensity = 2.2 * Math.sin(sw2 * Math.PI) * z; }
+      const a = AIM.petal; cam.position.set(0, a[1] + (.75 - a[1]) * z, a[2] + (7.6 - a[2]) * z); cam.lookAt(0, a[0] + (.6 - a[0]) * z, 0);
+    } else {
+      OB.position.set(0, (1 - pe) * .2 - .1 + 1.15 * rise - .3 * dn - Math.abs(shk) * .6, -14 * (1 - pe) + .02); OB.scale.setScalar((.55 + .45 * rise) * (1 + .12 * dn));
+      OB.rotation.set(0, -Math.PI * (1 - rise) + wb + CAPG.rotation.y * (1 - rise), 0);
+    }
+    if (ST3 && !run.pm && k >= LO + .3){ run.pm = true; run.pmT = k; glints(8); try { navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate([12, 40, 20]); } catch (e) {} }
+  } else {
+    if (window.CAPG) CAPG.visible = false;
+    /* жетон появляется спокойно: выплывает из глубины с лёгким доворотом, без вихря */
+    const pm = (x => 1 - Math.pow(1 - x, 3))(clamp((k - .2) / (LAND - .2)));
+    H.rotation.y = -Math.PI * .45 * (1 - pm) + wob;
+    H.rotation.x = (1 - pm) * .12; H.rotation.z = (1 - pm) * -.06;
+    H.position.set(ox, (1 - pm) * -.15, -5 * (1 - pm)); H.scale.setScalar(.92 + .08 * pm);
+  }
+  /* лента опускается и подхватывает медаль: рывок вниз и качание на подвесе */
+  
+  const tug = 0;
+  const alive = clamp((k - LO - .2) / 1.4);
+  if (!drag.on) { drag.w *= Math.pow(.04, dt); drag.rot += drag.w * dt; drag.rot *= Math.pow(.3, dt); }
+  const px = drag.tx * .38 * alive, py = drag.ty * .12 * alive; SK.px += (drag.tx * alive - SK.px) * Math.min(1, dt * 3); SK.py += (drag.ty * alive - SK.py) * Math.min(1, dt * 3);
+  const yT = ST3 ? 0 : (RY != null ? RY : drag.rot + Math.sin(t * .55) * .16 * alive + px);
+  P.rotation.y += (yT - P.rotation.y) * Math.min(1, dt * 8); if (FREEZE != null) P.rotation.y = yT;
+  P.rotation.z = ST3 ? 0 : tug * .05 + Math.sin(t * .9) * .015 * alive; P.rotation.x = ST3 ? 0 : -.04 + py;
+  P.position.y = -.02 * tug + Math.sin(t * 1.1) * .025 * alive;
+  if (!run.land && k >= LO) { run.land = true; app.classList.add('lnd'); if (!ST3){ glints(5); } /* у медали без конфетти — только мягкие блики */ try { navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate(18); } catch (e) {} }
+  /* свет: блик пробегает при посадке, потом медленно «гуляет» */
+  if (window.__spot) __spot.intensity = 0 * ease3(clamp((k - LO + .3) / 1.2)) * (1 + .12 * Math.exp(-3 * Math.max(0, k - LO)));
+  const sw = clamp((k - LO + .25) / 1.2);
+  keyL.position.set(-4.5 + 6 * ease3(sw) + Math.sin(t * .3) * .6, 4, 5); keyL.intensity = 1.5 + .7 * Math.sin(sw * Math.PI);
+  const rk = clamp((k - LO) / 1.1); ring.position.copy(OB.position).add(P.position); ring.position.z += .02; ring.scale.setScalar(1.02 + .9 * ease3(rk)); ring.material.opacity = 0;
+  if (run.land && !reduce && Math.random() < dt * .18) glints(1);
+  R.render(scene, cam);
+  const c0 = new T.Vector3(); OB.getWorldPosition(c0); const v = c0.clone().project(cam), edge = c0.clone().add(new T.Vector3(OB.scale.x, 0, 0)).project(cam);
+  drawFx(dt, (v.x * .5 + .5) * w, (-v.y * .5 + .5) * h, Math.abs(edge.x - v.x) * .5 * w);
+}
+window.play = (i) => KIND === 'stamp' ? playStamp(i) : (T ? play3d(i) : null);
+listChips(); if (KIND === 'stamp'){ playStamp(EX ? Math.max(0, STAMPS.findIndex((m) => m.k === EX)) : 0); requestAnimationFrame(frame); } else if (T) { play3d(cur); requestAnimationFrame(frame); } else { $('#load').textContent = 'Нужен браузер с WebGL'; setText(MEDALS[cur], cur); app.classList.add('on', 'lnd'); (function l(t) { drawSky(t / 1000); requestAnimationFrame(l); })(0); }
+$('#go').onclick = () => {
+  /* режим приложения (?ex=<id>): забираем марку в паспорт и открываем досье */
+  if (EX){ const msg = { type: 'kosmo:stamp', action: 'claim', ex: EX };
+    if (window.parent !== window) window.parent.postMessage(msg, '*'); else location.href = '../?ex=' + encodeURIComponent(EX) + '&open=dossier'; return; }
+  window.play(cur); };
+</script>
+</body>
+</html>
