@@ -9704,6 +9704,15 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     let pts = [], legPts = [];
     const exPos = (id) => { const b = new THREE.Box3().setFromObject(nodes[id]); const c = b.getCenter(new THREE.Vector3()); const f = floorOfId(id); c.y = f === 'upper' ? 1.38 : f === 'lower' ? .38 : b.min.y + .08; return c; }; /* v192: высота дорожки — по этажу экспоната (раньше низ подставки уводил «верхние» экспонаты на нижний этаж, и шаг не рисовался) */
     const floorOf = (p) => p.y > .9 ? 'upper' : 'lower';
+    /* v198: пунктир от края кружка одного экспоната до края кружка другого; угол L-образного пути выбираем так, чтобы не проходить сквозь другие экспонаты */
+    const exR = {}; const exRad = (id) => id == null || !nodes[id] ? 0 : exR[id] != null ? exR[id] : (exR[id] = (() => { const s = new THREE.Box3().setFromObject(nodes[id]).getSize(new THREE.Vector3()); return THREE.MathUtils.clamp(Math.max(s.x, s.z) / 2 + .5, 1, 4.5); })());
+    function hits(poly, skip){ let n = 0; for (const k of Object.keys(nodes)){ const id = +k; if (skip.includes(id)) continue; const c = exPos(id), r = exRad(id) - .25;
+        for (let i = 0; i < poly.length - 1; i++){ const a = poly[i], b = poly[i + 1]; if (Math.abs(a.y - c.y) > .5 || Math.abs(b.y - c.y) > .5) continue; const dx = b.x - a.x, dz = b.z - a.z, L2 = dx * dx + dz * dz || 1e-6; const t = THREE.MathUtils.clamp(((c.x - a.x) * dx + (c.z - a.z) * dz) / L2, 0, 1); if (Math.hypot(a.x + dx * t - c.x, a.z + dz * t - c.z) < r){ n++; break; } } } return n; }
+    function trim(poly, r0, r1){ const L = poly.reduce((s, p, i) => i ? s + p.distanceTo(poly[i - 1]) : 0, 0); if (L < .5) return poly; const k = Math.min(1, (L - .8) / Math.max(.01, r0 + r1)); r0 *= Math.max(0, k); r1 *= Math.max(0, k);
+      const cut = (q, r) => { q = q.map(v => v.clone()); while (r > 0 && q.length > 1){ const d = q[0].distanceTo(q[1]); if (d <= r){ r -= d; q.shift(); } else { q[0].lerp(q[1], r / d); r = 0; } } return q; };
+      return cut(cut(poly, r0).reverse(), r1).reverse(); }
+    function smart(a, b, idA, idB){ let poly; if (a.z > 50 || floorOf(a) !== floorOf(b)) poly = path(a, b); else { const cs = [ortho(a, b), zfirst(a, b)]; let best = cs[0], bh = 1e9; for (const c of cs){ const h = hits(c, [idA, idB]); if (h < bh){ bh = h; best = c; } } poly = best; }
+      return trim(poly, exRad(idA), exRad(idB)); }
     /* v192: переход между этажами — по ближайшей лестнице (левая или правая), а не всегда по левой */
     function stairsPt(a, b){ let best = null, bd = 1e9; for (const nm of ['Stairs_L', 'Stairs_R']){ const o = scene.getObjectByName(nm); if (!o) continue; const bx = new THREE.Box3().setFromObject(o); if (bx.isEmpty()) continue; const c = bx.getCenter(new THREE.Vector3()); c.y = .38; const d = a && b ? Math.hypot(a.x - c.x, a.z - c.z) + Math.hypot(b.x - c.x, b.z - c.z) : 0; if (d < bd){ bd = d; best = c; } } return best; }
     const ortho = (a, b) => { if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) return [a, b]; const m = new THREE.Vector3(b.x, a.y, a.z); return [a, m, b]; };
@@ -9720,10 +9729,10 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
         for (let j = 0; j < n; j++){ const m = new THREE.Mesh(dashG, mat); m.position.lerpVectors(a, b, (j + .5) / n); m.position.y += .06; m.rotation.y = ang; m.renderOrder = 3; group.add(m); } } } /* v165: пунктир вместо точек */
     function entry(){ const z = zones.vest; if (!z) return null; const c = z.getCenter(new THREE.Vector3()); c.y = z.max.y + .08; return c; }
     function routeDraw(){ crumbs.clear(); const list = ids(); pts = [entry(), ...list.map(exPos)].filter(Boolean);
-      for (let k = 0; k < pts.length - 1; k++) dots(path(pts[k], pts[k + 1]), crumbs, dimM); crumbs.visible = RT.on; }
+      for (let k = 0; k < pts.length - 1; k++) dots(smart(pts[k], pts[k + 1], k ? list[k - 1] : null, list[k]), crumbs, dimM); crumbs.visible = RT.on; } /* v198 */
     function routeGo(i, fly){ const list = ids(); if (!list.length || !zones.vest){ setTimeout(() => routeGo(i, fly), 400); return; } /* v168: карта ещё грузится — ждём */ if (pts.length < list.length + 1) routeDraw(); /* v168: карта только загрузилась — сначала строим маршрут */ RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
       const id = list[RT.i], from = pts[RT.i], to = pts[RT.i + 1]; /* v192: шаг N ведёт от экспоната N-1 (первый — от входа); раньше второй шаг тоже рисовался от входа */
-      leg.clear(); legPts = path(from, to); { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
+      leg.clear(); legPts = smart(from, to, RT.i ? list[RT.i - 1] : null, id); /* v198 */ { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
       select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); { /* v192: плеер маршрута закрывает низ экрана — рамку дорожки сдвигаем выше */ const sz = b.getSize(new THREE.Vector3()), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion); up.y = 0; if (up.lengthSq() > 1e-6){ up.normalize(); const c = b.getCenter(new THREE.Vector3()); b.expandByPoint(c.clone().addScaledVector(up, -Math.max(sz.x, sz.z) * .75)); } } if (fly) flyBox(b, .12);
       let L = 0; for (let k = 0; k < legPts.length - 1; k++) L += legPts[k].distanceTo(legPts[k + 1]);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {};
@@ -13219,7 +13228,7 @@ html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
 </script>
 <script>/* v183–185: облёты в 3D для «Союз — Аполлон» (26), старта «Союза» с Байконура (31) и «Энергии — Бурана» (35); открываются вместо досье, досье — внизу страницы облёта */
 (function w(){ if (!window.openLanding || !window.LANDING || typeof openEx !== 'function') return setTimeout(w, 300);
-  const FLY = { 26:['soyuzapollo.html', 'sa', '«Союз — Аполлон»'], 31:['baikonur.html', 'bk', '«Байконур»'], 35:['buran.html', 'bu', '«Энергия — Буран»'] };
+  const FLY = { 26:['soyuzapollo.html', 'sa', '«Союз — Аполлон»'], 31:['baikonur.html', 'bk', '«Байконур»'], 35:['buran.html', 'bu', '«Энергия — Буран»'], 12:['vostok.html', 'vo', '«Восток»'] };
   Object.entries(FLY).forEach(([id, f]) => { const fn = 'openFly' + id; window[fn] = () => openLanding(f[0]); window.LANDING[id] = fn; });
   const _oe = openEx; openEx = function(id){ if (FLY[id] && !window.__dosOnly) return openLanding(FLY[id][0]); /* v194: после истории — досье */ return _oe.apply(this, arguments); }; window.openEx = openEx;
   addEventListener('message', e => { for (const [id, f] of Object.entries(FLY)){ if (e.data === f[1] + ':map'){ document.getElementById('vl').classList.add('off'); showTab('map'); setTimeout(() => { window.m3select && m3select(+id, true); }, 900); }
@@ -13323,7 +13332,16 @@ html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
 .mk .mks{display:flex;align-items:center;gap:calc(5px * var(--s));margin-top:calc(6px * var(--s));font:500 calc(8px * var(--s)) 'Geist Mono',ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6)}
 .mk .mks i{width:calc(6px * var(--s));height:calc(6px * var(--s));border-radius:50%;flex:none}
 .mk.empty{background:rgba(255,255,255,.06)}.mk.empty .mkf{background:#101216;display:grid;place-items:center}
-.mk.empty .mkf b{font:300 calc(34px * var(--s)) Onest,Inter,sans-serif;color:rgba(255,255,255,.18)}
+.mk.empty .mkf b{position:relative;font:300 calc(34px * var(--s)) Onest,Inter,sans-serif;color:rgba(255,255,255,.55)}
+.mk.empty .mkf img.pv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.32) blur(calc(1.5px * var(--s)))}
+.mk.empty .mkf i.lk{position:absolute;left:50%;bottom:16%;width:calc(16px * var(--s));height:calc(16px * var(--s));transform:translateX(-50%);background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-opacity='.5' stroke-width='2'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")}
+/* превью марки */
+.mkpv{position:absolute;inset:0;z-index:300;background:rgba(7,8,10,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;opacity:0;transition:opacity .3s}.mkpv.on{opacity:1}
+.mkpv .mk{transform:rotate(-2deg);filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}.mkpv .mk.empty .mkf img.pv{filter:grayscale(.6) brightness(.55)}
+.mkpv h3{margin:0;font:500 21px var(--f);color:#fff;text-align:center}.mkpv p{margin:-8px 0 0;font-size:13.5px;color:rgba(236,238,241,.62);text-align:center;max-width:300px}
+.mkpv .lockd{position:relative;filter:grayscale(.9) brightness(.55)}.mkpv .lockd::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px;border-radius:50%;background:rgba(10,11,13,.7) no-repeat center/22px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")}
+.mkpv .bt{display:flex;gap:8px;width:100%;max-width:360px}.mkpv .bt button{flex:1;height:50px;border-radius:25px;border:0;font:600 14px var(--f);text-align:center;justify-content:center;display:flex;align-items:center}
+.mkpv .bt .pr{background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px -10px rgba(255,106,31,.75)}.mkpv .bt .sc{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
 /* экран получения */
 .mkov{position:absolute;inset:0;z-index:300;background:#07080A;display:flex;flex-direction:column;align-items:center;overflow:hidden;opacity:0;transition:opacity .35s}
 .mkov.on{opacity:1}
@@ -13376,8 +13394,8 @@ html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
   const coll = id => COLL.find(c => c[2].includes(id)) || ['Музей космонавтики', '#FF8A4A', []];
   const title = id => NAME[id] || ((window.tourEx ? tourEx(id).title : '') || 'Экспонат').replace(/[«»]/g, '');
   window.stampHTML = (id, s = 1, empty = false) => { const c = coll(id), n = title(id), fs = Math.min(27, Math.floor(196 / Math.max(5, n.length * .62)));
-    if (empty) return `<div class="mk empty" style="--s:${s}" data-id="${id}"><div class="mkf"><b>${id}</b></div></div>`;
     const av = (window.__AV || {})[id] || (window.tourEx ? tourEx(id).th : '');
+    if (empty){ const pv = STAMPED.has(id) ? `g/stamps/${id}.webp` : av; return `<div class="mk empty" style="--s:${s}" data-id="${id}"><div class="mkf">${pv ? `<img class="pv" src="${pv}" alt="">` : ''}<b>${id}</b><i class="lk"></i></div></div>`; } /* v198: превью ещё не собранной марки — тусклый кадр и номер */
     const pic = STAMPED.has(id) ? `<img class="ph" src="g/stamps/${id}.webp" alt="">` : av ? `<div class="bd"><img src="${av}" alt=""></div>` : '';
     return `<div class="mk" style="--s:${s}" data-id="${id}"><div class="mkf">${pic}<div class="mkg"></div><div class="mkc"><div class="mkt"><img src="g/stamps/logo.svg" alt="Музей космонавтики"><b>${id}</b></div><div><div class="mkn" style="font-size:calc(${fs}px * var(--s))">${n}</div><div class="mks"><i style="background:${c[1]}"></i>${c[0]}${YEAR[id] ? ' / ' + YEAR[id] : ''}</div></div></div></div></div>`; };
   const host = () => { const h = document.querySelector('.scr') || document.getElementById('dev') || document.body; if (h.scrollTop) h.scrollTop = 0; return h; };
@@ -13457,8 +13475,12 @@ html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
   /* 5. альбом марок в паспорте */
   function album(){ const v = document.getElementById('vPass'); if (!v) return; v.querySelector('.alb')?.remove(); const r = window.tourState ? tourState() : { done:[] }, got = new Set(r.done || []);
     const total = COLL.reduce((s, c) => s + c[2].length, 0), n = COLL.reduce((s, c) => s + c[2].filter(i => got.has(i)).length, 0);
-    const el = document.createElement('div'); el.className = 'alb'; el.innerHTML = `<h3>Альбом марок</h3><p>${n} из ${total} / сканируйте QR на табличках</p>` + COLL.map(([nm, col, ids]) => `<div class="col"><div class="ch"><i style="background:${col}"></i>${nm}<em>${ids.filter(i => got.has(i)).length} из ${ids.length}</em></div><div class="row">${ids.map(i => stampHTML(i, .42, !got.has(i))).join('')}</div></div>`).join('');
-    el.addEventListener('click', e => { const m = e.target.closest('.mk'); if (!m) return; const id = +m.dataset.id; m.classList.contains('empty') ? (window.showTab && showTab('map'), setTimeout(() => window.m3select && m3select(id, true), 700)) : __stampScreen(id, false); });
+    const el = document.createElement('div'); el.className = 'alb'; el.innerHTML = `<h3>Альбом марок</h3><p>${n} из ${total} / сканируйте QR на табличках</p>` + COLL.map(([nm, col, ids]) => `<div class="col"><div class="ch"><i style="background:${col}"></i>${nm}<em>${ids.filter(i => got.has(i)).length} из ${ids.length}</em></div><div class="row">${ids.map(i => stampHTML(i, .36, !got.has(i))).join('')}</div></div>`).join('');
+    el.addEventListener('click', e => { const m = e.target.closest('.mk'); if (!m) return; const id = +m.dataset.id, has = !m.classList.contains('empty'), c = coll(id);
+      const ov = document.createElement('div'); ov.className = 'mkpv'; ov.innerHTML = `<div class="${has ? '' : 'lockd'}">${stampHTML(id, 1, false)}</div><h3>${title(id)}</h3><p>${has ? 'Марка в альбоме / ' + c[0] : 'Эту марку дают у экспоната № ' + id + ': отсканируйте QR на табличке'}</p><div class="bt"><button class="pr">${has ? 'Открыть досье' : 'Как пройти'}</button><button class="sc">Закрыть</button></div>`;
+      host().appendChild(ov); requestAnimationFrame(() => ov.classList.add('on')); const close = () => { ov.classList.remove('on'); setTimeout(() => ov.remove(), 300); };
+      ov.querySelector('.sc').onclick = close; ov.onclick = ev => { if (ev.target === ov) close(); };
+      ov.querySelector('.pr').onclick = () => { close(); has ? dossier(id) : (window.showTab && showTab('map'), setTimeout(() => window.m3select && m3select(id, true), 700)); }; }); /* v198: превью марки по нажатию */
     const anchor = v.querySelector('.hd, h1, .ph') ; anchor && anchor.parentElement === v ? anchor.after(el) : v.prepend(el); }
   const rp = window.renderPass; if (rp) window.renderPass = function(){ const o = rp.apply(this, arguments); try { album(); } catch(e){ console.warn(e); } return o; }; setTimeout(() => { try { album(); } catch(_){} }, 800);
 })();
