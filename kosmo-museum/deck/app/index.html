@@ -11338,6 +11338,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const vh = () => hero.clientHeight || innerHeight;
     const stepTo = d => { const p = Math.round(Math.max(0, ex.scrollTop - w.offsetTop) / vh()); const t = Math.max(0, Math.min(CH.length + 1, p + d)); ex.scrollTo({ top:w.offsetTop + t * vh(), behavior:'smooth' }); };
     const sync = () => { if (!w.isConnected) return ex.removeEventListener('scroll', sync); const p = Math.max(0, Math.min(CH.length, (ex.scrollTop - w.offsetTop) / vh())); st.scrollLeft = p * st.clientWidth; hero.classList.toggle('inch', p > .35); };
+    let snapT = 0, py = ex.scrollTop, dir = 0, snapping = false; const snap = () => { if (window.__tDown){ snapT = setTimeout(snap, 160); return; } const y = ex.scrollTop - w.offsetTop, p = y / vh(); if (p <= 0 || p >= CH.length + .02) return; const fr = p - Math.floor(p); if (fr < .03 || fr > .97) return; const t = dir > 0 ? Math.ceil(p - .1) : dir < 0 ? Math.floor(p + .1) : Math.round(p); snapping = true; ex.scrollTo({ top:w.offsetTop + Math.min(CH.length, Math.max(0, t)) * vh(), behavior:'smooth' }); setTimeout(() => snapping = false, 700); };
+    ex.addEventListener('scroll', () => { if (!snapping){ const y = ex.scrollTop; if (Math.abs(y - py) > 1) dir = Math.sign(y - py); py = y; } clearTimeout(snapT); snapT = setTimeout(snap, 160); }, { passive:true }); /* v213: доводка до ближайшей главы */
     ex.addEventListener('scroll', sync, { passive:true }); requestAnimationFrame(sync);
     st.addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); stepTo(+b.dataset.d); });
     hero.querySelector('.psnav').addEventListener('click', e => { const l = e.target.closest('.psl'); if (l){ e.stopPropagation(); const li = ex.querySelector('#listen'); li && li.click(); setTimeout(() => { const ps = window.PL && PL.state ? PL.state() : {}; l.classList.toggle('on', !!ps.playing); l.querySelector('span').textContent = ps.playing ? 'Пауза' : 'Слушать'; l.querySelector('i').textContent = ps.playing ? '❚❚' : '▶'; }, 400); return; } const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); stepTo(+b.dataset.d); });
@@ -13848,6 +13850,7 @@ body:has(.agintro.on) .tdk{opacity:0!important;pointer-events:none!important}
 #vEx .psw.vsc .psteps .pc{pointer-events:auto}#vEx .psw.vsc .psteps .p0{pointer-events:none!important}
 #vEx .psw.vsc .stk .sdesc{transition:opacity .3s}#vEx .psw.vsc .stk.inch .sdesc{opacity:0;pointer-events:none}
 #vEx .psw.vsc .stk .sdesc{z-index:4}
+canvas.exfly{touch-action:none}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -14133,6 +14136,15 @@ body:has(.agintro.on) .tdk{opacity:0!important;pointer-events:none!important}
     document.addEventListener('pointerup', e => { if (!d0 || !(e.target.matches && e.target.matches('canvas.exfly'))) return; const moved = Math.hypot(e.clientX - d0[0], e.clientY - d0[1]); d0 = null; if (moved > 8) return;
       const cv = e.target, pe = cv.style.pointerEvents; cv.style.pointerEvents = 'none'; const el = document.elementFromPoint(e.clientX, e.clientY); cv.style.pointerEvents = pe;
       const b = el && el.closest('button, a, [data-a], .pa, .psl'); if (b){ e.preventDefault(); e.stopPropagation(); b.click(); } }, true); }
+  document.addEventListener('touchstart', () => window.__tDown = true, { capture:true, passive:true }); ['touchend', 'touchcancel'].forEach(t => document.addEventListener(t, e => { if (!e.touches || !e.touches.length) window.__tDown = false; }, { capture:true, passive:true }));
+  /* ---------- 21. вертикальный свайп по 3D-слою (canvas.exfly вне досье) прокручивает досье — на iPhone иначе прокрутка и главы не работали ---------- */
+  { let y0 = 0, x0 = 0, ly = 0, lt = 0, v = 0, mode = null, raf = 0; const sc = () => document.getElementById('vEx');
+    document.addEventListener('touchstart', e => { if (!(e.target.matches && e.target.matches('canvas.exfly'))) { mode = null; return; } const t = e.touches[0]; x0 = t.clientX; y0 = ly = t.clientY; lt = performance.now(); v = 0; mode = 'wait'; cancelAnimationFrame(raf); }, { capture:true, passive:true });
+    document.addEventListener('touchmove', e => { if (!mode) return; const t = e.touches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+      if (e.cancelable) e.preventDefault(); /* на 3D-слое прокручиваем только сами — одинаково в Safari и Chrome */
+      if (mode === 'wait'){ if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx) * 1.2) mode = 'v'; else if (Math.abs(dx) > 8) { mode = null; return; } else return; }
+      if (mode === 'v'){ e.preventDefault(); e.stopPropagation(); const el = sc(); if (!el) return; const now = performance.now(), d = ly - t.clientY; el.scrollTop += d; v = d / Math.max(1, now - lt); ly = t.clientY; lt = now; } }, { capture:true, passive:false });
+    document.addEventListener('touchend', () => { if (mode !== 'v'){ mode = null; return; } mode = null; const el = sc(); if (!el) return; { const w = el.querySelector('.psw.vsc'); if (w){ const n = +getComputedStyle(w).getPropertyValue('--n') || 6, h = (w.querySelector('.stk') || {}).clientHeight || innerHeight; if (el.scrollTop < w.offsetTop + n * h - 4) return; } } /* внутри истории — без инерции, доводка на одну главу */ let vel = v * 16; const step = () => { if (Math.abs(vel) < .5) return; el.scrollTop += vel; vel *= .94; raf = requestAnimationFrame(step); }; raf = requestAnimationFrame(step); }, { capture:true, passive:true }); }
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */
