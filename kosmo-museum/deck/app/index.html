@@ -11326,7 +11326,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       return o; } } };
   function ps1Story(ex, hero, cfg){ cfg = cfg || {}; const w = document.createElement('div'); w.className = 'psw'; hero.before(w); w.appendChild(hero); hero.classList.add('stk');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
-    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><div class="psnav"><button class="pa go" data-d="1" aria-label="Начать историю">История / ${(cfg.CH || PS1CH).length} глав <i>›</i></button></div>`; hero.appendChild(sd); } /* v206: стрелки сразу на титуле вместо «листай вбок» */
+    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><div class="psnav"><div class="psg"><button class="pa" data-d="-1" aria-label="Назад">‹</button><span>История / ${(cfg.CH || PS1CH).length} глав</span><button class="pa nx" data-d="1" aria-label="Дальше">›</button></div></div>`; hero.appendChild(sd); } /* v206: стрелки сразу на титуле вместо «листай вбок» */
     const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn"><button class="pa" data-d="-1" aria-label="Назад">‹</button>${n} / ${String(CH.length).padStart(2, '0')}<button class="pa" data-d="1" aria-label="Дальше">›</button></div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st); /* v167: главы листаются вбок */
     st.addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
     hero.querySelector('.psnav').addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
@@ -11951,7 +11951,7 @@ canvas.exfly{display:block}
     { id:'door', x:-2, z:64.2, c:'#E9ECF1', t:'Вход', k:'Главный вход', p:'Вход в музей — под монументом «Покорителям космоса». Сразу за дверями — вестибюль.' },
     { id:'wc', x:-17, z:48.6, c:'#7FD1C1', t:'Туалет', k:'Коридор к залам', p:'По левую сторону коридора между вестибюлем и первым залом. Доступен для маломобильных посетителей.' },
     { id:'wc2', x:15, z:48.6, c:'#7FD1C1', t:'Туалет', k:'Коридор к залам', p:'По правую сторону коридора между вестибюлем и первым залом.' },
-    { id:'gate', x:-2, z:52.2, c:'#8CC4FF', t:'Контроль билетов', k:'Вход в залы', p:'Турникеты перед первым залом: приложи QR из приложения или бумажный билет.' } ]; /* v208: «Точку эха» на карте пока прячем — загораживает вестибюль */ { const k = POI.findIndex(p => p.id === 'echo'); if (k >= 0) POI.splice(k, 1); }
+    { id:'gate', x:-2, z:52.2, c:'#8CC4FF', t:'Контроль билетов', k:'Вход в залы', p:'Турникеты перед первым залом: приложи QR из приложения или бумажный билет.' } ]; /* v208: «Точку эха» на карте пока прячем — загораживает вестибюль */ ['echo', 'gate'].forEach(id => { const k = POI.findIndex(p => p.id === id); if (k >= 0) POI.splice(k, 1); }); /* v210: без «Точки эха» и «Контроля билетов» */
   const wait = () => { const K = window.__m3k; if (!K || !K.zones || !K.zones.vest){ setTimeout(wait, 600); return; } build(K); }; wait();
   function build(K){ const T = K.THREE, Y = (K.zones.vest.max.y || 1.33), g = new T.Group(); g.name = 'vestPOI'; K.scene.add(g);
     const dark = new T.MeshStandardMaterial({ color:0x23262d, roughness:.6, metalness:.2 }), edge = new T.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:.45 });
@@ -13804,6 +13804,14 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transfor
 /* v210: «Маршрут под вас» — интересы компактнее, в результате лента экспонатов */
 .myr .ops:not(.seg){gap:6px!important}.myr .ops:not(.seg) button{height:34px!important;min-height:0!important;padding:0 12px!important;font-size:13px!important;border-radius:999px!important}
 .myr .res .ids{display:none!important}.myr .res .myrgal{margin:12px -4px 0}.myr .res .myrgal button{width:76px}.myr .res .myrgal span{width:76px;height:96px}.myr .res .myrgal b{font-size:10.5px}
+.sdesc .psnav .psg{display:inline-flex;align-items:center;gap:4px;padding:4px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.sdesc .psnav .psg span{padding:0 10px;font:500 13.5px var(--f,Inter)!important;color:#fff!important;white-space:nowrap;text-transform:none!important;letter-spacing:0!important}
+.sdesc .psnav .psg .pa{width:36px!important;height:36px!important;border:0!important;border-radius:50%!important;background:rgba(255,255,255,.12)!important;color:#fff!important;font-size:18px!important;line-height:1}
+.sdesc .psnav .psg .pa.nx{background:#fff!important;color:#121316!important}
+/* v210: паспорт — без случайной подложки у строки уровня и без подложек вокруг рядов марок */
+.plv .top{position:relative!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;height:auto!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.plv .top:before,.plv .top:after{display:none!important}
+#vPass .alb .col,#vPass .alb .row{background:none!important;border:0!important;box-shadow:none!important}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
