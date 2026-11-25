@@ -9582,6 +9582,9 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const pinEl = (id, n) => { const el = document.createElement('button'); el.className = 'm3pin'; el.innerHTML = `<b>${n}</b>`; el.addEventListener('click', ev => { ev.stopPropagation(); if (floorGate(id)) return; select(id, true); }); $('#m3pins').appendChild(el); return el; };
     let selected = null;
     const glow = (o, a) => o && o.traverse(m => { if (m.isMesh && m.material && m.material.emissive){ if (!m.userData.own){ m.material = m.material.clone(); m.userData.own = 1; m.userData.mat0 = m.material; } m.material.emissive.setRGB(a * .9, a * .42, a * .2); } });
+    /* v205: выбранный экспонат (и предыдущий шаг маршрута) — чётко, остальные полупрозрачные: в плотных залах видно, куда идти */
+    const fade = (keep) => { for (const [k, o] of Object.entries(nodes)){ const on = !keep || keep.includes(+k); o.traverse(m => { if (!(m.isMesh || m.isLine || m.isPoints || m.isSprite) || !m.material) return; if (!on && !m.userData.fadeOwn){ m.material = Array.isArray(m.material) ? m.material.map(x => x.clone()) : m.material.clone(); m.userData.fadeOwn = 1; } (Array.isArray(m.material) ? m.material : [m.material]).forEach(mt => { if (!mt.color) return; if (!mt.userData.c0) mt.userData.c0 = mt.color.clone(); mt.color.copy(mt.userData.c0); if (!on) mt.color.multiplyScalar(.22); if (mt.emissive){ if (!mt.userData.e0) mt.userData.e0 = mt.emissive.clone(); if (!on) mt.emissive.setRGB(0, 0, 0); } }); }); } }; /* v205: цветом, а не прозрачностью — прозрачность переписывает переключатель этажей */
+    window.__m3fade = fade;
     function select(id, fly){ if (window.__m3lift && window.__m3lift(id) === true){ window.__m3sel = id; return; } if (selected != null) glow(nodes[selected], 0); selected = id; window.__m3sel = id; const n = nodes[id]; if (!n) return; glow(n, .45);
       if (fly && curFloor !== 'all' && floorOfId(id) !== curFloor) m3floor(floorOfId(id), true);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {}; if (H.color) box.style.setProperty('--hc', H.color);
@@ -9600,7 +9603,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     r.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; });
     r.domElement.addEventListener('pointerup', e => { if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return; const rc = r.domElement.getBoundingClientRect();
       ndc.set((e.clientX - rc.left) / rc.width * 2 - 1, -((e.clientY - rc.top) / rc.height) * 2 + 1); ray.setFromCamera(ndc, cam);
-      for (const h of ray.intersectObjects(Object.values(nodes), true)){ let o = h.object; while (o && o.userData.ex == null) o = o.parent; if (o){ if (floorGate(o.userData.ex)) return; select(o.userData.ex, false); return; } }
+      for (const h of ray.intersectObjects(Object.values(nodes), true)){ let o = h.object; while (o && o.userData.ex == null) o = o.parent; if (o){ if (floorGate(o.userData.ex)) return; select(o.userData.ex, true); return; } } /* v205: тап по экспонату снова центрирует его */
       card.hidden = true; if (selected != null) glow(nodes[selected], 0); selected = null;
       /* v159: тап по залу (не по экспонату) — наезд в границы зала; кинозал и кафе открывают свои страницы */
       try { const CAFE = (window.__cafeBox && __cafeBox() || new THREE.Box3(new THREE.Vector3(5.6, 1.3, -62.4), new THREE.Vector3(12.0, 3.3, -58.6))) /* v172: кафе — по фактическому месту модели */; let best = null, bd = 1e9; const tp = new THREE.Vector3();
@@ -10151,7 +10154,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   let sel = (st().key in R) ? st().key : 'short';
   const V = () => window.HOME_V || 'a';
   function heroA(){ const r = st();
-    if (!live()) return `<div class="hma"><div class="hmk">Экскурсия с Белкой</div><h2>${window.__kcHeroT ? __kcHeroT() : 'Начать<br>экскурсию'}</h2><p>${window.__kcHeroP ? __kcHeroP() : 'Проведём по залам по шагам, расскажем у каждого экспоната, отметки — в паспорт.'}</p>
+    if (!live()) return `<div class="hma"><div class="hmk">Экскурсия с экскурсоводом</div><h2>${window.__kcHeroT ? __kcHeroT() : 'Начать<br>экскурсию'}</h2><p>${window.__kcHeroP ? __kcHeroP() : 'Проведём по залам по шагам, расскажем у каждого экспоната, отметки — в паспорт.'}</p>
       <div class="hmopts" id="hmOpts">${Object.entries(R).map(([k, v]) => `<button data-r="${k}" class="${k === sel ? 'on' : ''}"><i></i><div><b>${v.name}</b><span>${v.ids.length} экспонатов · ${v.note}</span></div><em>${v.time}</em></button>`).join('')}</div>
       <button class="hmcta" id="hmGo">Начать · ${R[sel].time} ${arrow}</button></div>`;
     const ids = R[r.key].ids, n = ex(ids[r.i]), dn = r.done.length;
@@ -10395,7 +10398,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const ORB = '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="10"/><ellipse cx="50" cy="50" rx="30" ry="11" transform="rotate(-25 50 50)"/></svg>';
   const STAR = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M24 4l5.5 11.5L42 17.3l-9 8.8 2.1 12.5L24 32.8l-11.1 5.8 2.1-12.5-9-8.8 12.5-1.8z"/></svg>';
   /* --- паспорт --- */
-  window.renderPass = () => { const v = $('#vPass'); if (!v || !R) return; const r = st(), ids = R[r.key].ids, done = r.started ? r.done.slice() : [], n = done.length, TOT = 37;
+  window.renderPass = () => { const v = $('#vPass'); if (!v || !R) return; const r = st(), ids = R[r.key].ids, done = (r.done || []).slice(), n = done.length, TOT = 37; /* v205: марки считаются и без начатой экскурсии */
     const lv = [[5, 'Конструктор', '5 отметок'], [15, 'Испытатель', '15 отметок'], [ids.length, 'Космонавт музея', `весь маршрут «${R[r.key].name}»`, true], [TOT, 'Главный конструктор', 'все 37 отметок → металлический значок на кассе музея']];
     const prog = (k, route) => Math.min(100, Math.round((route ? done.filter(x => ids.includes(x)).length : n) / k * 100));
     v.innerHTML = `<div class="hd"><div class="kick">Космический паспорт</div><h1>Твоя<br><em>коллекция</em></h1></div>
@@ -10413,7 +10416,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const rh = $('#rtHere'); if (rh) rh.addEventListener('click', e => { if (!window.tourHere) return; e.stopImmediatePropagation(); const r = st(); r.started = true; window.tourSave(r); tourHere(); }, true);
   /* --- отметка прямо из досье --- */
   const _open = window.openEx; if (_open) window.openEx = function(id){ _open.apply(this, arguments); try { stampBtn(id); } catch(_){} };
-  function stampBtn(id){ const r = st(), ids = R[r.key].ids, k = ids.indexOf(id), host = $('#vEx .acts2'); if (!host || k < 0) return; const got = r.started && r.done.includes(id);
+  function stampBtn(id){ const r = st(), ids = R[r.key].ids, k = ids.indexOf(id), host = $('#vEx .acts2'); if (!host || k < 0) return; const got = (r.done || []).includes(id);
     /* экскурсия идёт — внизу досье плашка «что дальше», чтобы не терять маршрут */
     if (r.started && r.done.length < ids.length){ const nx = ids.find(x => !r.done.includes(x) && x !== id) ?? null, nxi = nx != null ? ids.indexOf(nx) : -1, nn = nx != null ? window.tourEx(nx) : null;
       const bar = document.createElement('div'); bar.className = 'tourbar'; bar.innerHTML = `<div><small>Экскурсия «${R[r.key].name}» · ${r.done.length} из ${ids.length}</small><b>${nn ? 'Дальше: ' + nn.title : 'Последний шаг'}</b></div><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>`;
@@ -11902,7 +11905,7 @@ canvas.exfly{display:block}
   const ico = { prev:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>', next:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>', play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', pin:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>' };
   let sel = 'short';
   function renderPl(){ const r = window.tourState ? tourState() : null, R = window.TOUR_ROUTES || {}; if (!r || !R.short){ pl.hidden = true; return; } pl.hidden = false;
-    if (!r.started){ pl.innerHTML = `<div class="mpst"><div style="flex:1"><b><small>Экскурсия с Белкой</small>${R[sel].name} · ${R[sel].time || ''}</b><div class="mprs">${['short', 'kids', 'full'].map(k => `<button data-r="${k}" class="${k === sel ? 'on' : ''}">${R[k].name}</button>`).join('')}</div></div><button class="mpgo">Начать</button></div>`;
+    if (!r.started){ pl.innerHTML = `<div class="mpst"><div style="flex:1"><b><small>Экскурсия с экскурсоводом</small>${R[sel].name} · ${R[sel].time || ''}</b><div class="mprs">${['short', 'kids', 'full'].map(k => `<button data-r="${k}" class="${k === sel ? 'on' : ''}">${R[k].name}</button>`).join('')}</div></div><button class="mpgo">Начать</button></div>`;
       pl.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { sel = b.dataset.r; renderPl(); }); pl.querySelector('.mpgo').onclick = () => { window.tourStart && tourStart(sel); setTimeout(() => { typeof showTab === 'function' && showTab('map'); renderPl(); go(); }, 150); }; return; }
     const ids = R[r.key].ids, i = Math.min(r.i || 0, ids.length - 1), id = ids[i], x = window.tourEx ? tourEx(id) : { title:'' }, H = HALLS[(MEX.find(e => e[0] === id) || [])[3]] || {};
     pl.innerHTML = `<div class="mppb">${ids.map((q, k) => `<i class="${r.done.includes(q) ? 'd' : k === i ? 'c' : ''}"></i>`).join('')}</div><div class="mprow"><img class="mpth" src="${thumb(id)}" alt="" onerror="this.style.visibility='hidden'"><div class="mptx"><small>Шаг ${i + 1} из ${ids.length} · ${H.name || ''}</small><b>${x.title || ''}</b></div><button class="mpbt" data-a="where" aria-label="Куда идти">${ico.pin}</button><button class="mpbt pr" data-a="play" aria-label="Слушать">${ico.play}</button><button class="mpbt" data-a="next" aria-label="Следующий">${ico.next}</button></div>`;
@@ -12842,7 +12845,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
 
   /* --- герой: одна кнопка «Начать →» (состояние «Продолжить» — как было) */
   const hero = () => { const box = $('#hmHero'); if (!box || !box.querySelector('#hmOpts, #hbR')) return; const H = KC().home || {};
-    box.innerHTML = `<div class="hma h170"><div class="hmk">Экскурсия с Белкой</div><h2>${esc(H.heroTitle || 'Начать экскурсию')}</h2><p>${esc(H.heroText || 'Подберём маршрут под ваше время и интересы — Белка проведёт по залам.')}</p><button class="hmcta" id="hmGo">Начать ${ARROW}</button></div>`;
+    box.innerHTML = `<div class="hma h170"><div class="hmk">Экскурсия с экскурсоводом</div><h2>${esc(H.heroTitle || 'Начать экскурсию')}</h2><p>${esc(H.heroText || 'Шаг за шагом по залам, с рассказом у каждого экспоната.')}</p><button class="hmcta" id="hmGo">Начать ${ARROW}</button></div>`;
     box.querySelector('#hmGo').onclick = () => window.openMyRoute && openMyRoute(); };
   const rh0 = window.renderHome;
   window.renderHome = function(){ const r = rh0 && rh0.apply(this, arguments); try { hero(); renderOpen(); const g = (KC().home || {}).greeting; const h1 = $('#helloH'); if (g && h1 && !(window.tourLive && tourLive())) h1.textContent = g; } catch(e){ console.warn(e); } return r; };
@@ -13044,7 +13047,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   /* --- отметка: экспонат попадает в паспорт */
   function grant(id, viaScan){ const st = window.tourState, sv = window.tourSave; if (!st || !sv) return; const r = st(); const R = window.TOUR_ROUTES || {};
-    if (!r.started){ r.started = true; r.on = true; }
+    /* v205: скан ставит марку, но экскурсию не начинает — плеер маршрута не появляется сам */
     const ids = (R[r.key] || R.short || { ids:[] }).ids, first = !r.done.includes(id); if (first) r.done.push(id);
     if (ids[r.i] === id && r.i < ids.length - 1) r.i++;
     sv(r); window.badgeUpd && badgeUpd(); window.renderPass && renderPass(); window.renderHome && renderHome(); window.renderTour && renderTour();
@@ -13315,7 +13318,14 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
   /* 1. кнопка сканера рядом с «Билетом» — v191 (#qrFab) */
   /* 2. стрелка по шагам на схеме экспоната: открыть корпус, разобрать, собрать обратно — без свайпа */
   function stepper(card, getFig){ if (!card || card.querySelector('.xnav')) return; const fig = getFig(); if (!fig || !fig.figure) return;
-    const pts = (fig.figure.tour || []).filter(Boolean); if (!pts.length) return; const stage = card.querySelector('.stage'); if (!stage) return;
+    const pts = (fig.figure.tour || []).filter(Boolean); const stage = card.querySelector('.stage'); if (!stage) return;
+    if (!pts.length){ /* v205: у фигуры нет размеченных деталей — стрелки раскрывают её по шагам вместо «веди пальцем» */ const V = [0, .35, .7, 1], N2 = V.length - 1; let k2 = 0, cur = 0, raf = 0; const hint2 = card.querySelector('.hint'); if (hint2) hint2.textContent = 'Стрелками — раскрыть';
+      const nav = document.createElement('div'); nav.className = 'xnav'; nav.innerHTML = `<button class="pv" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><span class="ct"></span><button class="nx"></button>`; card.appendChild(nav);
+      const pv = nav.querySelector('.pv'), nx = nav.querySelector('.nx'), ct = nav.querySelector('.ct');
+      const anim = to => { cancelAnimationFrame(raf); const f0 = cur, t0 = performance.now(); const st = now => { const t = Math.min(1, (now - t0) / 700), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; cur = f0 + (to - f0) * e; const f = getFig(); f && f.set && f.set(cur); if (t < 1) raf = requestAnimationFrame(st); }; raf = requestAnimationFrame(st); };
+      const lab = () => { const end = k2 === N2; pv.disabled = k2 === 0; ct.innerHTML = k2 ? `<b>${k2}</b> / ${N2}` : `${N2} шага`; nx.classList.toggle('end', end); nx.innerHTML = k2 === 0 ? `<span>Показать</span>${AR}` : end ? '<span>К досье</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>' : `<span>Дальше</span>${AR}`; };
+      nx.onclick = ev => { ev.stopPropagation(); const f = getFig(); f && f.stopTour && f.stopTour(); if (k2 === N2){ const ex = card.closest('#vEx'), t = ex && ex.querySelector('.ex'); if (t) t.scrollIntoView({ behavior:'smooth', block:'start' }); else { k2 = 0; anim(0); lab(); } return; } k2++; anim(V[k2]); lab(); };
+      pv.onclick = ev => { ev.stopPropagation(); if (!k2) return; k2--; anim(V[k2]); lab(); }; lab(); return; }
     const N = pts.length; let k = 0, tr = null; /* v203: стрелки ‹ › по деталям, счётчик, после последней — «К досье ↓» */
     const hint = card.querySelector('.hint'); if (hint) hint.textContent = 'Стрелками — по деталям';
     const nav = document.createElement('div'); nav.className = 'xnav'; nav.innerHTML = `<button class="pv" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><span class="ct"></span><button class="nx"></button>`; card.appendChild(nav);
@@ -13725,6 +13735,10 @@ html.rtmode .exc .exgo{height:42px;margin-top:10px;font-size:14px}
 .plv .mdl i{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#5A606B,#23262D 70%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}
 .plv .mdl button.on i{background:radial-gradient(circle at 35% 30%,#FFE2C2,#D98A4E 45%,#7A3F1A 90%);box-shadow:0 0 0 2px rgba(255,178,122,.5),0 0 14px rgba(255,138,76,.45)}
 .plv .mdl em{font-style:normal;font-size:9.5px;line-height:1.15;text-align:center;color:#AEB6C2}
+.alb .row .mk{position:relative}.alb .row .mk .mkop{position:absolute;right:2px;top:2px;z-index:3;width:24px;height:24px;border-radius:50%;border:0;padding:5px;background:rgba(10,11,13,.72);color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}.alb .row .mk .mkop svg{width:100%;height:100%;display:block}
+/* v205: заголовок вкладки поднят на уровень кнопок «QR» и «Билет» — больше места под контент */
+#vTour>.hd,#vPass>.hd,#vMore>.hd{margin-top:-45px}#vTour>.hd>.kick,#vPass>.hd>.kick,#vMore>.hd>.kick{display:none}#vHall>.hd{margin-top:-34px}
+#vTour>.hd h1,#vPass>.hd h1,#vMore>.hd h1,#vHall>.hd h1{max-width:58%}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -13900,7 +13914,7 @@ html.rtmode .exc .exgo{height:42px;margin-top:10px;font-size:14px}
   { const f = document.getElementById('vlFrame'); if (f) new MutationObserver(vlBtn).observe(f, { attributes:true, attributeFilter:['src'] }); const vl = document.getElementById('vl'); if (vl) new MutationObserver(vlBtn).observe(vl, { attributes:true, attributeFilter:['class'] }); }
 
   /* ---------- 5. уровень профиля в паспорте ---------- */
-  const RANKS = [[0, 'Курсант'], [1, 'Стажёр'], [3, 'Наблюдатель'], [6, 'Конструктор'], [10, 'Испытатель'], [16, 'Космонавт'], [24, 'Командир экипажа'], [33, 'Главный конструктор']];
+  const RANKS = [[0, 'Пассажир'], [1, 'Стажёр'], [3, 'Штурман'], [6, 'Бортинженер'], [10, 'Пилот'], [16, 'Командир корабля'], [24, 'Космонавт-исследователь'], [33, 'Главный конструктор']]; /* v205: лётные звания, без военных */
   function level(){ const v = document.getElementById('vPass'); if (!v) return; v.querySelector('.plv')?.remove();
     v.querySelectorAll('.sec').forEach(s => { if (s.nextElementSibling && s.nextElementSibling.classList.contains('rwd')) s.classList.add('lvh'); });
     const n = nGot(), T = total(); let L = 0; RANKS.forEach(([k], j) => { if (n >= k) L = j; });
@@ -13943,6 +13957,8 @@ html.rtmode .exc .exgo{height:42px;margin-top:10px;font-size:14px}
       const scan = async () => { if (off) return; try { const raw = await detect(); const id = raw ? parse(raw) : null; if (id){ el.classList.add('hit'); try { navigator.vibrate && navigator.vibrate(30); } catch(_){} stop(); setTimeout(() => { close(); setTimeout(() => window.qrGrant && qrGrant(id, true), 200); }, 550); return; } } catch(_){} raf = requestAnimationFrame(() => setTimeout(scan, 160)); }; scan(); };
     el.querySelector('.cam').onclick = start;
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) start(); else { el.querySelector('.ph').textContent = 'Камера недоступна в этом браузере — отсканируйте код обычной камерой телефона.'; } };
+  /* ---------- 9. на каждой марке альбома — маленькая кнопка «открыть»: капсула этой марки (показ, без отметки) ---------- */
+  new MutationObserver(() => document.querySelectorAll('.alb .row .mk:not([data-op])').forEach(m => { m.dataset.op = 1; const b = document.createElement('button'); b.className = 'mkop'; b.setAttribute('aria-label', 'Открыть марку'); b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>'; b.onclick = e => { e.stopPropagation(); window.openStampView(+m.dataset.id); }; m.appendChild(b); })).observe(document.body, { childList:true, subtree:true });
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */
