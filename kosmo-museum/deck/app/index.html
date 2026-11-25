@@ -11333,9 +11333,15 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
     /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><div class="psnav"><button class="psl" type="button" aria-label="Слушать рассказ"><i>▶</i><span>Слушать</span></button><button class="pa go" data-d="1" aria-label="Подробнее">Подробнее <i>›</i></button></div>`; hero.appendChild(sd); } /* v206: стрелки сразу на титуле вместо «листай вбок» */
     const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn"><button class="pa" data-d="-1" aria-label="Назад">‹</button>${n} / ${String(CH.length).padStart(2, '0')}<button class="pa" data-d="1" aria-label="Дальше">›</button></div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st); /* v167: главы листаются вбок */
-    st.addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
-    hero.querySelector('.psnav').addEventListener('click', e => { const l = e.target.closest('.psl'); if (l){ e.stopPropagation(); const li = ex.querySelector('#listen'); li && li.click(); setTimeout(() => { const ps = window.PL && PL.state ? PL.state() : {}; l.classList.toggle('on', !!ps.playing); l.querySelector('span').textContent = ps.playing ? 'Пауза' : 'Слушать'; l.querySelector('i').textContent = ps.playing ? '❚❚' : '▶'; }, 400); return; } const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
-    hero.addEventListener('click', e => { if (e.target.closest('button, a, .hsd')) return; if (Math.round(st.scrollLeft / Math.max(1, st.clientWidth)) === 0) st.scrollTo({ left:st.clientWidth, behavior:'smooth' }); });
+    /* v213: главы ведёт вертикальная прокрутка досье — экспонат стоит, карточки сменяются; кнопки листают на одну главу */
+    w.style.setProperty('--n', CH.length); hero.appendChild(st); w.classList.add('vsc');
+    const vh = () => hero.clientHeight || innerHeight;
+    const stepTo = d => { const p = Math.round(Math.max(0, ex.scrollTop - w.offsetTop) / vh()); const t = Math.max(0, Math.min(CH.length + 1, p + d)); ex.scrollTo({ top:w.offsetTop + t * vh(), behavior:'smooth' }); };
+    const sync = () => { if (!w.isConnected) return ex.removeEventListener('scroll', sync); const p = Math.max(0, Math.min(CH.length, (ex.scrollTop - w.offsetTop) / vh())); st.scrollLeft = p * st.clientWidth; hero.classList.toggle('inch', p > .35); };
+    ex.addEventListener('scroll', sync, { passive:true }); requestAnimationFrame(sync);
+    st.addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); stepTo(+b.dataset.d); });
+    hero.querySelector('.psnav').addEventListener('click', e => { const l = e.target.closest('.psl'); if (l){ e.stopPropagation(); const li = ex.querySelector('#listen'); li && li.click(); setTimeout(() => { const ps = window.PL && PL.state ? PL.state() : {}; l.classList.toggle('on', !!ps.playing); l.querySelector('span').textContent = ps.playing ? 'Пауза' : 'Слушать'; l.querySelector('i').textContent = ps.playing ? '❚❚' : '▶'; }, 400); return; } const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); stepTo(+b.dataset.d); });
+    hero.addEventListener('click', e => { if (e.target.closest('button, a, .hsd')) return; if (Math.round(st.scrollLeft / Math.max(1, st.clientWidth)) === 0) stepTo(1); });
     ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
     /* v136: реплика Белки — сразу после истории */
     const bel = () => { const d = ex.querySelector('.dfc'); if (!d) return false; w.after(d); d.classList.add('afterst'); return true; }; /* v136: Белка — сразу после истории */ if (!bel()) setTimeout(bel, 350);
@@ -13835,6 +13841,13 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transfor
 .mplay .mpsel small{display:block;font:500 9.5px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#FF8A4C}.mplay .mpsel b{display:block;margin-top:3px;font:500 16px var(--f,Inter)}.mplay .mpsel b i{font-style:normal;font-size:11px;color:#8B93A0;margin-left:4px}
 .mplay .mpst.mpc .mpgo{height:44px!important;padding:0 22px!important}
 body:has(.agintro.on) .tdk{opacity:0!important;pointer-events:none!important}
+/* v213: история экспоната — вертикальная прокрутка листает главы */
+#vEx .psw.vsc{height:calc((var(--n) + 1) * 100svh)!important;height:calc((var(--n) + 1) * 100vh)}
+#vEx .psw.vsc>.stk{position:sticky!important;top:0!important;height:100svh!important;z-index:1}
+#vEx .psw.vsc .psteps{position:absolute!important;left:0;right:0;bottom:0;overflow:hidden!important;scroll-snap-type:none!important;pointer-events:none!important;touch-action:auto!important}
+#vEx .psw.vsc .psteps .pc{pointer-events:auto}#vEx .psw.vsc .psteps .p0{pointer-events:none!important}
+#vEx .psw.vsc .stk .sdesc{transition:opacity .3s}#vEx .psw.vsc .stk.inch .sdesc{opacity:0;pointer-events:none}
+#vEx .psw.vsc .stk .sdesc{z-index:4}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -14115,6 +14128,11 @@ body:has(.agintro.on) .tdk{opacity:0!important;pointer-events:none!important}
   /* ---------- 19. поиск на карте — превью экспонатов; карточка на карте — «Маршрут сюда» ---------- */
   new MutationObserver(() => { document.querySelectorAll('#m3sl button[data-id]:not([data-pv])').forEach(b => { b.dataset.pv = 1; const id = +b.dataset.id, x = window.tourEx ? tourEx(id) : {}; const img = (window.__STAMPED && __STAMPED.has(id)) ? `g/stamps/${id}.webp` : (window.__AV || {})[id] || x.th || ''; if (!img) return; const i = document.createElement('img'); i.className = 'slpv'; i.src = img; i.alt = ''; b.prepend(i); b.classList.add('haspv'); });
     document.querySelectorAll('.exc .exr').forEach(r => { if (r.querySelector('.rtto')) return; const q = r.querySelector('.qrb'); q && q.remove(); const b = document.createElement('button'); b.className = 'rtto'; b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8.4 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.6"/></svg>Маршрут'; b.onclick = e => { e.stopPropagation(); const id = window.__m3sel; if (id && window.m3pathTo && m3pathTo(+id)) say('Путь построен — идите по оранжевой линии'); }; r.appendChild(b); }); }).observe(document.body, { childList:true, subtree:true });
+  /* ---------- 20. 3D-слой экспоната (canvas.exfly) не перехватывает нажатия на кнопки под ним ---------- */
+  { let d0 = null; document.addEventListener('pointerdown', e => { d0 = e.target.matches && e.target.matches('canvas.exfly') ? [e.clientX, e.clientY] : null; }, true);
+    document.addEventListener('pointerup', e => { if (!d0 || !(e.target.matches && e.target.matches('canvas.exfly'))) return; const moved = Math.hypot(e.clientX - d0[0], e.clientY - d0[1]); d0 = null; if (moved > 8) return;
+      const cv = e.target, pe = cv.style.pointerEvents; cv.style.pointerEvents = 'none'; const el = document.elementFromPoint(e.clientX, e.clientY); cv.style.pointerEvents = pe;
+      const b = el && el.closest('button, a, [data-a], .pa, .psl'); if (b){ e.preventDefault(); e.stopPropagation(); b.click(); } }, true); }
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */

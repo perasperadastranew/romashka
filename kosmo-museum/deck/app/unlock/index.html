@@ -280,9 +280,9 @@ const ART = {
     a.dome(.66, -.42, .08, .9, .6);
     a.sparkle(-.6, -.55, .09, .8); a.sparkle(.5, .62, .06, .7); a.dot(-.4, .66, .02);
   },
-  /* Вся коллекция: старт ракеты, факел, траектория и звёзды */
+  /* Вся коллекция: ракета, факел и звёзды */
   m8(a, c) {
-    const tr = []; for (let i = 0; i <= 40; i++) { const t = i / 40; tr.push([-.8 + t * 1.25, .85 - t * t * 1.55]); } a.tube(tr, .016, .45);
+    /* v208: по просьбе Саши без траектории и без контурной ракеты Циолковского — только ракета */
     a.body((g, R) => { g.moveTo(0, -.5 * R); g.bezierCurveTo(.15 * R, -.36 * R, .14 * R, -.06 * R, .12 * R, .3 * R); g.lineTo(-.12 * R, .3 * R); g.bezierCurveTo(-.14 * R, -.06 * R, -.15 * R, -.36 * R, 0, -.5 * R); }, 0, .3, 1, .5, .08, -.12);
     a.g.save(); a.g.translate(X(.08), X(-.12)); a.g.rotate(.5);
     a.fill((g, R) => { g.moveTo(-.11 * R, .1 * R); g.lineTo(-.26 * R, .38 * R); g.lineTo(-.1 * R, .3 * R); g.closePath(); g.moveTo(.11 * R, .1 * R); g.lineTo(.26 * R, .38 * R); g.lineTo(.1 * R, .3 * R); g.closePath(); }, .75);
@@ -291,8 +291,6 @@ const ART = {
     c.dome(.08 + Math.sin(.5) * .18 * -1 + .0, -.12 - .18 * Math.cos(.5) * 1, .065, .9, .9);
     [[-.55, -.45, .1], [.6, -.6, .07], [.68, .2, .06], [-.7, .15, .05], [-.2, -.75, .05]].forEach(([x, y, s]) => a.sparkle(x, y, s, .85));
     for (let i = 0; i < 14; i++) { const an = Math.random() * 6.28, r = .3 + Math.random() * .6; a.dot(Math.cos(an) * r, Math.sin(an) * r, .012, .55); }
-    /* ракета Циолковского 1903 года — контуром, как на чертеже */
-    a.arc(-.4, .4, .3, .085, -.5, 0, 6.2832, .022, .95); a.tube([[-.66, .54], [-.78, .64]], .018, .9); a.tube([[-.66, .54], [-.8, .54]], .016, .85); c.tube([[-.5, .36], [-.47, .52]], .008, .6); c.tube([[-.36, .3], [-.33, .46]], .008, .6);
   }
 };
 /* надпись по дуге */
@@ -514,7 +512,7 @@ function glints(n) { for (let i = 0; i < n; i++) GL.push({ a: Math.random() * 6.
 function drawFx(dt, cx0, cy0, pxR) {
   const w = fx.width = fx.clientWidth * devicePixelRatio, h = fx.height = fx.clientHeight * devicePixelRatio, g = fx.getContext('2d'), k = devicePixelRatio;
   /* конфетти: вылетают из жетона, падают с вращением */
-  if (CFQ > 0 && !reduce){ const m = MEDALS[cur], tc = { bronze:'#E49A6A', silver:'#D9E0EA', gold:'#F2C45A' }[m.tier], cs = [tc, '#FFE2A8', '#F3EEE9', '#FF6A1F', '#8FB3D9'];
+  if (CFQ > 0 && !reduce){ const m = (KIND === 'medal' ? MEDALS[cur] : null) || { tier:'bronze' }, tc = { bronze:'#E49A6A', silver:'#D9E0EA', gold:'#F2C45A' }[m.tier] || '#E49A6A', cs = [tc, '#FFE2A8', '#F3EEE9', '#FF6A1F', '#8FB3D9'];
     for (let i = 0; i < CFQ; i++){ const a = -Math.PI / 2 + (Math.random() - .5) * 2.6, v = (5 + Math.random() * 10) * k; CF.push({ x:cx0 * k, y:cy0 * k, vx:Math.cos(a) * v, vy:Math.sin(a) * v - 3 * k, s:(3 + Math.random() * 4) * k, c:cs[i % 5], r:Math.random() * 6, vr:(Math.random() - .5) * .35, l:1, el:i % 3 === 0, fl:Math.random() * 6 }); } CFQ = 0; }
   for (let i = CF.length - 1; i >= 0; i--){ const p = CF[i]; p.vy += .25 * k; p.vx *= .985; p.vy *= .985; p.x += p.vx + Math.sin(p.fl += .1) * .6 * k; p.y += p.vy; p.r += p.vr; p.l -= .0045; if (p.l <= 0 || p.y > h + 20){ CF.splice(i, 1); continue; }
     g.save(); g.globalAlpha = Math.min(1, p.l * 1.6); g.fillStyle = p.c; g.translate(p.x, p.y); g.rotate(p.r); g.scale(1, Math.abs(Math.cos(p.fl)) * .8 + .2);
