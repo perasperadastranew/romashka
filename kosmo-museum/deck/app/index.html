@@ -13796,6 +13796,8 @@ body.hastdk #mp{display:none!important}
 .hmcollab b{display:block;margin-top:6px;font:500 20px/1.2 var(--f,Inter)}.hmcollab span{display:block;margin-top:6px;font-size:13.5px;line-height:1.45;color:#AEB6C2;max-width:85%}
 .hmcollab em{display:inline-block;margin-top:12px;font:600 13.5px var(--f,Inter);font-style:normal;color:#9CC0F0}
 .hmcollab .cbo{position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;border:1px solid rgba(156,192,240,.3);box-shadow:0 0 0 18px rgba(156,192,240,.06)}
+/* v210: в открытом досье — без общей полосы экскурсии (в досье своя плашка) */
+body:has(#vEx:not(.off)) .tdk,body:has(.qd) .tdk,body:has(#vEx:not(.off)) .agintro{transform:translateY(140%)!important;opacity:0!important;pointer-events:none!important}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -14054,6 +14056,12 @@ body.hastdk #mp{display:none!important}
     c.innerHTML = `<div class="cbk">Коллаборация / сейчас</div><b>Arknights × Музей космонавтики</b><span>Квест по залам: 5 вопросов у экспонатов, отметки в паспорт, значок и открытка на кассе</span><em>Пройти квест →</em><i class="cbo"></i>`;
     c.onclick = () => window.openQuest && openQuest(); v.appendChild(c); };
   new MutationObserver(collab).observe(document.body, { childList:true, subtree:true }); collab();
+  /* ---------- 16. «К экспонату» / «Идти к экспонату»: карта → полёт к экспонату → его 3D-карточка ---------- */
+  window.goToExhibit = id => { if (!id) return; const f = document.getElementById('fp'); f && f.classList.remove('on'); const vl = document.getElementById('vl'); vl && vl.classList.add('off'); window.closeEx && closeEx(); document.querySelectorAll('.qd').forEach(x => x.remove());
+    window.showTab && showTab('map'); setTimeout(() => { try { window.m3select && m3select(id, true); } catch(_){} }, 350); setTimeout(() => { try { if (window.__m3go) __m3go(id); } catch(_){} }, 1300); };
+  document.addEventListener('click', e => { const b = e.target.closest('#fpGo, #hmCont'); if (!b) return; let id = null;
+    if (b.id === 'fpGo'){ const ps = window.PL && PL.state ? PL.state() : {}; id = ps.id; } else { const r = window.tourState && tourState(), R = window.TOUR_ROUTES || window.ROUTES || {}; const ids = r && R[r.key] ? R[r.key].ids : []; id = ids[r ? r.i : 0]; }
+    if (!id) return; e.stopPropagation(); e.preventDefault(); goToExhibit(+id); }, true);
   /* ---------- 8. режим маршрута: компактная карточка ---------- */
   setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. тестер (?tester=1 или KC.me.tester): «Сбросить марки» в «Ещё», нажатие на закрытую марку в альбоме выдаёт её ---------- */
