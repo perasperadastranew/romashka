@@ -11326,10 +11326,10 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       return o; } } };
   function ps1Story(ex, hero, cfg){ cfg = cfg || {}; const w = document.createElement('div'); w.className = 'psw'; hero.before(w); w.appendChild(hero); hero.classList.add('stk');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
-    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><div class="psnav"><div class="psg"><button class="pa" data-d="-1" aria-label="Назад">‹</button><span>История / ${(cfg.CH || PS1CH).length} глав</span><button class="pa nx" data-d="1" aria-label="Дальше">›</button></div></div>`; hero.appendChild(sd); } /* v206: стрелки сразу на титуле вместо «листай вбок» */
+    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><div class="psnav"><button class="psl" type="button" aria-label="Слушать рассказ"><i>▶</i><span>Слушать</span></button><button class="pa go" data-d="1" aria-label="Подробнее">Подробнее <i>›</i></button></div>`; hero.appendChild(sd); } /* v206: стрелки сразу на титуле вместо «листай вбок» */
     const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn"><button class="pa" data-d="-1" aria-label="Назад">‹</button>${n} / ${String(CH.length).padStart(2, '0')}<button class="pa" data-d="1" aria-label="Дальше">›</button></div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st); /* v167: главы листаются вбок */
     st.addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
-    hero.querySelector('.psnav').addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
+    hero.querySelector('.psnav').addEventListener('click', e => { const l = e.target.closest('.psl'); if (l){ e.stopPropagation(); const li = ex.querySelector('#listen'); li && li.click(); setTimeout(() => { const ps = window.PL && PL.state ? PL.state() : {}; l.classList.toggle('on', !!ps.playing); l.querySelector('span').textContent = ps.playing ? 'Пауза' : 'Слушать'; l.querySelector('i').textContent = ps.playing ? '❚❚' : '▶'; }, 400); return; } const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
     hero.addEventListener('click', e => { if (e.target.closest('button, a, .hsd')) return; if (Math.round(st.scrollLeft / Math.max(1, st.clientWidth)) === 0) st.scrollTo({ left:st.clientWidth, behavior:'smooth' }); });
     ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
     /* v136: реплика Белки — сразу после истории */
@@ -13812,6 +13812,15 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transfor
 .plv .top{position:relative!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;height:auto!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 .plv .top:before,.plv .top:after{display:none!important}
 #vPass .alb .col,#vPass .alb .row{background:none!important;border:0!important;box-shadow:none!important}
+.sdesc .psnav{gap:8px!important}
+.sdesc .psnav .psl{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px 0 6px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#fff;font:500 14px var(--f,Inter);cursor:pointer}
+.sdesc .psnav .psl i{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;font-style:normal;font-size:11px}.sdesc .psnav .psl.on i{background:#FF6A1F}
+.sdesc .psnav .pa.go{height:44px!important;padding:0 8px 0 20px!important;display:inline-flex!important;align-items:center;gap:10px;border:0!important;background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%)!important;color:#121316!important;font:600 14px var(--f,Inter)!important;border-radius:999px!important;width:auto!important}
+.sdesc .psnav .pa.go i{width:30px;height:30px;border-radius:50%;background:rgba(18,19,22,.08);color:#FF5A10;display:grid;place-items:center;font-style:normal;font-size:16px}
+/* v211: «Залы» и поиск — к правому краю (кнопка «развернуть» скрыта); главы истории — только стрелками, вертикальный свайп всегда прокручивает вниз */
+#m3wrap .m3halls2{right:10px!important}#m3wrap #m3find{right:94px!important}
+.psteps{touch-action:pan-y!important}
+.sdesc .psnav .psl span{text-transform:none!important;letter-spacing:0!important;font:500 14px var(--f,Inter)!important;color:#fff!important}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -14093,5 +14102,52 @@ body:has(.exc.on) .mp,body:has(.exc.on) .tdk,body:has(.exc.on) .agintro{transfor
 })();
 </script>
 <!--/v203-->
+<style>/* v202: страница события */
+#evSheet{position:fixed;inset:0;z-index:90;background:#07080b;color:#fff;overflow-y:auto;transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.8,.2,1);-webkit-overflow-scrolling:touch}
+#evSheet.on{transform:none}
+#evSheet .eh{position:relative;padding:calc(env(safe-area-inset-top) + 64px) 22px 26px;background:radial-gradient(90% 70% at 85% 0%,var(--evc,rgba(255,122,46,.35)),rgba(0,0,0,0) 70%),linear-gradient(180deg,#15171c,#07080b);min-height:300px;display:flex;flex-direction:column;justify-content:flex-end}
+#evSheet .ex{position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:16px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;font-size:20px}
+#evSheet .ek{font:500 11px/1.2 var(--mono,ui-monospace,monospace);letter-spacing:.12em;text-transform:uppercase;color:#ff8a4a;margin-bottom:12px}
+#evSheet h1{font-size:32px;line-height:1.08;font-weight:500;margin:0 0 6px;letter-spacing:-.01em}
+#evSheet .eb{padding:6px 22px 40px}
+#evSheet .eg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 20px}
+#evSheet .ec{background:#121418;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:14px}
+#evSheet .ec small{display:block;color:rgba(255,255,255,.5);font-size:12px;margin-bottom:6px}
+#evSheet .ec b{font-weight:500;font-size:16px}
+#evSheet .ec.w{grid-column:1/-1}
+#evSheet p{color:rgba(255,255,255,.75);font-size:16px;line-height:1.5;margin:0 0 22px}
+#evSheet .ea{display:flex;flex-direction:column;gap:10px}
+#evSheet .ea button{height:52px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#fff;font-size:16px}
+#evSheet .ea button.p{background:#fff;color:#000;border:0}
+#kcEvents .r{cursor:pointer;-webkit-tap-highlight-color:transparent}#kcEvents .r:active{opacity:.6}
+#kcEvents .r>div:last-child{position:relative;padding-right:18px}#kcEvents .r>div:last-child:after{content:'›';position:absolute;right:0;top:0;color:rgba(255,255,255,.35);font-size:20px;line-height:1}
+</style>
+<div id="evSheet" aria-hidden="true"></div>
+<script>/* v202: страница события — по нажатию на строку афиши. Данные: KC.events (title, kind, day, time, until, place, desc?, link?) */
+(function(){ const $ = s => document.querySelector(s), E = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
+  const MON = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'], WD = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  const pd = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+  const COL = { 'Лекция':'rgba(90,140,255,.38)', 'Встреча':'rgba(255,122,46,.38)', 'Выставка':'rgba(170,110,255,.36)', 'Кино':'rgba(255,80,90,.32)', 'Мастер-класс':'rgba(80,200,150,.34)' };
+  const DESC = { 'Лекция':'Научно-популярная лекция для всех, кто любит космос. Без формул — с примерами, моделями и ответами на вопросы из зала.',
+    'Встреча':'Живой разговор с участником космической программы: как готовятся к полёту, что видно из иллюминатора и каково возвращаться на Землю. В конце — вопросы и автографы.',
+    'Выставка':'Временная выставка в залах музея: подлинные предметы, документы и фотографии, которые редко показывают публике.',
+    'Кино':'Показ документального фильма на большом экране кинозала музея.',
+    'Мастер-класс':'Практическое занятие с ведущим: собираем модель своими руками и забираем её домой. Материалы выдаём на месте.' };
+  const ev = () => (window.KC && KC.events) || [];
+  const when = e => { if (e.until && e.day && e.until >= e.day){ const u = pd(e.until); return ['Даты', 'до ' + u.getDate() + ' ' + MON[u.getMonth()]]; } if (!e.day) return ['Когда', e.date || '']; const d = pd(e.day); return ['Дата', d.getDate() + ' ' + MON[d.getMonth()] + ', ' + WD[d.getDay()]]; };
+  const ics = e => { if (!e.day) return; const d = e.day.replace(/-/g, ''), t = (e.time || '10:00').replace(':', '') + '00'; const [h, m] = (e.time || '10:00').split(':').map(Number); const end = String((h + 1.5 | 0)).padStart(2, '0') + String(m + (h % 1 ? 30 : 0)).padStart(2, '0') + '00';
+    const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Музей космонавтики//RU', 'BEGIN:VEVENT', 'UID:' + d + t + '@kosmo-museum', 'DTSTART;TZID=Europe/Moscow:' + d + 'T' + t, 'DTEND;TZID=Europe/Moscow:' + d + 'T' + String(h + 1).padStart(2, '0') + String(m).padStart(2, '0') + '00', 'SUMMARY:' + e.title, 'LOCATION:Музей космонавтики, ' + (e.place || '').replace(/\u00b7/g, '/'), 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type:'text/calendar' })); a.download = 'event.ics'; a.click(); window.toast && toast('Событие добавлено в календарь'); };
+  function open(e){ const sh = $('#evSheet'), w = when(e); sh.style.setProperty('--evc', COL[e.kind] || COL['Встреча']);
+    sh.innerHTML = `<div class="eh"><button class="ex" aria-label="Закрыть">×</button><div class="ek">${E(e.kind || 'Событие')}</div><h1>${E(e.title)}</h1></div><div class="eb"><div class="eg"><div class="ec"><small>${w[0]}</small><b>${E(w[1])}</b></div><div class="ec"><small>Время</small><b>${E(e.time || 'в часы работы')}</b></div>${e.place ? `<div class="ec w"><small>Где</small><b>${E(String(e.place).replace(/\s\u00b7\s/g, ' / '))}</b></div>` : ''}</div><p>${E(e.desc || DESC[e.kind] || 'Событие в Музее космонавтики.')}</p><div class="ea"><button class="p" data-a="tk">Купить билет</button>${e.day && !e.until ? '<button data-a="cal">Добавить в календарь</button>' : ''}<button data-a="map">Как пройти</button><button data-a="sh">Поделиться</button></div></div>`;
+    sh.classList.add('on'); sh.setAttribute('aria-hidden', 'false'); sh.scrollTop = 0;
+    sh.onclick = x => { if (x.target.closest('.ex')) return close(); const b = x.target.closest('button[data-a]'); if (!b) return; const a = b.dataset.a;
+      if (a === 'cal') ics(e); else if (a === 'tk'){ close(); setTimeout(() => window.openTicket ? openTicket() : document.getElementById('tkCard')?.click(), 300); } else if (a === 'map'){ close(); window.showTab && showTab('map'); }
+      else if (a === 'sh'){ const txt = e.title + ' — Музей космонавтики'; navigator.share ? navigator.share({ title:e.title, text:txt, url:location.href }).catch(() => {}) : (navigator.clipboard?.writeText(txt), window.toast && toast('Скопировано')); } }; }
+  function close(){ const sh = $('#evSheet'); sh.classList.remove('on'); sh.setAttribute('aria-hidden', 'true'); }
+  window.openEvent = open; window.closeEvent = close;
+  document.addEventListener('click', x => { const r = x.target.closest('#kcEvents .r'); if (!r) return; const N = x => String(x || '').replace(/[\s\u00a0]+/g, ' ').trim(); const t = N(r.querySelector('div:last-child b')?.textContent); const e = ev().find(v => N(v.title) === t); if (e) open(e); });
+})();
+</script>
 </body>
 </html>
