@@ -13191,6 +13191,25 @@ html.btn-white .tdk .tgo.nx{background:#fff!important}
   set(v); window.setBtnStyle = set; })();
 </script>
 <!--/v176-->
+<!--v193-->
+<style>
+/* v193: «перламутровая» главная кнопка по референсу (alpacareer.ru): светлая капсула с бликом и тёмным текстом, оранжевый — только свечение под кнопкой.
+   Вид по умолчанию; прежние: ?btn=white|glass|warm|orange */
+html.btn-pearl .hmcta,html.btn-pearl .tcur .hmcta,html.btn-pearl .gdgo,html.btn-pearl .tdk .tgo:not(.pl):not(.nx),html.btn-pearl .rtgo,html.btn-pearl .cartbar button,html.btn-pearl .tkbar button,html.btn-pearl .tkbuy button,html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mosb a.ex,html.btn-pearl .qrbtn em,html.btn-pearl #rt .rtnext170,html.btn-pearl .hpc button.pr,html.btn-pearl .vsbtns button.pr,html.btn-pearl .lfx .lc .bt button.pr,html.btn-pearl .m3info button.pr,html.btn-pearl .pullx.go,html.btn-pearl .tkfab,html.btn-pearl .myr .ops button.on,html.btn-pearl .qopts button.ok,html.btn-pearl .exc .exgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next],html.btn-pearl .xstep:not(.re),html.btn-pearl .qrhere .qn button.nx,html.btn-pearl .xdos,html.btn-pearl .tdk .tgo.nx{background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%)!important;color:#121316!important;border:0!important;border-radius:999px!important;font-weight:600!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12),0 0 0 1px rgba(255,255,255,.08),0 10px 26px -10px rgba(255,106,31,.75),0 2px 8px rgba(0,0,0,.35)!important;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+html.btn-pearl .xstep:not(.re) i,html.btn-pearl .mplay .mprow .mpbt[data-a=next] i{background:rgba(18,19,22,.08)!important}
+html.btn-pearl .xstep:not(.re) svg,html.btn-pearl .exc .exgo span,html.btn-pearl .mplay .mprow .mpbt[data-a=next] svg{color:#FF5A10}
+html.btn-pearl .stampbtn:not(.ok){border-color:rgba(255,138,74,.45)!important;background:linear-gradient(180deg,rgba(255,106,31,.14),rgba(255,106,31,.04))!important;box-shadow:inset 0 0 0 1px rgba(255,138,74,.12),0 0 24px -6px rgba(255,106,31,.45)!important}
+html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
+</style>
+<script>
+/* v193: вид кнопок — по умолчанию «перламутр» */
+(() => { const V = ['pearl', 'white', 'glass', 'warm', 'orange']; let v = null; try { v = new URLSearchParams(location.search).get('btn'); } catch(_){}
+  if (V.includes(v)){ try { localStorage.setItem('kosmoBtn2', v); } catch(_){} } else { try { v = localStorage.getItem('kosmoBtn2'); } catch(_){} }
+  if (!V.includes(v)) v = 'pearl';
+  const set = x => { V.forEach(k => document.documentElement.classList.toggle('btn-' + k, k === x)); try { localStorage.setItem('kosmoBtn2', x); } catch(_){} };
+  set(v); window.setBtnStyle = set; })();
+</script>
+<!--/v193-->
 <script>/* v174: «Луна-16» — облёт в 3D по главам (app/luna16.html): посадка, бур, капсула, взлёт ракеты */
 (function w(){ if (!window.openLanding || !window.LANDING) return setTimeout(w, 300);
   window.openLuna16 = () => openLanding('luna16.html'); window.LANDING[21] = 'openLuna16';
