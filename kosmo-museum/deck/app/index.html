@@ -11326,9 +11326,10 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       return o; } } };
   function ps1Story(ex, hero, cfg){ cfg = cfg || {}; const w = document.createElement('div'); w.className = 'psw'; hero.before(w); w.appendChild(hero); hero.classList.add('stk');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'psov'); hero.appendChild(svg);
-    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><span class="swp"><i></i></span><em>листай вбок</em>`; hero.appendChild(sd); }
+    /* v136: внизу титула — одна строка о чём история и значок «листай» */ { const sd = document.createElement('div'); sd.className = 'sdesc'; sd.innerHTML = `<p>${cfg.sub || 'Первый искусственный спутник Земли: шар 58 см, четыре антенны и сигнал, который услышал весь мир'}</p><div class="psnav"><button class="pa" data-d="-1" aria-label="Назад" disabled>‹</button><span>${(cfg.CH || PS1CH).length} глав</span><button class="pa go" data-d="1" aria-label="Начать">Начать ›</button></div>`; hero.appendChild(sd); } /* v206: стрелки сразу на титуле вместо «листай вбок» */
     const st = document.createElement('div'); st.className = 'psteps'; const CH = cfg.CH || PS1CH; st.innerHTML = '<div class="pst p0"></div>' + CH.map(([n, h, p]) => `<div class="pst"><div class="pc"><div class="pn"><button class="pa" data-d="-1" aria-label="Назад">‹</button>${n} / ${String(CH.length).padStart(2, '0')}<button class="pa" data-d="1" aria-label="Дальше">›</button></div><h3>${h}</h3><p>${p}</p></div></div>`).join(''); w.appendChild(st); /* v167: главы листаются вбок */
     st.addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
+    hero.querySelector('.psnav').addEventListener('click', e => { const b = e.target.closest('.pa'); if (!b) return; e.stopPropagation(); st.scrollBy({ left:+b.dataset.d * st.clientWidth, behavior:'smooth' }); });
     hero.addEventListener('click', e => { if (e.target.closest('button, a, .hsd')) return; if (Math.round(st.scrollLeft / Math.max(1, st.clientWidth)) === 0) st.scrollTo({ left:st.clientWidth, behavior:'smooth' }); });
     ex.querySelectorAll('.ps1s, .stagecard.hero, .xcard.hero').forEach(x => x.remove());
     /* v136: реплика Белки — сразу после истории */
@@ -13757,6 +13758,12 @@ html .tdk .tgo span,html .tdk .tgo em{display:none!important}html .tdk .tgo>i{po
 html .tdk .tgo svg{width:16px;height:16px}
 html .tdk .trw{order:1}html .tdk .trw .tsm[data-a=next]{order:3}
 body.hastdk #mp{display:none!important}
+.sdesc .psnav{display:flex;align-items:center;gap:10px;margin-top:12px}.sdesc .psnav span{flex:1;font:500 11px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#8B93A0}
+.sdesc .psnav .pa{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(10,11,13,.5);color:#fff;font-size:18px;cursor:pointer}.sdesc .psnav .pa:disabled{opacity:.3}
+.sdesc .psnav .pa.go{width:auto;padding:0 18px;border:0;background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;font:600 14px var(--f,Inter)}
+.stagecard .ro,.xcard .ro,.xwrap .ro{font:500 13px/1.35 var(--f,Inter)!important;letter-spacing:0!important;text-transform:none!important;color:rgba(236,238,241,.92)!important;background:rgba(10,11,13,.74);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:7px 11px;border-radius:12px;max-width:calc(100% - 24px);text-shadow:none!important}
+.stagecard .ro.idle,.xcard .ro.idle,.xwrap .ro.idle{background:none;padding:0;color:#8B93A0!important;font-size:12px!important}
+.stagecard .ro:empty{display:none}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
