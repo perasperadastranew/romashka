@@ -27,7 +27,7 @@ h1{font-weight:500;font-size:34px;letter-spacing:-.02em;margin-top:10px}
 .top button.gh{background:none;border:1px solid rgba(255,255,255,.2);color:#fff}
 .load{position:absolute;inset:0;display:grid;place-items:center;font:500 11px ui-monospace,monospace;color:rgba(255,255,255,.4)}
 </style></head><body><div class="wrap">
-<div class="k">Музей в кармане · гиды</div><h1>Белка и Стрелка — анимации поз</h1>
+<div class="k">Музей в кармане / гиды</div><h1>Белка и Стрелка — анимации поз</h1>
 <div class="sub">Тапни на иллюминатор, чтобы выбрать, кто показывает. Кнопки ниже запускают трюки, позы и эмоции.</div>
 <div class="duo"><button class="dg" data-w="belka"><div class="po"><div class="load">загружаю…</div><div id="dB"></div></div><b>Белка</b><span>спокойнее</span></button>
 <button class="dg" data-w="strelka"><div class="po"><div class="load">загружаю…</div><div id="dS"></div></div><b>Стрелка</b><span>живее</span></button></div>
@@ -347,7 +347,7 @@ const each = f => Object.keys(D).forEach((w, k) => on[w] && setTimeout(() => f(D
 const say = t => { $('#now').textContent = t; };
 const mark = (box, b) => { document.querySelectorAll('.btns button').forEach(x => x.classList.remove('on')); b && b.classList.add('on'); };
 const run = { t:(n, l) => { say('Трюк: ' + l); each(d => { d.setPose('sit'); d.trick(n, { force:true }); }); if (n === 'runOut') setTimeout(() => each(d => d.trick('runIn', { force:true })), 1600); },
-  p:(n, l) => { say('Поза: ' + l + ' · ' + n); each(d => d.setPose(n)); },
+  p:(n, l) => { say('Поза: ' + l + ' / ' + n); each(d => d.setPose(n)); },
   m:(n, l) => { say('Эмоция: ' + l); each(d => { d.setPose('sit'); d.setMood(n, 3000); }); } };
 const mk = (id, list, kind) => { const box = $(id); list.forEach(([n, l]) => { const b = document.createElement('button'); b.innerHTML = `${l}<small>${n}</small>`; b.onclick = () => { stopAuto(); mark(box, b); run[kind](n, l); }; box.appendChild(b); }); };
 mk('#bT', T, 't'); mk('#bP', P, 'p'); mk('#bM', M, 'm');

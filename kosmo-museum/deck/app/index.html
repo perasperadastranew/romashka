@@ -9011,6 +9011,7 @@ notes('today');
 (() => {
   const SH = /(^|[\s(«„"—–-])(в|во|к|ко|с|со|у|о|об|обо|и|а|но|да|на|по|за|из|от|до|не|ни|же|ли|бы|для|при|без|над|под|про|или|что|как|его|её|их|мы|вы|ты|я|он|она|оно|они|все|так|уже|ещё|где|кто|это|то|те|та|тот|чем)\s+/gi;
   const fix = (t) => { let o = t, p; do { p = o; o = o.replace(SH, (m, a, w) => a + w + ' '); } while (o !== p);
+    o = o.replace(/[\s\u00a0]·[\s\u00a0]/g, '\u00a0/ '); /* v195: точки-разделители «·» показываем как «/» (просьба Саши) */
     return o.replace(/\s+([—–])\s/g, ' $1 ').replace(/(\d)\s+(км|м|мин|ч|кг|см|г|₽|%|м²|тыс\.|млн|витков|дня|дней|лет|года|год|чел\.)(?=[\s.,;:!?)»]|$)/g, '$1 $2'); };
   const SKIP = { SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, CODE:1, PRE:1 };
   const walk = (n) => { if (n.nodeType === 3){ const v = n.nodeValue; if (v && /\s/.test(v)){ const f = fix(v); if (f !== v) n.nodeValue = f; } return; }
@@ -12605,7 +12606,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
   window.kcApply = apply;
   apply(); window.addEventListener('load', apply);
   /* ссылка с сайта: ../app/?ex=12 открывает карточку экспоната */
-  { const id = +(new URLSearchParams(location.search).get('ex') || 0); if (id) window.addEventListener('load', () => setTimeout(() => { try { window.openStop ? openStop(id) : window.openEx && openEx(id); } catch(_){} }, 900)); }
+  { const id = +(new URLSearchParams(location.search).get('ex') || 0); if (id) window.addEventListener('load', () => setTimeout(() => { if (window.__stampScreen) return; /* v194: скан ?ex= ведёт через марку */ try { window.openStop ? openStop(id) : window.openEx && openEx(id); } catch(_){} }, 900)); }
 })();
 </script>
 <!--v170-->
@@ -13009,6 +13010,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const ids = (R[r.key] || R.short || { ids:[] }).ids, first = !r.done.includes(id); if (first) r.done.push(id);
     if (ids[r.i] === id && r.i < ids.length - 1) r.i++;
     sv(r); window.badgeUpd && badgeUpd(); window.renderPass && renderPass(); window.renderHome && renderHome(); window.renderTour && renderTour();
+    if (window.__stampScreen){ try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(30); } catch(_){} __stampScreen(id, first); return; } /* v194: марка «Кино и хром» */
     const x = ex(id), ok = document.createElement('div'); ok.className = 'qok';
     ok.innerHTML = `<div><div class="st">${x.th ? `<img src="${x.th}" alt="">` : ''}<b>${first ? 'ОТМЕТКА' : 'УЖЕ ЕСТЬ'}</b></div><h3>${x.title}</h3><p>${first ? 'Отметка в космическом паспорте' : 'Эта отметка уже в паспорте'}${x.hall ? ' · ' + x.hall : ''}</p><button>${viaScan ? 'Открыть досье' : 'В паспорт'}</button></div>`;
     scr().appendChild(ok); requestAnimationFrame(() => ok.classList.add('on')); try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(30); } catch(_){}
@@ -13219,7 +13221,7 @@ html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
 (function w(){ if (!window.openLanding || !window.LANDING || typeof openEx !== 'function') return setTimeout(w, 300);
   const FLY = { 26:['soyuzapollo.html', 'sa', '«Союз — Аполлон»'], 31:['baikonur.html', 'bk', '«Байконур»'], 35:['buran.html', 'bu', '«Энергия — Буран»'] };
   Object.entries(FLY).forEach(([id, f]) => { const fn = 'openFly' + id; window[fn] = () => openLanding(f[0]); window.LANDING[id] = fn; });
-  const _oe = openEx; openEx = function(id){ if (FLY[id]) return openLanding(FLY[id][0]); return _oe.apply(this, arguments); }; window.openEx = openEx;
+  const _oe = openEx; openEx = function(id){ if (FLY[id] && !window.__dosOnly) return openLanding(FLY[id][0]); /* v194: после истории — досье */ return _oe.apply(this, arguments); }; window.openEx = openEx;
   addEventListener('message', e => { for (const [id, f] of Object.entries(FLY)){ if (e.data === f[1] + ':map'){ document.getElementById('vl').classList.add('off'); showTab('map'); setTimeout(() => { window.m3select && m3select(+id, true); }, 900); }
     if (e.data === f[1] + ':stamp') window.toast && toast('Отметка ' + f[2] + ' в паспорте'); } }); })();
 </script>
@@ -13300,5 +13302,167 @@ html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
   new MutationObserver(addQ).observe(document.body, { childList:true, subtree:true });
 })();
 </script>
+<script>/* v200 admin: аватарки экспонатов остальных залов (серия «Кино») — дополняет window.__AV, не меняя существующие */ (function(){ var A = window.__AV = window.__AV || {}; [16, 20, 25, 29, 30, 32, 33, 34, 37, 38, 41, 44, 45, 47, 49, 56, 900].forEach(function(i){ if (!A[i]) A[i] = "thumbs/gen/" + i + ".webp"; }); })();</script>
+<!--v194-->
+<style>
+/* v194: QR-сценарий — марка «Кино и хром», экран получения, история экспоната, альбом марок в паспорте */
+@font-face{font-family:'W3SIP';src:url(g/stamps/w3sip.woff2) format('woff2');font-display:block}
+.mk{--s:1;width:calc(240px * var(--s));height:calc(320px * var(--s));box-sizing:border-box;padding:calc(14px * var(--s));background:#F4F2EE;flex:none;
+  -webkit-mask:radial-gradient(circle calc(5px * var(--s)) at calc(7px * var(--s)) calc(7px * var(--s)),transparent 96%,#000 100%) calc(-7px * var(--s)) calc(-7px * var(--s))/calc(14px * var(--s)) calc(14px * var(--s)),linear-gradient(#000 0 0) center/calc(100% - 14px * var(--s)) calc(100% - 14px * var(--s)) no-repeat;
+  mask:radial-gradient(circle calc(5px * var(--s)) at calc(7px * var(--s)) calc(7px * var(--s)),transparent 96%,#000 100%) calc(-7px * var(--s)) calc(-7px * var(--s))/calc(14px * var(--s)) calc(14px * var(--s)),linear-gradient(#000 0 0) center/calc(100% - 14px * var(--s)) calc(100% - 14px * var(--s)) no-repeat;-webkit-mask-composite:source-over;mask-composite:add}
+.mk .mkf{position:relative;width:100%;height:100%;overflow:hidden;background:#000}
+.mk .mkf>img.ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mk .mkf .bd{position:absolute;left:50%;top:46%;width:56%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;overflow:hidden;box-shadow:0 0 0 calc(3px * var(--s)) #C8CDD3,0 0 0 calc(5px * var(--s)) #6E757E,0 10px 30px rgba(0,0,0,.6)}
+.mk .mkf .bd img{width:100%;height:100%;object-fit:cover}
+.mk .mkg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.75) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,0) 62%,rgba(0,0,0,.8) 100%)}
+.mk .mkc{position:absolute;inset:0;padding:calc(14px * var(--s));display:flex;flex-direction:column;justify-content:space-between}
+.mk .mkt{display:flex;justify-content:space-between;align-items:flex-start}
+.mk .mkt img{height:calc(16px * var(--s));width:auto}
+.mk .mkt b{font:300 calc(34px * var(--s))/.8 Onest,Inter,var(--f),sans-serif;letter-spacing:-.04em;color:#F4F4F2}
+.mk .mkn{font-family:'W3SIP',Onest,sans-serif;line-height:.9;text-transform:uppercase;white-space:nowrap;background:linear-gradient(150deg,#FFFFFF 0%,#EEF2F6 18%,#C3CEDA 34%,#8FA5BC 46%,#5F84AA 55%,#7FA6CC 64%,#B8D0E6 78%,#E4EDF6 92%,#C9D6E3 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mk .mks{display:flex;align-items:center;gap:calc(5px * var(--s));margin-top:calc(6px * var(--s));font:500 calc(8px * var(--s)) 'Geist Mono',ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.mk .mks i{width:calc(6px * var(--s));height:calc(6px * var(--s));border-radius:50%;flex:none}
+.mk.empty{background:rgba(255,255,255,.06)}.mk.empty .mkf{background:#101216;display:grid;place-items:center}
+.mk.empty .mkf b{font:300 calc(34px * var(--s)) Onest,Inter,sans-serif;color:rgba(255,255,255,.18)}
+/* экран получения */
+.mkov{position:absolute;inset:0;z-index:300;background:#07080A;display:flex;flex-direction:column;align-items:center;overflow:hidden;opacity:0;transition:opacity .35s}
+.mkov.on{opacity:1}
+.mkov::before{content:"";position:absolute;left:-20%;right:-20%;bottom:-30%;height:70%;background:radial-gradient(50% 60% at 50% 100%,rgba(255,106,31,.55),rgba(255,106,31,.12) 55%,transparent 75%);pointer-events:none}
+.mkov .k{position:relative;margin-top:max(64px,calc(env(safe-area-inset-top) + 40px));font:500 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#FF8A4A}
+.mkov .x{position:absolute;top:max(44px,calc(env(safe-area-inset-top) + 8px));right:14px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#fff;font-size:20px;z-index:2}
+.mkov .stg{position:relative;flex:1;display:grid;place-items:center;perspective:900px;width:100%}
+.mkov .stw{position:relative}
+.mkov .stw .mk{filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+.mkov.go .stw .mk{animation:mkIn .62s cubic-bezier(.2,1.1,.3,1) both}
+@keyframes mkIn{0%{transform:translateY(-120%) rotate(-25deg) rotateY(60deg);opacity:0}55%{opacity:1}78%{transform:rotate(-5deg)}90%{transform:rotate(-1.6deg)}100%{transform:rotate(-3deg)}}
+.mkov .pm{position:absolute;right:-26px;bottom:34px;width:108px;height:108px;opacity:0;pointer-events:none}
+.mkov.go .pm{animation:pmIn .3s cubic-bezier(.3,1.6,.5,1) .7s both}
+@keyframes pmIn{0%{transform:scale(2.4) rotate(-20deg);opacity:0}100%{transform:rotate(-12deg);opacity:.92}}
+.mkov.go .stw{animation:shk .32s ease .95s}
+@keyframes shk{0%,100%{transform:none}30%{transform:scale(.97) translateY(4px)}60%{transform:scale(1.02)}}
+.mkov .b{position:relative;width:100%;max-width:420px;box-sizing:border-box;padding:0 22px max(28px,calc(env(safe-area-inset-bottom) + 18px));text-align:center}
+.mkov .b h3{margin:0;font:500 24px/1.15 var(--f);color:#fff;letter-spacing:-.02em}
+.mkov .b p{margin:8px 0 0;font-size:14px;color:rgba(236,238,241,.62)}
+.mkov .b .t{opacity:0;transform:translateY(12px);transition:opacity .6s .8s,transform .8s .8s cubic-bezier(.2,.8,.2,1)}
+.mkov.go .b .t{opacity:1;transform:none}
+.mkov .b button{display:block;width:100%;height:52px;border-radius:26px;border:0;margin-top:12px;font:600 15px var(--f);cursor:pointer}
+.mkov .b .pr{margin-top:20px;background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12),0 10px 26px -10px rgba(255,106,31,.75)}
+.mkov .b .sc{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
+/* история */
+.qsov{position:absolute;inset:0;z-index:300;background:#000;overflow:hidden}
+.stskip{position:absolute;z-index:310;top:max(44px,calc(env(safe-area-inset-top) + 8px));right:14px;height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(255,255,255,.2);background:rgba(10,11,13,.6);color:#fff;font:500 13px var(--f);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.stsnd{position:absolute;z-index:310;top:max(44px,calc(env(safe-area-inset-top) + 8px));left:14px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(10,11,13,.6);color:#fff;font-size:14px}
+.stbar{position:absolute;z-index:310;left:14px;right:14px;top:max(30px,calc(env(safe-area-inset-top) + 2px));height:3px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden}.stbar i{display:block;height:100%;width:0;background:#FF8A4A}
+.sttitle{position:absolute;z-index:309;left:0;right:0;bottom:0;padding:120px 24px 22%;text-align:center;opacity:0;transition:opacity .6s;background:linear-gradient(180deg,transparent,rgba(0,0,0,.85) 45%);pointer-events:none}
+.sttitle.on{opacity:1}
+.sttitle b{display:block;font:500 26px/1.2 var(--f);color:#fff;letter-spacing:-.02em}.sttitle span{display:block;margin-top:8px;font:500 11px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#FF8A4A}
+.spsc svg{position:absolute;inset:0;width:100%;height:100%}
+/* альбом в паспорте */
+.alb{margin:16px 12px 0;padding:16px 0 6px;border-radius:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+.alb h3{margin:0 16px;font:500 19px var(--f);color:#fff}.alb>p{margin:4px 16px 0;font-size:13px;color:#9AA3AF}
+.alb .col{margin-top:16px}
+.alb .ch{display:flex;align-items:center;gap:8px;padding:0 16px;font:500 13px var(--f);color:#E8EBEF}.alb .ch i{width:8px;height:8px;border-radius:50%}.alb .ch em{margin-left:auto;font:500 11px ui-monospace,Menlo,monospace;font-style:normal;color:#8B93A0}
+.alb .row{display:flex;gap:10px;overflow-x:auto;padding:10px 16px 6px;scrollbar-width:none}.alb .row::-webkit-scrollbar{display:none}
+.alb .row .mk{cursor:pointer}
+</style>
+<script>
+/* v194: QR-сценарий экспоната — марка → история → досье; альбом марок по коллекциям */
+(() => {
+  const COLL = [['Начало космической эры', '#FF6A1F', [10, 37, 32, 31]], ['Первый полёт человека', '#2F6FB3', [12, 13, 11]], ['Открытый космос', '#2E8C86', [14, 49, 19, 45]], ['Лунная программа', '#7D8794', [24, 21, 22, 47, 900]],
+    ['К планетам', '#B5502F', [16, 23, 15]], ['Станции и стыковки', '#6A5BB0', [36, 44, 25, 26, 27, 29, 20]], ['Ракеты и старты', '#C4912B', [33, 41, 34, 35, 38]], ['Спутники для Земли', '#3F8A55', [30, 56]]];
+  const YEAR = { 10:1957, 37:1958, 32:1957, 12:1961, 13:1961, 11:1960, 14:1965, 49:1969, 19:1977, 45:1989, 24:1966, 21:1970, 22:1970, 900:1967, 16:1961, 23:1967, 15:1971, 36:1986, 44:1969, 25:1975, 26:1975, 27:1980, 29:1998, 20:1967, 33:1965, 41:1999, 34:1999, 35:1988, 38:1981, 30:1982, 56:2003 };
+  const NAME = { 10:'Спутник-1', 21:'Луна-16', 22:'Луноход-1', 35:'Буран', 12:'Восток', 13:'СК-1', 14:'Беркут', 24:'Луна-9', 36:'Мир', 15:'Марс-3', 23:'Венера-4', 26:'Союз — Аполлон', 900:'Сатурн-5', 29:'МКС' };
+  const STAMPED = new Set([10, 21, 22]); /* готовые кадры app/g/stamps/<id>.webp */
+  const coll = id => COLL.find(c => c[2].includes(id)) || ['Музей космонавтики', '#FF8A4A', []];
+  const title = id => NAME[id] || ((window.tourEx ? tourEx(id).title : '') || 'Экспонат').replace(/[«»]/g, '');
+  window.stampHTML = (id, s = 1, empty = false) => { const c = coll(id), n = title(id), fs = Math.min(27, Math.floor(196 / Math.max(5, n.length * .62)));
+    if (empty) return `<div class="mk empty" style="--s:${s}" data-id="${id}"><div class="mkf"><b>${id}</b></div></div>`;
+    const av = (window.__AV || {})[id] || (window.tourEx ? tourEx(id).th : '');
+    const pic = STAMPED.has(id) ? `<img class="ph" src="g/stamps/${id}.webp" alt="">` : av ? `<div class="bd"><img src="${av}" alt=""></div>` : '';
+    return `<div class="mk" style="--s:${s}" data-id="${id}"><div class="mkf">${pic}<div class="mkg"></div><div class="mkc"><div class="mkt"><img src="g/stamps/logo.svg" alt="Музей космонавтики"><b>${id}</b></div><div><div class="mkn" style="font-size:calc(${fs}px * var(--s))">${n}</div><div class="mks"><i style="background:${c[1]}"></i>${c[0]}${YEAR[id] ? ' / ' + YEAR[id] : ''}</div></div></div></div></div>`; };
+  const host = () => { const h = document.querySelector('.scr') || document.getElementById('dev') || document.body; if (h.scrollTop) h.scrollTop = 0; return h; };
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const STORY = { 10:'sputnik', 21:'land', 22:'land', 35:'land' };
+  /* 3. досье после истории */
+  const dossier = id => { window.__viaQR = id; window.__dosOnly = true; try { (window.openEx || openEx)(id); } finally { window.__dosOnly = false; } };
+  /* 1. экран марки */
+  window.__stampScreen = (id, first) => { document.querySelectorAll('.mkov').forEach(x => x.remove()); const has = !!STORY[id];
+    const pm = `<svg class="pm" viewBox="0 0 120 120"><g fill="none" stroke="#B8430A" stroke-width="2.4" opacity=".85"><circle cx="60" cy="60" r="52"/><circle cx="60" cy="60" r="38"/></g><path id="pmc" d="M60 14a46 46 0 1 1 -.1 0" fill="none"/><text font-family="ui-monospace,Menlo,monospace" font-size="9.5" letter-spacing="2.2" fill="#B8430A" opacity=".9"><textPath href="#pmc">МУЗЕЙ КОСМОНАВТИКИ / МОСКВА / </textPath></text><text x="60" y="58" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#B8430A">${new Date().toLocaleDateString('ru-RU')}</text><text x="60" y="73" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#B8430A">№ ${id}</text></svg>`;
+    const ov = document.createElement('div'); ov.className = 'mkov'; ov.innerHTML = `<button class="x" aria-label="Закрыть">×</button><div class="k">${first ? 'Новая марка' : 'Марка уже в альбоме'} / экспонат ${id}</div><div class="stg"><div class="stw">${stampHTML(id, 1.12)}${first ? pm : ''}</div></div>
+      <div class="b"><div class="t"><h3>${title(id)}</h3><p>${first ? 'Отметка в космическом паспорте' : 'Эта отметка уже в паспорте'}</p></div><button class="pr">${has ? 'Смотреть историю' : 'Открыть досье'}</button><button class="sc">В паспорт</button></div>`;
+    host().appendChild(ov); requestAnimationFrame(() => { ov.classList.add('on'); requestAnimationFrame(() => ov.classList.add('go')); });
+    const close = () => { ov.classList.remove('on'); setTimeout(() => ov.remove(), 350); };
+    ov.querySelector('.x').onclick = close; ov.querySelector('.sc').onclick = () => { close(); window.showTab && showTab('pass'); };
+    ov.querySelector('.pr').onclick = () => { close(); has ? playStory(id) : dossier(id); }; };
+  /* 2. истории */
+  function chrome(onSkip, total){ const h = host(), els = [];
+    const sk = document.createElement('button'); sk.className = 'stskip'; sk.textContent = 'Пропустить'; sk.onclick = onSkip; h.appendChild(sk); els.push(sk);
+    const bar = document.createElement('div'); bar.className = 'stbar'; bar.innerHTML = '<i></i>'; h.appendChild(bar); els.push(bar); const i = bar.firstChild; i.style.transition = `width ${total}ms linear`; requestAnimationFrame(() => requestAnimationFrame(() => i.style.width = '100%'));
+    return { add:e => { h.appendChild(e); els.push(e); }, rm:() => els.forEach(e => e.remove()) }; }
+  window.playStory = (id) => { if (reduce()) return dossier(id); if (STORY[id] === 'sputnik') return sputnik(id); return landing(id); };
+  function landing(id){ const fn = window.LANDING && window.LANDING[id]; if (!fn || !window[fn]) return dossier(id); const f = document.getElementById('vlFrame'), before = f.src; window[fn]();
+    const vl = document.getElementById('vl'), fresh = f.src !== before; let timers = [], done = false;
+    const end = () => { if (done) return; done = true; timers.forEach(clearTimeout); ui.rm(); vl.classList.add('off'); setTimeout(() => dossier(id), 250); };
+    const TOT = 11500, ui = chrome(end, TOT);
+    const run = () => { let w; try { w = f.contentWindow; } catch(_){ return; } let n = Math.max(2, Math.round((w.document.documentElement.scrollHeight || w.innerHeight) / w.innerHeight));
+      try { w.scrollTo(0, 0); } catch(_){} if (id === 35 && n > 3) n--; /* последний экран облёта — текст, титр ставим раньше */ const step = Math.min(2300, (TOT - (id === 35 ? 3000 : 1200)) / (n - 1));
+      for (let k = 1; k < n; k++) timers.push(setTimeout(() => { try { w.scrollTo({ top:k * w.innerHeight, behavior:'smooth' }); } catch(_){} }, 400 + step * k));
+      const last = 400 + step * (n - 1);
+      if (id === 35){ const t = document.createElement('div'); t.className = 'sttitle'; t.innerHTML = '<b>2 витка, 206 минут,<br>посадка без экипажа</b><span>15 ноября 1988 / Байконур</span>'; ui.add(t); timers.push(setTimeout(() => t.classList.add('on'), last + 600)); timers.push(setTimeout(end, last + 3000)); }
+      else timers.push(setTimeout(end, last + 1000)); };
+    const ready = () => setTimeout(run, 500); fresh ? f.addEventListener('load', ready, { once:true }) : ready();
+    const cx = document.getElementById('vlClose'); cx && cx.addEventListener('click', () => { if (!done){ done = true; timers.forEach(clearTimeout); ui.rm(); } }, { once:true }); }
+  /* Спутник-1: шар выходит из-за края Земли, антенны раскрываются (из передней части шара, назад парами), «бип-бип», 4 октября 1957 */
+  function sputnik(id){ const ov = document.createElement('div'); ov.className = 'qsov spsc'; let done = false, ac = null, beepT = 0, snd = false;
+    const W = 390, H = 844;
+    ov.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice"><defs>
+      <radialGradient id="spB" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#C9D2DC"/><stop offset=".75" stop-color="#5D6B7C"/><stop offset="1" stop-color="#1B222B"/></radialGradient>
+      <linearGradient id="spE" gradientUnits="userSpaceOnUse" x1="0" y1="${H * .74}" x2="0" y2="${H}"><stop offset="0" stop-color="#3B78B8"/><stop offset=".08" stop-color="#173F6E"/><stop offset=".45" stop-color="#0A1D36"/><stop offset="1" stop-color="#03070E"/></linearGradient>
+      <linearGradient id="spA" x1="0" x2="1"><stop offset="0" stop-color="#E8EDF2"/><stop offset="1" stop-color="#6F7B88"/></linearGradient></defs>
+      <rect width="${W}" height="${H}" fill="#020306"/>${Array.from({ length:70 }, () => `<circle cx="${(Math.random() * W).toFixed(0)}" cy="${(Math.random() * H * .7).toFixed(0)}" r="${(Math.random() * .9 + .2).toFixed(2)}" fill="#fff" opacity="${(Math.random() * .6 + .2).toFixed(2)}"/>`).join('')}
+      <g id="spSat" transform="translate(-200 -200)"><circle r="30" fill="url(#spB)"/><path d="M0 -30 A30 30 0 0 1 0 30" fill="none" stroke="#8A96A3" stroke-width="1.4" opacity=".7"/><g id="spAnts"></g></g><g id="spEarth"><ellipse cx="${W / 2}" cy="${H * .74 + 1500}" rx="1500" ry="1500" fill="url(#spE)"/><ellipse cx="${W / 2}" cy="${H * .74 + 1500}" rx="1503" ry="1503" fill="none" stroke="#6FB6FF" stroke-width="5" opacity=".55" filter="blur(3px)"/><ellipse cx="${W / 2}" cy="${H * .74 + 1500}" rx="1500.5" ry="1500.5" fill="none" stroke="#BFE3FF" stroke-width="1.4"/></g>
+      
+      <text id="spBeep" x="${W / 2}" y="${H * .2}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="15" letter-spacing="3" fill="#FF8A4A" opacity="0">БИП / БИП</text>
+      <text id="spHz" x="${W / 2}" y="${H * .2 + 22}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" letter-spacing="1.5" fill="#8B93A0" opacity="0">20,005 и 40,002 МГц</text></svg>
+      <div class="sttitle"><b>4 октября 1957</b><span>Первый искусственный спутник Земли</span></div>`;
+    host().appendChild(ov); const svg = ov.querySelector('svg'), sat = svg.querySelector('#spSat'), ants = svg.querySelector('#spAnts'), beep = svg.querySelector('#spBeep'), hz = svg.querySelector('#spHz'), ttl = ov.querySelector('.sttitle');
+    /* полёт справа налево: передняя часть шара — слева, антенны крепятся к передней полусфере и уходят назад, вправо, двумя парами */
+    const ANT = [[-12, -20, 2.4, -12], [-14, -10, 2.9, -4], [-14, 10, 2.9, 4], [-12, 20, 2.4, 12]];
+    const end = () => { if (done) return; done = true; cancelAnimationFrame(raf); ui.rm(); try { ac && ac.close(); } catch(_){} ov.style.transition = 'opacity .4s'; ov.style.opacity = 0; setTimeout(() => { ov.remove(); dossier(id); }, 380); };
+    const TOT = 7600, ui = chrome(end, TOT);
+    const sb = document.createElement('button'); sb.className = 'stsnd'; sb.textContent = '🔇'; sb.setAttribute('aria-label', 'Звук'); sb.onclick = () => { snd = !snd; sb.textContent = snd ? '🔊' : '🔇'; if (snd && !ac){ try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(_){} } }; ui.add(sb);
+    const tone = f => { if (!snd || !ac) return; const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0, ac.currentTime); g.gain.linearRampToValueAtTime(.14, ac.currentTime + .01); g.gain.setValueAtTime(.14, ac.currentTime + .28); g.gain.linearRampToValueAtTime(0, ac.currentTime + .3); o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + .32); };
+    const t0 = performance.now(); let raf = 0, lastBeep = -1;
+    const ez = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+    const frame = now => { const t = now - t0;
+      /* шар выходит из-за края Земли: снизу справа вверх-влево */
+      const p = ez(cl(t / 3600)), x = W * (.66 - .22 * p), y = H * (.84 - .44 * p), s = .85 + .5 * p; /* из-за края Земли: Земля рисуется поверх */ sat.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${s.toFixed(3)})`);
+      /* антенны раскрываются от корпуса */
+      const a = ez(cl((t - 2200) / 1500)); ants.innerHTML = ANT.map(([ax, ay, len, spread]) => { const L = 26 + len * 30 * (.15 + .85 * a), dx = Math.cos((spread * (.3 + .7 * a)) * Math.PI / 180) * L, dy = Math.sin((spread * (.3 + .7 * a)) * Math.PI / 180) * L; return `<line x1="${ax}" y1="${ay}" x2="${(ax + 30 + dx).toFixed(1)}" y2="${(ay + dy * 1.6).toFixed(1)}" stroke="url(#spA)" stroke-width="1.6" stroke-linecap="round"/>`; }).join('');
+      /* «бип-бип» после раскрытия */
+      if (t > 3800){ const k = Math.floor((t - 3800) / 600); const on = ((t - 3800) % 600) < 300; beep.setAttribute('opacity', on ? 1 : .25); hz.setAttribute('opacity', .9); if (on && k !== lastBeep){ lastBeep = k; tone(k % 2 ? 40.002 * 20 : 20.005 * 40); } }
+      if (t > 4600) ttl.classList.add('on');
+      if (t >= TOT) return end(); raf = requestAnimationFrame(frame); };
+    raf = requestAnimationFrame(frame); }
+  /* 4. досье «Лунохода-1» (22) и новые факты — на сверку с музеем */
+  try { if (typeof EX !== 'undefined'){ let e = EX.find(x => x.id === 22); if (!e){ e = { id:22 }; EX.push(e); } const D = { short:'«Луноход-1»', inv:'№ 22', title:'Самоходный аппарат «Луноход-1»', desc:'Первый в мире планетоход: 301 сутки работал на Луне.', photos:[] }; for (const k in D) if (e[k] == null) e[k] = D[k]; }
+    if (typeof INFO !== 'undefined'){
+      INFO[22] = Object.assign({ nums:[['10,5', 'км', 'пройдено'], ['301', 'сут.', 'работы'], ['756', 'кг', 'масса']],
+        sum:'Первый в мире планетоход доставила «Луна-17» 17 ноября 1970 года в Море Дождей. Им управляли с Земли, из Центра дальней космической связи под Симферополем, по картинке с задержкой в несколько секунд.',
+        facts:['Экипаж из пяти человек: командир, водитель, штурман, бортинженер и оператор антенны', 'Лунной ночью аппарат грел радиоизотопный источник', 'Крышка с солнечной батареей открывалась днём, как ноутбук', 'Лазерный отражатель лунохода нашли снова в 2010 году — по нему до сих пор меряют расстояние до Луны'] }, INFO[22] || {});
+      const add = (id, arr) => { const I = INFO[id]; if (!I) return; I.facts = I.facts || []; arr.forEach(f => I.facts.includes(f) || I.facts.push(f)); };
+      add(21, ['Бур остановился на глубине около 35 см: дальше пошла твёрдая порода', 'Капсула весила около 39 кг и садилась без управления — её нашли по радиомаяку в казахстанской степи', 'В 1971 году 3 грамма грунта «Луны-16» обменяли с NASA на образцы «Аполлонов»']);
+      add(10, ['Яркая «звёздочка» в небе 1957 года была в основном второй ступенью ракеты: сам шар был слишком мал для глаза']);
+      add(35, ['Сел на полосу Байконура при сильном боковом ветре и отклонился от осевой линии всего на несколько метров', 'Теплозащита — около 39 тысяч плиток, каждая своей формы', 'В 2002 году летавший «Буран» погиб под обрушившейся крышей монтажного корпуса']); } const B = window.__EXBASE, cp = o => JSON.parse(JSON.stringify(o)); if (B){ const e22 = EX.find(x => x.id === 22); const b22 = B.EX.find(x => x.id === 22); b22 ? Object.assign(b22, cp(e22)) : B.EX.push(cp(e22)); [10, 21, 22, 35].forEach(k => { if (INFO[k]) B.INFO[k] = cp(INFO[k]); }); } /* слой контента (админка) восстанавливает досье из снимка — дописываем в снимок */  } catch(e){ console.warn(e); }
+  /* 5. альбом марок в паспорте */
+  function album(){ const v = document.getElementById('vPass'); if (!v) return; v.querySelector('.alb')?.remove(); const r = window.tourState ? tourState() : { done:[] }, got = new Set(r.done || []);
+    const total = COLL.reduce((s, c) => s + c[2].length, 0), n = COLL.reduce((s, c) => s + c[2].filter(i => got.has(i)).length, 0);
+    const el = document.createElement('div'); el.className = 'alb'; el.innerHTML = `<h3>Альбом марок</h3><p>${n} из ${total} / сканируйте QR на табличках</p>` + COLL.map(([nm, col, ids]) => `<div class="col"><div class="ch"><i style="background:${col}"></i>${nm}<em>${ids.filter(i => got.has(i)).length} из ${ids.length}</em></div><div class="row">${ids.map(i => stampHTML(i, .42, !got.has(i))).join('')}</div></div>`).join('');
+    el.addEventListener('click', e => { const m = e.target.closest('.mk'); if (!m) return; const id = +m.dataset.id; m.classList.contains('empty') ? (window.showTab && showTab('map'), setTimeout(() => window.m3select && m3select(id, true), 700)) : __stampScreen(id, false); });
+    const anchor = v.querySelector('.hd, h1, .ph') ; anchor && anchor.parentElement === v ? anchor.after(el) : v.prepend(el); }
+  const rp = window.renderPass; if (rp) window.renderPass = function(){ const o = rp.apply(this, arguments); try { album(); } catch(e){ console.warn(e); } return o; }; setTimeout(() => { try { album(); } catch(_){} }, 800);
+})();
+</script>
+<!--/v194-->
 </body>
 </html>
